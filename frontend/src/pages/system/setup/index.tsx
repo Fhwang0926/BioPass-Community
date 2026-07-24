@@ -2,13 +2,12 @@ import { Alert, Button, Card, Form, Input, Layout, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
-// @ts-ignore
-import forge from "node-forge";
 
 import authService from "@/api/services/auth";
 import { getHomePageNavigatePath } from "@/router/utils";
 import { useUserActions, useUserToken } from "@/store/userStore";
 import idleService from "@/api/services/idle";
+import { hashClientPassword } from "@/utils/passwordHash";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -66,7 +65,7 @@ export default function SetupPage() {
 	const onFinish = async (values: SetupFormValues) => {
 		setLoading(true);
 		try {
-			const passwordHash = forge.md.sha512.create().update(values.password).digest().toHex();
+			const passwordHash = hashClientPassword(values.password);
 			const res = await authService.completeSetup({
 				name: values.name.trim(),
 				email: values.email.trim().toLowerCase(),

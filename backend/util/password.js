@@ -20,6 +20,9 @@ export function isClientPasswordHash (password) {
 }
 
 function sha512Hex (value) {
+  // Intentional: first-pass material only. Stored passwords use scrypt (see hashPassword).
+  // codeql[js/insufficient-password-hash]
+  // codeql[js/weak-cryptographic-algorithm]
   return forge.md.sha512.create().update(String(value || '')).digest().toHex()
 }
 

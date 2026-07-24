@@ -9,8 +9,7 @@ import idleService from "@/api/services/idle";
 import { toast } from "sonner";
 import type { UserInfo, UserToken } from "#/entity";
 import { StorageEnum } from "#/enum";
-// @ts-ignore
-import forge from "node-forge";
+import { hashClientPassword } from "@/utils/passwordHash";
 
 type UserStore = {
 	userInfo: Partial<UserInfo>;
@@ -82,8 +81,8 @@ export const useSignIn = () => {
 
 	const signIn = async (data: SignInReq) => {
 		try {
-			// 프론트엔드에서 비밀번호를 SHA512로 해시 (1차 해싱)
-			data.password = forge.md.sha512.create().update(data.password).digest().toHex();
+			// First-pass hash only; server stores with scrypt.
+			data.password = hashClientPassword(data.password);
 			const res = await signInMutation.mutateAsync(data);
 			// 인터셉터가 1depth data만 반환 → 백엔드가 중첩이면 res = { result, data: { user, accessToken, refreshToken } }
 			const raw = res as unknown as { user?: UserInfo; accessToken?: string; refreshToken?: string; data?: typeof res };

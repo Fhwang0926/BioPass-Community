@@ -6,8 +6,7 @@ import Card from "@/components/card";
 import { toast } from "sonner";
 import userService from "@/api/services/user";
 import { t } from "@/locales/i18n";
-// @ts-ignore
-import forge from "node-forge";
+import { hashClientPassword } from "@/utils/passwordHash";
 
 type FieldType = {
 	password?: string;
@@ -24,8 +23,8 @@ export default function SecurityTab() {
 		try {
 			setIsLoading(true);
 			await userService.updateProfile({
-				password: forge.md.sha512.create().update(values.password).digest().toHex(),
-				password_new: forge.md.sha512.create().update(values.password_new).digest().toHex()
+				password: hashClientPassword(values.password || ""),
+				password_new: hashClientPassword(values.password_new || "")
 			});
 			
 			await queryClient.invalidateQueries({ queryKey: ['profile'] });

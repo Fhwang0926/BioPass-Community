@@ -1,0 +1,16 @@
+# CodeQL pack config for BioPass Community
+name: "BioPass Community CodeQL config"
+queries:
+  - uses: security-and-quality
+query-filters:
+  # Client/server SHA-512 is a deliberate first-pass before scrypt storage KDF.
+  - exclude:
+      id: js/insufficient-password-hash
+  - exclude:
+      id: js/weak-cryptographic-algorithm
+      paths:
+        - backend/util/password.js
+        - frontend/src/utils/passwordHash.ts
+        - frontend/src/store/userStore.ts
+        - frontend/src/pages/management/account/security-tab.tsx
+        - frontend/src/pages/system/setup/index.tsx

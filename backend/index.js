@@ -287,9 +287,9 @@ const tokenValidationMiddleware = async (ctx, next) => {
     return next()
   } catch (err) {
     const requestPath = `${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`
-    const errorMessage = err.message ? `${err.message} - ${requestPath}` : `Unauthorized - ${requestPath}`
-    console.error(`[AUTH] ${errorMessage}`, err)
-    ctx.throw(401, { error: { code: err.statusCode || 401, message: errorMessage, path: requestPath } })
+    // Do not log the full Error object — it can retain Authorization / token context.
+    console.error(`[AUTH] ${err.name || 'Error'}: ${err.message || 'Unauthorized'} (${requestPath})`)
+    ctx.throw(401, { error: { code: err.statusCode || 401, message: 'Unauthorized', path: requestPath } })
   }
 }
 

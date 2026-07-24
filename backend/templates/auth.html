@@ -1120,6 +1120,39 @@
       function tr(key, fallback) {
         return (authI18n && authI18n[key]) || fallback || key;
       }
+
+      /** Allow only app deep-link / Android intent / https universal-link schemes. */
+      function isAllowedAppOpenUrl(url) {
+        if (!url || typeof url !== 'string') return false;
+        var trimmed = url.trim();
+        if (!trimmed) return false;
+        var schemeMatch = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed);
+        if (!schemeMatch) return false;
+        var scheme = schemeMatch[1].toLowerCase();
+        if (scheme === 'javascript' || scheme === 'data' || scheme === 'vbscript' || scheme === 'file') {
+          return false;
+        }
+        if (scheme === 'https') return true;
+        if (scheme === 'intent') {
+          return trimmed.indexOf('://') !== -1 && trimmed.indexOf('#Intent;') !== -1;
+        }
+        // Custom app schemes (e.g. biopass://auth?request_id=...)
+        return scheme.length <= 32 && trimmed.indexOf('://') !== -1;
+      }
+
+      /** Post-verify redirects: same-origin path or http(s) only. */
+      function isAllowedRedirectUrl(url) {
+        if (!url || typeof url !== 'string') return false;
+        var trimmed = url.trim();
+        if (trimmed.charAt(0) === '/' && trimmed.charAt(1) !== '/') return true;
+        try {
+          var parsed = new URL(trimmed, window.location.origin);
+          return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+        } catch (e) {
+          return false;
+        }
+      }
+
       var urlParams = new URLSearchParams(window.location.search);
       var clientIdEl = document.getElementById('emailAuthClientId');
       var emailEl = document.getElementById('emailAuthEmail');
@@ -1152,15 +1185,18 @@
           if (deepLink) {
             var isAndroid = /android/i.test(navigator.userAgent);
             var openUrl = isAndroid && deepLinkAndroid ? deepLinkAndroid : deepLink;
-            try {
-              var a = document.createElement('a');
-              a.href = openUrl;
-              a.style.display = 'none';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            } catch (e) {
-              try { window.location.href = openUrl; } catch (e2) {}
+            if (isAllowedAppOpenUrl(openUrl)) {
+              try {
+                var a = document.createElement('a');
+                a.href = openUrl;
+                a.rel = 'noopener noreferrer';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              } catch (e) {
+                try { window.location.href = openUrl; } catch (e2) {}
+              }
             }
           }
           if (!requestId) {
@@ -1230,6 +1266,7 @@
 
       function doVerifyRedirect(url) {
         if (verifyEmailRedirectDone || !url) return;
+        if (!isAllowedRedirectUrl(url)) return;
         verifyEmailRedirectDone = true;
         window.location.href = url;
       }

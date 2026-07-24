@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8eef5"/>
+      <stop offset="100%" style="stop-color:#d0dce8"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="240" fill="url(#bg3)" rx="12"/>
+  <!-- Phone / success screen -->
+  <rect x="100" y="30" width="120" height="180" rx="12" fill="#fff" stroke="#52c41a" stroke-width="2"/>
+  <!-- Checkmark circle -->
+  <circle cx="160" cy="105" r="40" fill="#f6ffed" stroke="#52c41a" stroke-width="3"/>
+  <path d="M144 105 L156 117 L178 93" fill="none" stroke="#52c41a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Success text -->
+  <text x="160" y="165" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#52c41a" font-weight="700">\�x D�</text>
+  <text x="160" y="185" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#595959">t� D�� \�xȵ��</text>
+  <!-- Step label -->
+  <text x="160" y="225" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#262626" font-weight="600">3. \�x D�</text>
+</svg>

@@ -1,0 +1,90 @@
+# Full stack with prebuilt GHCR image: PostgreSQL (db) + API (api)
+#
+#   cp .env.example .env   # set AUTH_SECRET (and optionally POSTGRES_PASSWORD)
+#   docker compose -f docker-compose.ghcr.yml up -d
+#
+# IMAGE_TAG=1.0.0 docker compose -f docker-compose.ghcr.yml up -d
+# Forks: set BIOPASS_IMAGE=ghcr.io/<owner>/biopass-community
+
+name: biopass
+
+x-api-environment: &api-environment
+  NODE_ENV: production
+  PORT: "3030"
+  DATABASE_URL: postgresql://biopass:${POSTGRES_PASSWORD:-biopass}@db:5432/biopass
+  AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env — openssl rand -hex 32}
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3030}
+  FRONTEND_ORIGIN: ${PUBLIC_BASE_URL:-http://localhost:3030}
+  CORS_ORIGINS: ${CORS_ORIGINS:-}
+  TRUST_PROXY: ${TRUST_PROXY:-0}
+  CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+  MAINTENANCE_EMAIL: ${MAINTENANCE_EMAIL:-}
+  TZ_OFFSET: ${TZ_OFFSET:-+00:00}
+  ENABLE_SWAGGER: ${ENABLE_SWAGGER:-0}
+  SKIP_AUTO_SCHEMA_SYNC: ${SKIP_AUTO_SCHEMA_SYNC:-0}
+  ALLOW_SCHEMA_FORCE: ${ALLOW_SCHEMA_FORCE:-0}
+  AUTH_ACCESS: ${AUTH_ACCESS:-}
+  AUTH_REFRESH: ${AUTH_REFRESH:-}
+  AUTH_ACCESS_APP: ${AUTH_ACCESS_APP:-}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASS: ${SMTP_PASS:-}
+  SMTP_SERVICE: ${SMTP_SERVICE:-}
+  FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-firebase-service-account.json}
+  INIT_ADMIN_EMAIL: ${INIT_ADMIN_EMAIL:-}
+  INIT_ADMIN_PASSWORD: ${INIT_ADMIN_PASSWORD:-}
+  INIT_ADMIN_NAME: ${INIT_ADMIN_NAME:-Admin}
+  INIT_ADMIN_PHONE: ${INIT_ADMIN_PHONE:-}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: biopass
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-biopass}
+      POSTGRES_DB: biopass
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - biopass_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biopass -d biopass"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+  api:
+    image: ${BIOPASS_IMAGE:-ghcr.io/fhwang0926/biopass-community}:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    ports:
+      - "${API_HOST_BIND:-127.0.0.1}:${API_PORT:-3030}:3030"
+    environment:
+      <<: *api-environment
+    volumes:
+      - biopass_upload:/app/upload
+      - biopass_json:/app/json
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "--input-type=module",
+          "-e",
+          "const r=await fetch('http://127.0.0.1:3030/ping'); process.exit(r.ok?0:1)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 45s
+
+volumes:
+  biopass_pg:
+  biopass_upload:
+  biopass_json:

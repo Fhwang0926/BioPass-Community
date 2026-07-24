@@ -1,0 +1,28 @@
+name: Documentation
+description: Clarify or improve README, setup, or contributor docs
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Where
+      description: File or URL (for example README Quick start, SECURITY.md)
+      placeholder: README.md → Quick start
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is unclear or wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Optional rewrite or checklist of what should be added
+    validations:
+      required: false

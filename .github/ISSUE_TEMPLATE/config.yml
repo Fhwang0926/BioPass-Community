@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Fhwang0926/BioPass-Community/security/advisories/new
+    about: Do not file a public issue for security problems. Use a private advisory (see SECURITY.md).
+  - name: Documentation & self-hosting
+    url: https://github.com/Fhwang0926/BioPass-Community/blob/main/README.md
+    about: Quick start, Docker Compose, and first-run admin setup.

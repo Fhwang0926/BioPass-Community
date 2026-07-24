@@ -25,7 +25,7 @@ function hiddenAuthChoiceVars(text, escapeHtml) {
   }
 }
 
-function renderBioAuthSection(authRequestId, deepLinkUrl, deepLinkAndroidIntentUrl, noAppHintDisplay, text) {
+function renderBioAuthSection(authRequestId, deepLinkScheme, deepLinkPath, androidPackage, noAppHintDisplay, text) {
   if (!authRequestId) return ''
 
   return `        <!-- 바이오 인증 (기본/권장) – 메인 인증 카드 -->
@@ -33,7 +33,7 @@ function renderBioAuthSection(authRequestId, deepLinkUrl, deepLinkAndroidIntentU
           <h2 class="bio-auth-title">${escapeHtml(text.bioTitle)}</h2>
           <p class="bio-auth-desc">${escapeHtml(text.bioDesc)}</p>
           <p class="bio-auth-fallback-hint" style="display: ${noAppHintDisplay};">${escapeHtml(text.bioFallbackHint)}</p>
-          <button type="button" id="bioAuthCta" class="btn bio-auth-cta" data-auth-request-id="${authRequestId}" data-deep-link="${deepLinkUrl}" data-deep-link-android="${deepLinkAndroidIntentUrl}">${escapeHtml(text.bioCta)}</button>
+          <button type="button" id="bioAuthCta" class="btn bio-auth-cta" data-auth-request-id="${authRequestId}" data-app-scheme="${deepLinkScheme}" data-app-path="${deepLinkPath}" data-android-package="${androidPackage}">${escapeHtml(text.bioCta)}</button>
           <div id="bioAuthToast" class="bio-auth-toast" role="status" aria-live="polite"></div>
         </section>`
 }
@@ -84,8 +84,9 @@ export function renderErrorPage(status, error, errorDescription, baseUrl = '', s
     noAppHintDisplay,
     bioAuthSectionHtml: '',
     authRequestId: '',
-    deepLinkUrl: '',
-    deepLinkAndroidIntentUrl: '',
+    deepLinkScheme: '',
+    deepLinkPath: '',
+    androidPackage: '',
     bioAuthSectionDisplay,
     authChoiceDividerDisplay,
     emailAuthSectionDisplay,
@@ -118,10 +119,6 @@ export function renderGuidePage(ctx, serverInfo = null, options = {}) {
   const scheme = APP_DEEP_LINK_SCHEME || 'biopass'
   const path = APP_DEEP_LINK_PATH || 'auth'
   const packageAndroid = APP_PACKAGE_ANDROID || 'com.biopass'
-  const deepLinkUrl = authRequestId ? `${scheme}://${path}?request_id=${encodeURIComponent(authRequestId)}` : ''
-  const deepLinkAndroidIntentUrl = authRequestId
-    ? `intent://${path}?request_id=${encodeURIComponent(authRequestId)}#Intent;scheme=${encodeURIComponent(scheme)};package=${encodeURIComponent(packageAndroid)};end`
-    : ''
   const q = ctx && ctx.request.query ? ctx.request.query : {}
   const emailAuthClientId = (q.client_id != null && String(q.client_id).trim())
     ? String(q.client_id).trim()
@@ -167,8 +164,9 @@ export function renderGuidePage(ctx, serverInfo = null, options = {}) {
   const bioAuthSectionHtml = bioAuthSectionDisplay === 'block'
     ? renderBioAuthSection(
       escapeHtml(authRequestId),
-      escapeHtml(deepLinkUrl),
-      escapeHtml(deepLinkAndroidIntentUrl),
+      escapeHtml(scheme),
+      escapeHtml(path),
+      escapeHtml(packageAndroid),
       noAppHintDisplay,
       text
     )
@@ -221,8 +219,9 @@ export function renderGuidePage(ctx, serverInfo = null, options = {}) {
     noAppHintDisplay,
     bioAuthSectionHtml,
     authRequestId: escapeHtml(authRequestId),
-    deepLinkUrl: escapeHtml(deepLinkUrl),
-    deepLinkAndroidIntentUrl: escapeHtml(deepLinkAndroidIntentUrl),
+    deepLinkScheme: escapeHtml(scheme),
+    deepLinkPath: escapeHtml(path),
+    androidPackage: escapeHtml(packageAndroid),
     bioAuthSectionDisplay,
     authChoiceDividerDisplay,
     emailAuthSectionDisplay,

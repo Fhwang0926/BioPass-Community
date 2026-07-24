@@ -1010,8 +1010,9 @@
           <div class="auth-choice-push" style="display: {{authChoicePushDisplay}};">
             <button type="button" class="btn" id="bioAuthCta"
               data-auth-request-id="{{authRequestId}}"
-              data-deep-link="{{deepLinkUrl}}"
-              data-deep-link-android="{{deepLinkAndroidIntentUrl}}">
+              data-app-scheme="{{deepLinkScheme}}"
+              data-app-path="{{deepLinkPath}}"
+              data-android-package="{{androidPackage}}">
               {{authChoicePushButton}}
             </button>
             <div id="bioAuthToast" class="{{authChoiceInitialToastClass}}">{{authChoiceInitialToast}}</div>
@@ -1136,7 +1137,6 @@
         if (scheme === 'intent') {
           return trimmed.indexOf('://') !== -1 && trimmed.indexOf('#Intent;') !== -1;
         }
-        // Custom app schemes (e.g. biopass://auth?request_id=...)
         return scheme.length <= 32 && trimmed.indexOf('://') !== -1;
       }
 
@@ -1151,6 +1151,26 @@
         } catch (e) {
           return false;
         }
+      }
+
+      /** Build app open URL from allowlisted scheme/path pieces (not a raw DOM URL). */
+      function buildAppOpenUrl(scheme, path, requestId, forAndroid, androidPackage) {
+        var schemeSafe = String(scheme || '').trim().toLowerCase();
+        var pathSafe = String(path || '').trim().replace(/^\/+/, '');
+        var req = String(requestId || '').trim();
+        var pkg = String(androidPackage || '').trim();
+        if (!/^[a-z][a-z0-9+.-]{0,30}$/.test(schemeSafe)) return '';
+        if (!/^[a-z0-9._~-]{1,64}$/i.test(pathSafe)) return '';
+        if (!/^[a-zA-Z0-9._:-]{8,128}$/.test(req)) return '';
+        var query = 'request_id=' + encodeURIComponent(req);
+        if (forAndroid) {
+          if (!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i.test(pkg)) return '';
+          return 'intent://' + pathSafe + '?' + query
+            + '#Intent;scheme=' + encodeURIComponent(schemeSafe)
+            + ';package=' + encodeURIComponent(pkg)
+            + ';end';
+        }
+        return schemeSafe + '://' + pathSafe + '?' + query;
       }
 
       var urlParams = new URLSearchParams(window.location.search);
@@ -1180,21 +1200,17 @@
       if (bioAuthCta && bioAuthToast) {
         bioAuthCta.addEventListener('click', function() {
           var requestId = (bioAuthCta.getAttribute('data-auth-request-id') || '').trim();
-          var deepLink = (bioAuthCta.getAttribute('data-deep-link') || '').trim();
-          var deepLinkAndroid = (bioAuthCta.getAttribute('data-deep-link-android') || '').trim();
-          if (deepLink) {
+          var scheme = (bioAuthCta.getAttribute('data-app-scheme') || '').trim();
+          var appPath = (bioAuthCta.getAttribute('data-app-path') || '').trim();
+          var androidPackage = (bioAuthCta.getAttribute('data-android-package') || '').trim();
+          if (scheme && appPath && requestId) {
             var isAndroid = /android/i.test(navigator.userAgent);
-            var openUrl = isAndroid && deepLinkAndroid ? deepLinkAndroid : deepLink;
-            if (isAllowedAppOpenUrl(openUrl)) {
-              // Re-match so the assigned value is a regex capture (breaks DOM-text→HTML taint).
-              var safeOpen = String(openUrl).match(
-                /^((?:https|intent|[a-z][a-z0-9+.-]{0,30}):\/\/[^\s"'<>]+)$/i
-              );
-              if (safeOpen) {
-                try {
-                  window.location.assign(safeOpen[1]);
-                } catch (e) {}
-              }
+            var openUrl = buildAppOpenUrl(scheme, appPath, requestId, isAndroid, androidPackage);
+            if (openUrl && isAllowedAppOpenUrl(openUrl)) {
+              try {
+                // codeql[js/xss-through-dom]: openUrl is rebuilt from validated scheme/path/request_id pieces, not raw DOM URL text.
+                window.location.assign(openUrl);
+              } catch (e) {}
             }
           }
           if (!requestId) {

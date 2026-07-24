@@ -140,7 +140,6 @@ export function register(route) {
       if (userIdForRequest === PLACEHOLDER_APP_USER_ID) {
         await ensurePlaceholderAppUser()
       }
-      let appName = ''
 
       await sql.db
         .update(sql.schema.authRequests)
@@ -153,15 +152,13 @@ export function register(route) {
         metadata: { reason: 'resend' }
       }).catch(() => {})
 
-      if (!appName) {
-        const appRow = await sql.db
-          .select({ name: sql.schema.apps.name })
-          .from(sql.schema.apps)
-          .where(eq(sql.schema.apps.id, appId))
-          .limit(1)
-          .get()
-        appName = appRow?.name || ''
-      }
+      const appRow = await sql.db
+        .select({ name: sql.schema.apps.name })
+        .from(sql.schema.apps)
+        .where(eq(sql.schema.apps.id, appId))
+        .limit(1)
+        .get()
+      const appName = appRow?.name || ''
 
       await sql.db
         .update(sql.schema.logMail)

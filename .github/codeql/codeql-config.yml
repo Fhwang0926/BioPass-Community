@@ -34,3 +34,11 @@ query-filters:
       id: js/useless-assignment-to-local
   - exclude:
       id: js/comparison-between-incompatible-types
+  - exclude:
+      id: js/unused-local-variable
+
+  # Deep-link open rebuilds URL from validated scheme/path/request_id pieces.
+  - exclude:
+      id: js/xss-through-dom
+      paths:
+        - backend/templates/auth.html

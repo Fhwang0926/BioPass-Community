@@ -12,7 +12,7 @@ working_directory.addPath(__dirname);
 import { sql } from "../../lib/index.js";
 import { hashPassword } from "../password.js";
 import { hashPhoneSha512 } from "../phone.js";
-import { eq, sql as drizzleSql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 const normalizePermission = (permission, fallback = 'USER') => {
   const value = String(permission || fallback).trim().toUpperCase();

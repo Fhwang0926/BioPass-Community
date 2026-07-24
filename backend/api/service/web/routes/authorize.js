@@ -453,8 +453,13 @@ export function register(route) {
         if (acceptsHtml) {
           ctx.type = 'text/html'
           const errorBaseUrl = resolvePublicBaseUrl(ctx)
-          const serverInfo = application && redirect_uri ? getServerInfo(application, redirect_uri) : null
-          const emailAuthParams = (client_id && redirect_uri) ? { clientId: client_id, redirectUri: redirect_uri, state: state || '', scope: (scope && typeof scope === 'string' ? scope : '') || 'email,phone' } : null
+          const serverInfo = application ? getServerInfo(application, redirect_uri) : null
+          const emailAuthParams = {
+            clientId: client_id,
+            redirectUri: redirect_uri,
+            state: state || '',
+            scope: (scope && typeof scope === 'string' ? scope : '') || 'email,phone'
+          }
           ctx.body = renderErrorPage(500, 'server_error', '인증 요청 생성 중 오류가 발생했습니다. ' + (dbError?.message || ''), errorBaseUrl, serverInfo, emailAuthParams)
         } else {
           ctx.body = {

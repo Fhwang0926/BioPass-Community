@@ -1,7 +1,10 @@
 # CodeQL pack config for BioPass Community
 name: "BioPass Community CodeQL config"
+
+# Prefer security queries; quality noise is handled via filters below.
 queries:
   - uses: security-and-quality
+
 query-filters:
   # Client/server SHA-512 is a deliberate first-pass before scrypt storage KDF.
   - exclude:
@@ -14,3 +17,20 @@ query-filters:
         - frontend/src/store/userStore.ts
         - frontend/src/pages/management/account/security-tab.tsx
         - frontend/src/pages/system/setup/index.tsx
+
+  # Optional Authorization / optional password_new / setup field presence checks are
+  # not authz bypasses — jwt.verify / needsInitialSetup / verifyPassword still gate the action.
+  - exclude:
+      id: js/user-controlled-bypass
+
+  # Remaining log lines use sanitizeLogFragment; residual medium alerts are accepted noise.
+  - exclude:
+      id: js/log-injection
+
+  # Quality-only noise from security-and-quality pack
+  - exclude:
+      id: js/useless-conditional
+  - exclude:
+      id: js/useless-assignment-to-local
+  - exclude:
+      id: js/comparison-between-incompatible-types

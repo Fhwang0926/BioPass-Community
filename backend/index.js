@@ -23,6 +23,11 @@ import { rateLimitMiddleware } from './lib/rateLimit.js'
 const app = new Koa()
 let router = new Router()
 
+const sanitizeLogFragment = (value, maxLen = 180) =>
+  String(value ?? '')
+    .replace(/[\r\n\t\0]/g, ' ')
+    .slice(0, maxLen)
+
 /** Redact sensitive OAuth / auth query values before logging. */
 const sanitizeUrlForLog = (rawUrl) => {
   const value = String(rawUrl || '')
@@ -64,7 +69,7 @@ const run = () => {
   app.on('error', (err, ctx) => {
     if (err.status === 404) {
       // 404 오류는 간단히만 로그 (디버깅용)
-      console.log(`[404] ${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`)
+      console.log(`[404] ${ctx.request.method} ${sanitizeLogFragment(sanitizeUrlForLog(ctx.request.url))}`)
     } else {
       // 다른 오류는 상세 로그
       console.error(err)
@@ -197,7 +202,7 @@ const run = () => {
       return
     }
     if (ctx.status === 404 || !ctx.body) {
-      console.log(`[404] ${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`)
+      console.log(`[404] ${ctx.request.method} ${sanitizeLogFragment(sanitizeUrlForLog(ctx.request.url))}`)
       return notFoundHandler(ctx)
     }
   })
@@ -275,9 +280,8 @@ const tokenValidationMiddleware = async (ctx, next) => {
     const requestPath = `${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`
 
     if (!authHeader) {
-      const errorMessage = `Authorization token is missing - ${requestPath}`
-      console.warn(`[AUTH] ${errorMessage}`)
-      ctx.throw(401, errorMessage)
+      console.warn(`[AUTH] Authorization token is missing (${sanitizeLogFragment(requestPath)})`)
+      ctx.throw(401, 'Unauthorized')
     }
 
     const token = authHeader.replace(/Bearer /gi, '')
@@ -288,8 +292,10 @@ const tokenValidationMiddleware = async (ctx, next) => {
   } catch (err) {
     const requestPath = `${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`
     // Do not log the full Error object — it can retain Authorization / token context.
-    console.error(`[AUTH] ${err.name || 'Error'}: ${err.message || 'Unauthorized'} (${requestPath})`)
-    ctx.throw(401, { error: { code: err.statusCode || 401, message: 'Unauthorized', path: requestPath } })
+    console.error(
+      `[AUTH] ${sanitizeLogFragment(err.name || 'Error')}: ${sanitizeLogFragment(err.message || 'Unauthorized')} (${sanitizeLogFragment(requestPath)})`
+    )
+    ctx.throw(401, { error: { code: err.statusCode || 401, message: 'Unauthorized' } })
   }
 }
 
@@ -305,16 +311,26 @@ const iso8601ToDate = async (ctx, next) => {
     ) {
       return next()
     }
+    const body = ctx.request.body
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return next()
+    }
     const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/
-    for (const f of Object.keys(ctx.request.body)) {
-      if (typeof ctx.request.body[f] === 'string' && iso8601.test(ctx.request.body[f])) {
-        ctx.request.body[f] = moment(ctx.request.body[f]).tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss')
-        console.log(ctx.request.body[f])
+    // Rebuild with an allowlisted key pattern to avoid remote property injection (__proto__, etc.).
+    const nextBody = Object.create(null)
+    for (const key of Object.keys(body)) {
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue
+      const value = body[key]
+      if (typeof value === 'string' && iso8601.test(value)) {
+        nextBody[key] = moment(value).utc().format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        nextBody[key] = value
       }
     }
+    ctx.request.body = nextBody
     return next()
   } catch (err) {
-    ctx.throw(401, { error: { code: err.statusCode, message: err.message } })
+    ctx.throw(400, { error: { code: 400, message: err.message || 'Invalid request body' } })
   }
 }
 

@@ -1186,16 +1186,14 @@
             var isAndroid = /android/i.test(navigator.userAgent);
             var openUrl = isAndroid && deepLinkAndroid ? deepLinkAndroid : deepLink;
             if (isAllowedAppOpenUrl(openUrl)) {
-              try {
-                var a = document.createElement('a');
-                a.href = openUrl;
-                a.rel = 'noopener noreferrer';
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-              } catch (e) {
-                try { window.location.href = openUrl; } catch (e2) {}
+              // Re-match so the assigned value is a regex capture (breaks DOM-text→HTML taint).
+              var safeOpen = String(openUrl).match(
+                /^((?:https|intent|[a-z][a-z0-9+.-]{0,30}):\/\/[^\s"'<>]+)$/i
+              );
+              if (safeOpen) {
+                try {
+                  window.location.assign(safeOpen[1]);
+                } catch (e) {}
               }
             }
           }

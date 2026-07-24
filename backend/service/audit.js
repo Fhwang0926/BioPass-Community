@@ -22,25 +22,26 @@ const truncateString = (str, maxLength = 150) => {
  * @returns {any} - 처리된 객체
  */
 const truncateObjectValues = (obj, maxLength = 150) => {
-  if (!obj) return obj
+  if (obj == null) return obj
 
   // 배열인 경우
   if (Array.isArray(obj)) {
     return obj.map(item => truncateObjectValues(item, maxLength))
   }
 
-  // 객체인 경우
-  if (typeof obj === 'object' && obj !== null) {
-    const truncated = {}
+  // 객체인 경우 (Date / RegExp 등은 그대로)
+  if (typeof obj === 'object') {
+    if (obj instanceof Date || obj instanceof RegExp) return obj
+    const truncated = Object.create(null)
     for (const [key, value] of Object.entries(obj)) {
+      // Block prototype-pollution keys; only copy plain identifier-like properties.
+      if (typeof key !== 'string' || !/^[A-Za-z0-9_.-]+$/.test(key)) continue
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
       if (typeof value === 'string') {
-        // 문자열 값이 maxLength를 넘으면 자르기
         truncated[key] = truncateString(value, maxLength)
       } else if (typeof value === 'object' && value !== null) {
-        // 중첩된 객체나 배열은 재귀적으로 처리
         truncated[key] = truncateObjectValues(value, maxLength)
       } else {
-        // 다른 타입은 그대로 유지
         truncated[key] = value
       }
     }

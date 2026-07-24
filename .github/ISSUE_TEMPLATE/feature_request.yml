@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest an improvement for the self-hosted community edition
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem and the outcome you want.
+        This edition is **self-hosted**. Commercial SaaS surfaces (billing/Polar, hosting console, vendor QnA/FAQ) are out of scope — see [CONTRIBUTING.md](https://github.com/Fhwang0926/BioPass-Community/blob/main/CONTRIBUTING.md).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that is hard or impossible today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work? Keep it concrete if you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds or other approaches you already tried
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Admin console UX
+        - API / OAuth / MFA flows
+        - Docker / ops / observability
+        - Security / policy
+        - Docs
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This fits self-hosted Community (not a commercial SaaS feature request)
+          required: true

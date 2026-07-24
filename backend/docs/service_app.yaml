@@ -1,0 +1,96 @@
+# OpenAPI path fragments for Swagger UI (`/api-docs`)
+# Loaded by `service/swagger.js` — keep only integrator-facing routes here.
+
+openapi: 3.0.3
+paths:
+  /api/app/authorize:
+    get:
+      tags: [Service (App)]
+      summary: OAuth authorize
+      security: []
+      parameters:
+        - { in: query, name: client_id, schema: { type: string } }
+        - { in: query, name: redirect_uri, schema: { type: string } }
+        - { in: query, name: response_type, schema: { type: string, default: code } }
+        - { in: query, name: state, schema: { type: string } }
+      responses:
+        "200": { description: Authorize HTML or redirect }
+
+  /api/app/token:
+    post:
+      tags: [Service (App)]
+      summary: OAuth token (code or refresh_token)
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grant_type: { type: string }
+                code: { type: string }
+                client_id: { type: string }
+                client_secret: { type: string }
+                refresh_token: { type: string }
+      responses:
+        "200": { description: access_token / refresh_token }
+
+  /api/app/signup/send-code:
+    post:
+      tags: [Service (App)]
+      summary: Send signup verification code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier_type, identifier_value]
+              properties:
+                identifier_type: { type: string, enum: [email, phone] }
+                identifier_value: { type: string }
+      responses:
+        "200": { description: Code sent }
+
+  /api/app/signup/verify:
+    post:
+      tags: [Service (App)]
+      summary: Verify signup code and issue tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier_type, identifier_value, code]
+              properties:
+                identifier_type: { type: string }
+                identifier_value: { type: string }
+                code: { type: string }
+                device: { type: object }
+      responses:
+        "200": { description: user_id + tokens }
+
+  /api/app/my-auth-requests:
+    get:
+      tags: [Service (App)]
+      summary: List pending auth requests for the signed-in user
+      responses:
+        "200": { description: Auth request list }
+
+  /api/app/submit-auth-result:
+    post:
+      tags: [Service (App)]
+      summary: Approve or reject an auth request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id: { type: string }
+                result: { type: string, enum: [approved, rejected] }
+      responses:
+        "200": { description: Result applied }

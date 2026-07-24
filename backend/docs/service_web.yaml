@@ -1,0 +1,103 @@
+# OpenAPI path fragments for Swagger UI (`/api-docs`)
+# Loaded by `service/swagger.js` — keep only integrator-facing routes here.
+
+openapi: 3.0.3
+paths:
+  /api/web/authorize:
+    get:
+      tags: [Service (Web)]
+      summary: OAuth authorize
+      security: []
+      parameters:
+        - { in: query, name: client_id, required: true, schema: { type: string } }
+        - { in: query, name: redirect_uri, required: true, schema: { type: string } }
+        - { in: query, name: response_type, schema: { type: string, default: code } }
+        - { in: query, name: state, schema: { type: string } }
+        - { in: query, name: email, schema: { type: string } }
+        - { in: query, name: phone, schema: { type: string } }
+      responses:
+        "200": { description: HTML guide / verify page }
+        "302": { description: Redirect }
+
+  /api/web/request-email-code:
+    post:
+      tags: [Service (Web)]
+      summary: Request email verification code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id, redirect_uri, email]
+              properties:
+                client_id: { type: string }
+                redirect_uri: { type: string }
+                email: { type: string }
+                state: { type: string }
+      responses:
+        "200": { description: verify_url }
+        "302": { description: Redirect to verify-email }
+
+  /api/web/verify-email:
+    get:
+      tags: [Service (Web)]
+      summary: Email code entry page (HTML)
+      security: []
+      responses:
+        "200": { description: HTML form }
+    post:
+      tags: [Service (Web)]
+      summary: Verify email code
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id: { type: string }
+                email: { type: string }
+                code: { type: string }
+                redirect_uri: { type: string }
+                state: { type: string }
+      responses:
+        "200": { description: redirect_url }
+        "302": { description: redirect_uri?code=... }
+
+  /api/web/token:
+    post:
+      tags: [Service (Web)]
+      summary: OAuth token exchange
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grant_type: { type: string }
+                code: { type: string }
+                client_id: { type: string }
+                client_secret: { type: string }
+                refresh_token: { type: string }
+      responses:
+        "200": { description: access_token / refresh_token }
+
+  /api/web/verify-token:
+    post:
+      tags: [Service (Web)]
+      summary: Validate access token
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+                client_id: { type: string }
+                client_secret: { type: string }
+      responses:
+        "200": { description: User profile }

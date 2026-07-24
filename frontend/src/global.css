@@ -1,0 +1,12 @@
+/* font */
+@import "@fontsource-variable/open-sans";
+@import "@fontsource-variable/inter";
+
+/* simplebar */
+@import "simplebar-react/dist/simplebar.min.css";
+
+/* tailwind */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+

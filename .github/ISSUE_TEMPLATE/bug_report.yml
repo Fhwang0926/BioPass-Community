@@ -1,0 +1,86 @@
+name: Bug report
+description: Something is broken in BioPass Community (API, admin UI, or Docker)
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve BioPass Community.
+        **Security issues:** do not use this form — see [SECURITY.md](https://github.com/Fhwang0926/BioPass-Community/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong in one or two sentences?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Docker / Compose / GHCR image
+        - Backend API
+        - Admin console (frontend)
+        - First-run setup / auth
+        - Database / schema
+        - Docs
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Git tag, commit SHA, or image tag (for example `latest`, `1.0.0`, or `sha-…`)
+      placeholder: e.g. v1.0.0 or commit abcdef1
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps starting from a clean or known state
+      placeholder: |
+        1. `docker compose -f docker-compose.ghcr.yml up -d`
+        2. Open http://localhost:3030/#/setup
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error messages or relevant log snippets (redact secrets)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - label: Docker Compose (recommended stack)
+        - label: Local backend + frontend (dev)
+        - label: Other / custom deploy
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: OS, CPU arch (amd64/arm64), Postgres version, related screenshots (no secrets)
+    validations:
+      required: false

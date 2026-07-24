@@ -1,0 +1,110 @@
+# BioPass Community — Node API + Vite admin UI
+
+# --- Dependencies ---
+node_modules/
+.pnpm-store/
+.yarn/*
+!.yarn/releases
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+.yarn-integrity
+
+# --- Env / secrets (keep the single root sample) ---
+.env
+.env.*
+!.env.example
+!**/.env.example
+backend/.env
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# --- Logs & diagnostics ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# --- Test / coverage / caches ---
+coverage/
+*.lcov
+.nyc_output/
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+vite.config.*.timestamp-*
+
+# --- Build outputs ---
+dist/
+build/
+frontend/dist/
+backend/wwwroot/
+*.tgz
+
+# --- Backend runtime data (not source) ---
+backend/upload/*
+!backend/upload/.gitkeep
+backend/json/*
+!backend/json/.gitkeep
+!backend/json/*.example.json
+
+# --- Firebase / mobile / cloud secrets ---
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase-adminsdk*.json
+**/firebase-service-account.json
+**/firebase-service-account*.json
+!**/firebase-service-account.example.json
+.firebase/
+**/serviceAccount*.json
+**/credentials.json
+**/secrets.json
+
+# --- Local TLS / misc keys ---
+cert.sh
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_ed25519
+*.zip
+
+# --- Editor / OS ---
+.idea/
+.vscode/
+!.vscode/extensions.json
+*.iml
+*.ipr
+*.iws
+*.sublime*
+.DS_Store
+**/.DS_Store
+Thumbs.db
+**/*.backup.*
+**/*.back.*
+*~
+
+# --- Tooling / agent noise ---
+.cursor/
+.codex/
+.turbo/
+frontend/stats.html
+frontend/state.html
+
+# --- Local DB / docker leftovers ---
+*.sql.gz
+.dump/
+postgres-data/
+pgdata/

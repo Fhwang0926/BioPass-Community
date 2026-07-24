@@ -1,0 +1,30 @@
+{
+  "watch": [
+    "api",
+    "service",
+    "lib",
+    "model",
+    "util",
+    "docs",
+    "config.js",
+    "index.js",
+    ".env"
+  ],
+  "ext": "js,mjs,cjs,json,yml,yaml",
+  "ignore": [
+    "node_modules/**",
+    "wwwroot/**",
+    "upload/**",
+    "coverage/**",
+    ".git/**",
+    "**/*.log",
+    "**/*.pdf"
+  ],
+  "delay": "400ms",
+  "signal": "SIGTERM",
+  "verbose": true,
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "exec": "node index.js"
+}

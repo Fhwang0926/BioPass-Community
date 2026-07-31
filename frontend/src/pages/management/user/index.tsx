@@ -26,8 +26,10 @@ import companyService from "@/api/services/company";
 import { t } from "@/locales/i18n";
 import { useUserInfo } from "@/store/userStore";
 
-const isSuperAdminUser = (user?: Pick<User, "permissions">) =>
-	String(user?.permissions || "").toUpperCase() === "SUPER_ADMIN";
+const isAdminPermission = (permissions?: string) => {
+	const value = String(permissions || "").toUpperCase();
+	return value === "ADMIN" || value === "SUPER_ADMIN";
+};
 
 export default function UserPage() {
 	const [searchForm] = Form.useForm();
@@ -71,13 +73,11 @@ export default function UserPage() {
 			dataIndex: "permissions",
 			width: 120,
 			render: (permissions) => {
-				const value = String(permissions || '').toUpperCase();
+				const value = String(permissions || "").toUpperCase();
+				const label = value === "SUPER_ADMIN" ? "ADMIN" : value || "-";
 				return (
-					<Tag color={
-						value === 'ADMIN' || value === 'SUPER_ADMIN' ? 'red' :
-						'green'
-					}>
-						{value || '-'}
+					<Tag color={isAdminPermission(value) ? "red" : "green"}>
+						{label}
 					</Tag>
 				);
 			},
@@ -97,9 +97,6 @@ export default function UserPage() {
 			key: "operation",
 			width: 120,
 			render: (_, record) => {
-				if (isSuperAdminUser(record)) {
-					return <Tag color="purple">{t('sys.menu.user.management.db_only')}</Tag>;
-				}
 				return (
 					<Space>
 						<IconButton onClick={() => onEdit(record)}>
@@ -207,19 +204,20 @@ export default function UserPage() {
 	};
 
 	const onEdit = async (record: UserProps["formValue"]) => {
-		if (isSuperAdminUser(record)) {
-			toast.warning(t('sys.menu.user.management.db_only'));
-			return;
-		}
 		try {
+			const perm = String(record.permissions || "").toUpperCase();
+			const formValue: UserProps["formValue"] = {
+				...record,
+				permissions: isAdminPermission(perm) ? "admin" : "user",
+			};
 			// Fetch company information if company_id exists
-			if (record.company_id) {
-				const rv = await companyService.getCompany(record.company_id);
+			if (formValue.company_id) {
+				const rv = await companyService.getCompany(formValue.company_id);
 				setUserProps((prev) => ({
 					...prev,
 					show: true,
 					title: t('sys.menu.user.management.edit'),
-					formValue: record,
+					formValue,
 					selectedCompany: rv,
 				}));
 			} else {
@@ -227,7 +225,7 @@ export default function UserPage() {
 					...prev,
 					show: true,
 					title: t('sys.menu.user.management.edit'),
-					formValue: record,
+					formValue,
 					selectedCompany: null,
 				}));
 			}
@@ -237,7 +235,10 @@ export default function UserPage() {
 				...prev,
 				show: true,
 				title: t('sys.menu.user.management.edit'),
-				formValue: record,
+				formValue: {
+					...record,
+					permissions: isAdminPermission(record.permissions) ? "admin" : "user",
+				} as UserProps["formValue"],
 				selectedCompany: null,
 			}));
 		}

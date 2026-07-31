@@ -215,19 +215,24 @@ route.delete('/:id', async (ctx) => {
 
     const perm = String(user.permissions || '').toUpperCase()
     if (perm === 'ADMIN' || perm === 'SUPER_ADMIN') {
+      const companyId = user.companyId
+      const conditions = [
+        eq(sql.schema.sysUser.isDel, false),
+        eq(sql.schema.sysUser.isActive, true),
+        or(
+          eq(sql.schema.sysUser.permissions, 'ADMIN'),
+          eq(sql.schema.sysUser.permissions, 'SUPER_ADMIN'),
+          eq(sql.schema.sysUser.permissions, 'admin'),
+          eq(sql.schema.sysUser.permissions, 'super_admin')
+        )
+      ]
+      if (companyId) {
+        conditions.push(eq(sql.schema.sysUser.companyId, companyId))
+      }
       const rows = await sql.db
         .select({ count: sql.sql`count(*)::int` })
         .from(sql.schema.sysUser)
-        .where(and(
-          eq(sql.schema.sysUser.isDel, false),
-          eq(sql.schema.sysUser.isActive, true),
-          or(
-            eq(sql.schema.sysUser.permissions, 'ADMIN'),
-            eq(sql.schema.sysUser.permissions, 'SUPER_ADMIN'),
-            eq(sql.schema.sysUser.permissions, 'admin'),
-            eq(sql.schema.sysUser.permissions, 'super_admin')
-          )
-        ))
+        .where(and(...conditions))
         .get()
       if (Number(rows?.count ?? 0) <= 1) {
         return ctx.throw(400, 'Cannot delete the last active administrator')

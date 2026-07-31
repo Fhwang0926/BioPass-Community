@@ -66,8 +66,7 @@ export enum HtmlDataAttribute {
 // custom
 
 export enum PermissionAccount {
-	SUPER_ADMIN = 0,
-	ADMIN = 1,
-	USER = 2,
-	APP = 3,
+	ADMIN = 0,
+	USER = 1,
+	APP = 2,
 }

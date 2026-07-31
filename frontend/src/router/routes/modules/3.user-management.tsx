@@ -26,7 +26,7 @@ const userManagement: AppRouteObject = {
 			<SvgIcon icon="ic-management" className="ant-menu-item-icon" size="24" />
 		),
 		key: "/user-management",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+		permissions: [PermissionAccount.ADMIN],
 		hideMenu: false, // 메뉴에 표시하고 children을 드롭다운으로 표시
 		section: "service", // 서비스 섹션에 포함
 	},
@@ -42,7 +42,7 @@ const userManagement: AppRouteObject = {
 			meta: { 
 				label: "sys.menu.userDevice.users", 
 				key: "/user-management/users", 
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN], 
+				permissions: [PermissionAccount.ADMIN], 
 				hideMenu: false,
 				section: "service", // 서비스 섹션에 포함
 			},
@@ -62,7 +62,7 @@ const userManagement: AppRouteObject = {
 			meta: { 
 				label: "sys.menu.userDevice.devices", 
 				key: "/user-management/devices", 
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN], 
+				permissions: [PermissionAccount.ADMIN], 
 				hideMenu: false,
 				section: "service", // 서비스 섹션에 포함
 			},

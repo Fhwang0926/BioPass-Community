@@ -3,6 +3,8 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
+    "prepare": "node scripts/install-git-hooks.js",
+    "hooks:install": "node scripts/install-git-hooks.js",
     "dev": "npm run dev --prefix backend",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",

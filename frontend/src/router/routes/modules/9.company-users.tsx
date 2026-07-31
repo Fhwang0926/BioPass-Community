@@ -21,7 +21,7 @@ const companyUsers: AppRouteObject = {
 		label: "sys.menu.user.management.company_account_title",
 		icon: <Iconify icon="solar:users-group-rounded-bold" size={24} />,
 		key: "/management/users",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+		permissions: [PermissionAccount.ADMIN],
 		hideMenu: false,
 		section: "myInfo",
 	},

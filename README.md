@@ -4,12 +4,24 @@ Self-hosted biometric MFA / OAuth authentication platform (community edition).
 
 Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
+## Companion app — Bio Pass
+
+End users approve login requests on their phone with fingerprint or Face ID.
+
+| Store | Link |
+|-------|------|
+| **App Store (iOS)** | [Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314) |
+| Google Play (Android) | Not published yet — set `APP_DOWNLOAD_URL_ANDROID` / `VITE_PLAY_STORE_URL` when available |
+
+Search on the App Store: [biopass](https://apps.apple.com/kr/iphone/search?term=biopass) → **Bio Pass** (Utilities).
+
+The mobile client talks to your self-hosted server over `/api/app` and `/api/web`. This repository ships the **server + admin console only**; the iOS app is distributed separately from the App Store.
+
 ## What's included
 
 - **Backend**: Node.js 22+, Koa, Drizzle ORM, PostgreSQL
 - **Admin console**: React + Vite (based on [slash-admin](https://github.com/d3george/slash-admin))
-
-This edition ships the API + admin UI. Mobile clients talk to the same `/api/app` and `/api/web` endpoints; a Flutter app is **not** bundled in this repository.
+- **Auth UX**: Browser OAuth/email flow + deep-link / push approval via the Bio Pass app
 
 Commercial SaaS features (plans, Polar billing, hosting console, vendor QnA/FAQ) are not part of this edition.
 
@@ -124,6 +136,42 @@ docker compose down -v      # wipe DB and uploads — full reinstall
 - For upgrades, prefer `SKIP_AUTO_SCHEMA_SYNC=1` and run schema sync deliberately; avoid `ALLOW_SCHEMA_FORCE=1` unless you accept destructive changes
 - Do not expose Postgres publicly (bound to `127.0.0.1` by default)
 - Optionally configure SMTP and Firebase push — see commented keys in [`.env.example`](.env.example) (Compose forwards them into the API container)
+- Point phones at your public HTTPS origin (`PUBLIC_BASE_URL`) so the Bio Pass app can reach `/api/app`
+
+## How others use a deployed instance
+
+After you publish this stack (Docker / GHCR), other people fall into two roles.
+
+### A) Operator (you / your org) — one-time setup
+
+1. Deploy with Compose (or GHCR image) and open the admin UI (`/#/setup` → `/#/login`).
+2. Create an **Application** in the console (client id / secret, redirect URIs, site origin).
+3. Set `PUBLIC_BASE_URL` to the HTTPS URL clients and the mobile app will call.
+4. Optional but recommended for production MFA UX:
+   - **SMTP** — email verification codes when the user has no registered device yet
+   - **Firebase** — push notifications to the Bio Pass app (`FIREBASE_SERVICE_ACCOUNT_JSON`)
+5. Integrate your product with OAuth authorize / token (see admin **Developer** pages and `backend/docs/`).
+
+### B) End user (people signing into *your* apps)
+
+1. Install **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** from the App Store.
+2. Open the app and sign up / sign in with **email** against *your* server (the app uses the API base you configure / that your deep links point to).
+3. When they try to log into a site that uses your BioPass OAuth app:
+   - Browser opens the BioPass authorize / guide page on your server
+   - They get a **push** (or tap “Approve in app” / deep link `biopass://…`)
+   - They approve or deny with **biometrics**
+4. On success the browser receives the OAuth `code` on your `redirect_uri` as usual.
+
+Without the mobile app, users can still complete login via **email code** when you have SMTP configured — the app is the recommended biometric path, not a hard requirement for every flow.
+
+```mermaid
+flowchart LR
+  UserApp[Your web/app] --> Authorize["/api/web/authorize"]
+  Authorize --> Phone[Bio Pass app]
+  Phone -->|approve| Authorize
+  Authorize --> Redirect[redirect_uri + code]
+  Redirect --> UserApp
+```
 
 ## Docker image (GHCR) & GitHub Actions
 
@@ -211,11 +259,15 @@ BioPass-Community/
 
 ## Roles (community)
 
+Single-organization self-host — there is no platform / multi-tenant super-admin role.
+
 | Role | Typical use |
 |------|-------------|
-| `ADMIN` | Organization admin (created via `/#/setup` or invite) |
+| `ADMIN` | Organization admin (created via `/#/setup` or invite). Full console access within their company. |
 | `USER` | Console user with limited access |
-| `SUPER_ADMIN` | Optional elevated role (DB-assignable). Mostly the same UI as `ADMIN`; some multi-company system APIs require it. Not needed for single-org self-host. |
+| `APP` | Mobile end-user identity (Bio Pass app) — not a console login role |
+
+Legacy DB value `SUPER_ADMIN` (if present) is treated as `ADMIN` on read.
 
 ## Security notes
 

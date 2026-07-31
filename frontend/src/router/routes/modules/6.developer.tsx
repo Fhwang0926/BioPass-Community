@@ -24,7 +24,7 @@ const developer: AppRouteObject = {
 			<CodeOutlined className="ant-menu-item-icon" style={{ fontSize: "24px" }} />
 		),
 		key: "/developer",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+		permissions: [PermissionAccount.ADMIN],
 		hideMenu: true, // 그룹은 메뉴에 표시하지 않고 children만 표시
 		section: "developer",
 	},
@@ -37,12 +37,12 @@ const developer: AppRouteObject = {
 		{
 			path: "quick-start",
 			element: <DeveloperQuickStart />,
-			meta: { label: "sys.menu.developer.quickStart", key: "/developer/quick-start", permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN, PermissionAccount.USER], hideMenu: false, section: "developer" },
+			meta: { label: "sys.menu.developer.quickStart", key: "/developer/quick-start", permissions: [PermissionAccount.ADMIN, PermissionAccount.USER], hideMenu: false, section: "developer" },
 		},
 		{
 			path: "docs",
 			element: <DeveloperDocs />,
-			meta: { label: "sys.menu.developer.docs", key: "/developer/docs", permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN, PermissionAccount.USER], hideMenu: false, section: "developer" },
+			meta: { label: "sys.menu.developer.docs", key: "/developer/docs", permissions: [PermissionAccount.ADMIN, PermissionAccount.USER], hideMenu: false, section: "developer" },
 		},
 	],
 };

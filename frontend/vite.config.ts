@@ -16,6 +16,9 @@ export default defineConfig(({ mode }) => {
 		VITE_APP_HOMEPAGE: fileEnv.VITE_APP_HOMEPAGE || "/service/dashboard",
 		VITE_APP_TITLE: fileEnv.VITE_APP_TITLE || "BioPass",
 		VITE_APP_BASE_PATH: fileEnv.VITE_APP_BASE_PATH || "/",
+		VITE_APP_STORE_URL:
+			fileEnv.VITE_APP_STORE_URL || "https://apps.apple.com/kr/app/bio-pass/id6760216314",
+		VITE_PLAY_STORE_URL: fileEnv.VITE_PLAY_STORE_URL || "",
 	};
 	const base = env.VITE_APP_BASE_PATH;
 	const isProduction = mode === "production";
@@ -27,6 +30,8 @@ export default defineConfig(({ mode }) => {
 			"import.meta.env.VITE_APP_HOMEPAGE": JSON.stringify(env.VITE_APP_HOMEPAGE),
 			"import.meta.env.VITE_APP_TITLE": JSON.stringify(env.VITE_APP_TITLE),
 			"import.meta.env.VITE_APP_BASE_PATH": JSON.stringify(env.VITE_APP_BASE_PATH),
+			"import.meta.env.VITE_APP_STORE_URL": JSON.stringify(env.VITE_APP_STORE_URL),
+			"import.meta.env.VITE_PLAY_STORE_URL": JSON.stringify(env.VITE_PLAY_STORE_URL),
 		},
 		plugins: [
 			react({

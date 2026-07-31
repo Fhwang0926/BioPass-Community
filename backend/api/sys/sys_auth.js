@@ -40,6 +40,7 @@ function resolveCompanyEmail(companyEmail, userEmail) {
 
 function resolveIsAdminFlag(permission) {
   const normalizedPermission = String(permission || 'USER').trim().toUpperCase()
+  // Legacy SUPER_ADMIN is treated as ADMIN for token/profile flags
   return normalizedPermission === 'ADMIN' || normalizedPermission === 'SUPER_ADMIN'
 }
 

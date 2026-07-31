@@ -14,6 +14,14 @@ For a full stack try: `cp .env.example .env` (set `AUTH_SECRET`) then `docker co
 
 See the root [README.md](README.md) for Docker Compose, GHCR, and role notes.
 
+## Git hooks (lefthook)
+
+Hooks live in the repo-root [`lefthook.yml`](lefthook.yml) (installs into `.git/hooks` after `pnpm install` in `frontend/`, or `npm run hooks:install` at the root).
+
+- **pre-commit:** frontend Biome format/lint + `tsc`; backend `node --check` on staged JS
+- **commit-msg:** Conventional Commits via commitlint (`frontend/`)
+- Skip once: `LEFTHOOK=0 git commit …` or `git commit --no-verify`
+
 ## Pull requests
 
 - Keep changes focused; prefer small PRs

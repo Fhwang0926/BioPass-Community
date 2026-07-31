@@ -9,8 +9,6 @@ import { Iconify } from "@/components/icon";
 import companyService from "@/api/services/company";
 import type { UpdateCompanyParams } from "@/api/services/company";
 import { useUserInfo } from "@/store/userStore";
-import { PermissionAccount } from "@/types/enum";
-
 const normalizeCompany = (company: any) => {
 	if (!company) return null;
 
@@ -29,8 +27,8 @@ export default function TeamsTab() {
 	const userInfo = useUserInfo();
 	const companyId = userInfo.company_id;
 	const [isEditing, setIsEditing] = useState(false);
-	const isCompanyAdmin = [PermissionAccount.ADMIN, PermissionAccount.SUPER_ADMIN]
-		.includes((userInfo.permissions || "").toUpperCase() as PermissionAccount);
+	const perm = String(userInfo.permissions || "").toUpperCase();
+	const isCompanyAdmin = perm === "ADMIN" || perm === "SUPER_ADMIN";
 
 	const { data: companyData, isLoading } = useQuery({
 		queryKey: ["company", companyId],

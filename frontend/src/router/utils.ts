@@ -81,12 +81,16 @@ export function checkShowPermission(route: AppRouteObject, permissions: string) 
 	
 	const upperPermissions = permissions?.toUpperCase();
 	
+	// Legacy DB value SUPER_ADMIN is treated as ADMIN for menu access
+	const isAdmin =
+		upperPermissions === "ADMIN" || upperPermissions === "SUPER_ADMIN";
+
 	return (
-		(route.meta.permissions.includes(PermissionAccount.SUPER_ADMIN) && upperPermissions == "SUPER_ADMIN") ||
-		(route.meta.permissions.includes(PermissionAccount.ADMIN) && upperPermissions == "ADMIN") ||
-		(route.meta.permissions.includes(PermissionAccount.USER) && upperPermissions == "USER") ||
-		(route.meta.permissions.includes(PermissionAccount.APP) && upperPermissions == "APP")
-	)
+		(route.meta.permissions.includes(PermissionAccount.ADMIN) && isAdmin) ||
+		(route.meta.permissions.includes(PermissionAccount.USER) &&
+			(upperPermissions === "USER" || isAdmin)) ||
+		(route.meta.permissions.includes(PermissionAccount.APP) && upperPermissions === "APP")
+	);
 }
 
 /**

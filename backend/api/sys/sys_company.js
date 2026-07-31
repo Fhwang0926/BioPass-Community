@@ -1,46 +1,34 @@
 'use strict'
 
-import { eq, and, or, like, ne, desc } from 'drizzle-orm'
+import { eq, and, like, ne, desc } from 'drizzle-orm'
 import Router from 'koa-router'
-import _ from 'lodash'
-import { sql, func as _func } from '../../lib/index.js'
+import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
-import {
-  createPermissionError,
-  hasSystemAdminPermission,
-  isSuperAdmin
-} from '../../service/permission.js'
-import { assertSameAdminCompany, getProfileCompanyId } from '../../service/serviceScope.js'
+import { createPermissionError, isAdmin } from '../../service/permission.js'
+import { assertSameAdminCompany, requireAdminCompanyScope } from '../../service/serviceScope.js'
 
 const route = new Router()
 
-/** 시스템 관리 콘솔 전용 작업 — SUPER_ADMIN만 */
-function assertSystemAdmin(ctx, action = 'manage companies') {
-  if (!hasSystemAdminPermission(ctx.request.profile)) {
+/** Organization admin — own company only (Community edition). */
+function assertOrgAdmin(ctx, action = 'manage company') {
+  if (!isAdmin(ctx.request.profile)) {
     throw createPermissionError(action)
   }
 }
 
-/** 자사 기업 조회 — SUPER_ADMIN은 전체, 그 외는 본인 companyId만 */
 function assertCanReadCompany(ctx, companyId, action = 'read company') {
-  if (isSuperAdmin(ctx.request.profile)) return
-  const ownCompanyId = getProfileCompanyId(ctx.request.profile)
-  if (!ownCompanyId || ownCompanyId !== companyId) {
-    throw createPermissionError(action)
-  }
-}
-
-function normalizeEmailValue(value) {
-  const email = String(value || '').trim().toLowerCase()
-  return email || null
+  assertSameAdminCompany(ctx.request.profile, companyId, action)
 }
 
 // get search
 route.post('/search', async (ctx) => {
   try {
-    assertSystemAdmin(ctx, 'search companies')
-    // 기본 검색 조건
-    const conditions = [eq(sql.schema.sysCompany.isDel, false)]
+    const ownCompanyId = requireAdminCompanyScope(ctx.request.profile, 'search companies')
+    // Community: only the caller's organization
+    const conditions = [
+      eq(sql.schema.sysCompany.isDel, false),
+      eq(sql.schema.sysCompany.id, ownCompanyId)
+    ]
 
     // 기타 검색 조건
     if (ctx.request.body.name) {
@@ -95,49 +83,9 @@ route.post('/search', async (ctx) => {
 // insert one
 route.post('/create', async (ctx) => {
   try {
-    assertSystemAdmin(ctx, 'create company')
-    const body = ctx.request.body
-
-    // 필수 필드 검증
-    if (!body.name) {
-      ctx.throw(400, 'Company name is required')
-    }
-
-    // 사업자 번호 길이 검증 (최대 30자리)
-    if (body.business_no && body.business_no.length > 30) {
-      ctx.throw(400, 'Business registration number cannot exceed 30 characters')
-    }
-
-    // 중복 검사
-    const conditions = []
-    if (body.name) conditions.push(eq(sql.schema.sysCompany.name, body.name))
-    if (body.code) conditions.push(eq(sql.schema.sysCompany.code, body.code))
-    if (body.business_no) conditions.push(eq(sql.schema.sysCompany.businessNo, body.business_no))
-
-    if (conditions.length > 0) {
-      const existingCompany = await sql.db.select()
-        .from(sql.schema.sysCompany)
-        .where(or(...conditions))
-        .limit(1)
-        .get()
-
-      if (existingCompany) {
-        ctx.throw(400, 'Company with same name, code, or business number already exists')
-      }
-    }
-
-    const companyEmail = normalizeEmailValue(body.email) || normalizeEmailValue(ctx.request.profile?.email)
-
-    const company = await sql.db.insert(sql.schema.sysCompany).values({
-      name: body.name,
-      code: body.code,
-      businessNo: body.business_no,
-      thumbnail: body.thumbnail,
-      email: companyEmail,
-      isActive: body.is_active !== undefined ? body.is_active : true
-    }).returning().get()
-
-    ctx.body = await logSuccess(ctx, 'company_create', 'Company create successful', company)
+    assertOrgAdmin(ctx, 'create company')
+    // Single-org Community: organization is created during /setup only
+    ctx.throw(403, 'Creating additional companies is not supported in Community edition')
   } catch (e) {
     ctx.body = await logFailure(ctx, 'company_create', 'Company create failed', e)
   }
@@ -196,18 +144,11 @@ route.patch('/:id', async (ctx) => {
     }
 
     const profile = ctx.request.profile
-    const isSystemAdmin = isSuperAdmin(profile)
-    if (!isSystemAdmin) {
-      assertSameAdminCompany(profile, id, 'update company')
-    }
+    assertSameAdminCompany(profile, id, 'update company')
 
     // 업데이트 가능한 필드만 선택
     const updateData = {}
-    const selfServiceFields = ['name', 'code', 'business_no', 'thumbnail', 'email']
-    const systemOnlyFields = ['is_active']
-    const allowedFields = isSystemAdmin
-      ? [...selfServiceFields, ...systemOnlyFields]
-      : selfServiceFields
+    const allowedFields = ['name', 'code', 'business_no', 'thumbnail', 'email', 'is_active']
 
     allowedFields.forEach(field => {
       if (body[field] !== undefined && body[field] !== null && body[field] !== '') {
@@ -289,12 +230,12 @@ route.patch('/:id', async (ctx) => {
 // remove one (soft delete)
 route.delete('/:id', async (ctx) => {
   try {
-    assertSystemAdmin(ctx, 'delete company')
     const id = parseInt(ctx.params.id)
-
     if (!id) {
       ctx.throw(400, 'Company ID is required')
     }
+
+    assertSameAdminCompany(ctx.request.profile, id, 'delete company')
 
     const company = await sql.db.select()
       .from(sql.schema.sysCompany)
@@ -309,7 +250,7 @@ route.delete('/:id', async (ctx) => {
       ctx.throw(404, 'Company not found')
     }
 
-    // 그룹과 관련된 사용자들도 함께 소프트 삭제
+    // Soft-delete company and its console users
     await sql.db.update(sql.schema.sysUser)
       .set({
         isDel: true,

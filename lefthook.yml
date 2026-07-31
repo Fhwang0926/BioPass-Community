@@ -1,0 +1,64 @@
+# Repo-root git hooks for BioPass Community (frontend + backend).
+# Install: `pnpm install` in frontend/, or `npm run hooks:install` at repo root.
+# Skip: LEFTHOOK=0 git commit …  or  git commit --no-verify
+
+skip_output:
+  - meta
+  - success
+  - summary
+
+pre-commit:
+  parallel: true
+  commands:
+    frontend-format:
+      glob:
+        - "frontend/*.{js,jsx,ts,tsx,json,md}"
+        - "frontend/**/*.{js,jsx,ts,tsx,json,md}"
+      exclude:
+        - frontend/pnpm-lock.yaml
+      run: |
+        files=""
+        for f in {staged_files}; do
+          files="$files ${f#frontend/}"
+        done
+        cd frontend && npx @biomejs/biome format --write --no-errors-on-unmatched $files
+      stage_fixed: true
+
+    frontend-lint:
+      glob:
+        - "frontend/*.{js,jsx,ts,tsx}"
+        - "frontend/**/*.{js,jsx,ts,tsx}"
+      run: |
+        files=""
+        for f in {staged_files}; do
+          files="$files ${f#frontend/}"
+        done
+        cd frontend && npx @biomejs/biome lint --no-errors-on-unmatched $files
+
+    frontend-types:
+      glob:
+        - "frontend/*.{ts,tsx}"
+        - "frontend/**/*.{ts,tsx}"
+      run: cd frontend && npx tsc --noEmit
+
+    backend-syntax:
+      glob:
+        - "backend/*.{js,cjs,mjs}"
+        - "backend/**/*.{js,cjs,mjs}"
+      exclude:
+        - backend/node_modules/**
+      run: |
+        status=0
+        for f in {staged_files}; do
+          [ -f "$f" ] || continue
+          node --check "$f" || status=1
+        done
+        exit $status
+
+commit-msg:
+  commands:
+    commitlint:
+      run: cd frontend && npx commitlint --edit {1}
+      skip:
+        - merge
+        - rebase

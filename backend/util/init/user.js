@@ -21,6 +21,7 @@ const normalizePermission = (permission, fallback = 'USER') => {
 
 const resolveIsAdminFlag = (permission) => {
   const normalizedPermission = normalizePermission(permission);
+  // Legacy SUPER_ADMIN is treated as ADMIN
   return normalizedPermission === 'ADMIN' || normalizedPermission === 'SUPER_ADMIN';
 };
 

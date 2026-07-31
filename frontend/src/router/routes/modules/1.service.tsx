@@ -31,7 +31,7 @@ const service: AppRouteObject = {
 			<SvgIcon icon="ic-analysis" className="ant-menu-item-icon" size="24" />
 		),
 		key: "/service",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN, PermissionAccount.USER],
+		permissions: [PermissionAccount.ADMIN, PermissionAccount.USER],
 		hideMenu: true, // 그룹은 메뉴에 표시하지 않고 children만 표시
 		section: "service", // 섹션 이름
 	},
@@ -50,7 +50,7 @@ const service: AppRouteObject = {
 					<SvgIcon icon="ic-analysis" className="ant-menu-item-icon" size="24" />
 				),
 				key: "/service/dashboard",
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+				permissions: [PermissionAccount.ADMIN],
 				hideMenu: false,
 				section: "service",
 			},
@@ -64,7 +64,7 @@ const service: AppRouteObject = {
 					<AppstoreOutlined className="ant-menu-item-icon" style={{ fontSize: "24px" }} />
 				),
 				key: "/service/application",
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN, PermissionAccount.USER],
+				permissions: [PermissionAccount.ADMIN, PermissionAccount.USER],
 				hideMenu: false,
 				section: "service",
 			},
@@ -96,7 +96,7 @@ const service: AppRouteObject = {
 					<SafetyOutlined className="ant-menu-item-icon" style={{ fontSize: "24px" }} />
 				),
 				key: "/service/auth-log",
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+				permissions: [PermissionAccount.ADMIN],
 				hideMenu: false,
 				section: "service",
 			},
@@ -119,7 +119,7 @@ const service: AppRouteObject = {
 					<SecurityScanOutlined className="ant-menu-item-icon" style={{ fontSize: "24px" }} />
 				),
 				key: "/service/security-policy",
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+				permissions: [PermissionAccount.ADMIN],
 				hideMenu: false,
 				section: "service",
 			},

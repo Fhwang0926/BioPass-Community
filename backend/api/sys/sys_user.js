@@ -6,12 +6,11 @@ import Router from 'koa-router'
 import moment from 'moment-timezone'
 import { sql, smtp } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
-import { hasUserManagementPermission, createPermissionError, isSuperAdmin } from '../../service/permission.js'
+import { hasUserManagementPermission, createPermissionError } from '../../service/permission.js'
 import { hashPassword, isClientPasswordHash } from '../../util/password.js'
 import { hashPhoneSha512 } from '../../util/phone.js'
 
 const route = new Router()
-const DB_ONLY_SUPER_ADMIN_MESSAGE = 'SUPER_ADMIN can only be changed directly in DB'
 const USER_MANAGED_PERMISSIONS = new Set(['USER', 'ADMIN'])
 
 /**
@@ -41,15 +40,11 @@ const getProfileCompanyId = (profile) => parseCompanyId(profile?.companyId ?? pr
 
 const getRequestCompanyId = (body = {}) => parseCompanyId(body.company_id ?? body.companyId)
 
-const resolveTargetCompanyId = (profile, requestedCompanyId = null) => {
-  if (isSuperAdmin(profile)) {
-    return requestedCompanyId
-  }
+const resolveTargetCompanyId = (profile, _requestedCompanyId = null) => {
   return getProfileCompanyId(profile)
 }
 
 const canManageCompanyUser = (profile, targetCompanyId) => {
-  if (isSuperAdmin(profile)) return true
   const profileCompanyId = getProfileCompanyId(profile)
   const parsedTargetCompanyId = parseCompanyId(targetCompanyId)
   return Boolean(
@@ -78,6 +73,7 @@ const toBoolean = (value, fallback = false) => {
 
 const resolveIsAdminFlag = (permission) => {
   const normalizedPermission = normalizePermission(permission)
+  // Legacy SUPER_ADMIN counts as admin for last-admin guards
   return normalizedPermission === 'ADMIN' || normalizedPermission === 'SUPER_ADMIN'
 }
 
@@ -86,18 +82,12 @@ const resolvePermission = (permission) => normalizePermission(permission)
 const resolveUserManagedPermission = (ctx, permission) => {
   const normalizedPermission = resolvePermission(permission)
   if (normalizedPermission === 'SUPER_ADMIN') {
-    ctx.throw(403, DB_ONLY_SUPER_ADMIN_MESSAGE)
+    ctx.throw(400, 'Invalid permissions')
   }
   if (!USER_MANAGED_PERMISSIONS.has(normalizedPermission)) {
     ctx.throw(400, 'Invalid permissions')
   }
   return normalizedPermission
-}
-
-const assertNotSuperAdminUser = (ctx, user) => {
-  if (normalizePermission(user?.permissions) === 'SUPER_ADMIN') {
-    ctx.throw(403, DB_ONLY_SUPER_ADMIN_MESSAGE)
-  }
 }
 
 /**
@@ -119,19 +109,25 @@ const assertNotLastActiveAdmin = async (ctx, user, { nextPermissions, nextIsActi
   })()
   if (willRemainAdmin) return
 
+  const companyId = parseCompanyId(user.companyId)
+  const conditions = [
+    eq(sql.schema.sysUser.isDel, false),
+    eq(sql.schema.sysUser.isActive, true),
+    or(
+      eq(sql.schema.sysUser.permissions, 'ADMIN'),
+      eq(sql.schema.sysUser.permissions, 'SUPER_ADMIN'),
+      eq(sql.schema.sysUser.permissions, 'admin'),
+      eq(sql.schema.sysUser.permissions, 'super_admin')
+    )
+  ]
+  if (companyId) {
+    conditions.push(eq(sql.schema.sysUser.companyId, companyId))
+  }
+
   const rows = await sql.db
     .select({ count: drizzleSql`count(*)::int` })
     .from(sql.schema.sysUser)
-    .where(and(
-      eq(sql.schema.sysUser.isDel, false),
-      eq(sql.schema.sysUser.isActive, true),
-      or(
-        eq(sql.schema.sysUser.permissions, 'ADMIN'),
-        eq(sql.schema.sysUser.permissions, 'SUPER_ADMIN'),
-        eq(sql.schema.sysUser.permissions, 'admin'),
-        eq(sql.schema.sysUser.permissions, 'super_admin')
-      )
-    ))
+    .where(and(...conditions))
     .get()
 
   if (Number(rows?.count ?? 0) <= 1) {
@@ -245,26 +241,19 @@ const sendInvitationEmail = async ({ ctx, email, name, company, temporaryPasswor
  */
 route.post('/search', async (ctx) => {
   try {
-    // 권한 검증: 사용자 관리 권한 필요 (SUPER_ADMIN 또는 ADMIN)
+    // 권한 검증: 조직 ADMIN
     if (!hasUserManagementPermission(ctx.request.profile)) {
       throw createPermissionError('search users')
     }
 
-    // 검색 조건 빌드
+    // 검색 조건 빌드 — own company only
     const conditions = [eq(sql.schema.sysUser.isDel, false)]
-    const requestedCompanyId = getRequestCompanyId(ctx.request.body)
     const profileCompanyId = getProfileCompanyId(ctx.request.profile)
 
-    if (isSuperAdmin(ctx.request.profile)) {
-      if (requestedCompanyId) {
-        conditions.push(eq(sql.schema.sysUser.companyId, requestedCompanyId))
-      }
-    } else {
-      if (!profileCompanyId) {
-        return ctx.throw(400, 'Company ID is required')
-      }
-      conditions.push(eq(sql.schema.sysUser.companyId, profileCompanyId))
+    if (!profileCompanyId) {
+      return ctx.throw(400, 'Company ID is required')
     }
+    conditions.push(eq(sql.schema.sysUser.companyId, profileCompanyId))
 
     // 이메일 필터 (부분 일치)
     if (ctx.request.body?.email) {
@@ -349,11 +338,10 @@ route.post('/create', async (ctx) => {
   try {
     const body = ctx.request.body
 
-    // 권한 검증: 사용자 관리 권한 필요 (SUPER_ADMIN 또는 ADMIN)
-    // ADMIN의 경우 같은 기업의 사용자만 생성 가능
+    // 권한 검증: 같은 조직 ADMIN만 사용자 생성 가능
     const requestedCompanyId = getRequestCompanyId(body)
     const targetCompanyId = resolveTargetCompanyId(ctx.request.profile, requestedCompanyId)
-    if (!targetCompanyId && !isSuperAdmin(ctx.request.profile)) {
+    if (!targetCompanyId) {
       return ctx.throw(400, 'Company ID is required')
     }
     if (!canManageCompanyUser(ctx.request.profile, targetCompanyId)) {
@@ -510,7 +498,7 @@ route.post('/invite', async (ctx) => {
  */
 route.get('/:id', async (ctx) => {
   try {
-    // 권한 검증: 사용자 관리 권한 필요 (SUPER_ADMIN 또는 ADMIN)
+    // 권한 검증: 조직 ADMIN
     if (!hasUserManagementPermission(ctx.request.profile)) {
       throw createPermissionError('view user details')
     }
@@ -576,10 +564,7 @@ route.patch('/:id', async (ctx) => {
       return ctx.throw(404, 'User not found')
     }
 
-    assertNotSuperAdminUser(ctx, user)
-
-    // 권한 검증: 사용자 관리 권한 필요 (SUPER_ADMIN 또는 ADMIN)
-    // ADMIN의 경우 같은 기업의 사용자만 수정 가능
+    // 권한 검증: 같은 조직 ADMIN만 수정 가능
     if (!canManageCompanyUser(ctx.request.profile, user.companyId)) {
       throw createPermissionError('update users')
     }
@@ -683,11 +668,9 @@ route.delete('/:id', async (ctx) => {
       return ctx.throw(404, 'User not found or already deleted')
     }
 
-    assertNotSuperAdminUser(ctx, user)
     await assertNotLastActiveAdmin(ctx, user, { deleting: true })
 
-    // 권한 검증: 사용자 관리 권한 필요 (SUPER_ADMIN 또는 ADMIN)
-    // ADMIN의 경우 같은 기업의 사용자만 삭제 가능
+    // 권한 검증: 같은 조직 ADMIN만 삭제 가능
     if (!canManageCompanyUser(ctx.request.profile, user.companyId)) {
       throw createPermissionError('delete users')
     }

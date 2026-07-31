@@ -2,7 +2,7 @@
 
 import { eq } from 'drizzle-orm'
 import { sql } from '../lib/index.js'
-import { createPermissionError, hasServiceAccessPermission, isAdmin, isSuperAdmin } from './permission.js'
+import { createPermissionError, hasServiceAccessPermission, isAdmin } from './permission.js'
 
 const toPositiveInteger = (value) => {
   if (value === undefined || value === null || value === '') return null
@@ -52,24 +52,11 @@ export const requireAdminCompanyScope = (profile, action = 'access company admin
 }
 
 export const assertSameAdminCompany = (profile, targetCompanyId, action = 'access company admin data') => {
-  if (!isAdmin(profile)) {
-    throw createPermissionError(action)
-  }
-
-  const parsedTargetCompanyId = toPositiveInteger(targetCompanyId)
-  if (!parsedTargetCompanyId) {
-    throw createPermissionError(action)
-  }
-
-  if (isSuperAdmin(profile)) {
-    return parsedTargetCompanyId
-  }
-
   const companyId = requireAdminCompanyScope(profile, action)
-  if (companyId !== parsedTargetCompanyId) {
+  const parsedTargetCompanyId = toPositiveInteger(targetCompanyId)
+  if (!parsedTargetCompanyId || companyId !== parsedTargetCompanyId) {
     throw createPermissionError(action)
   }
-
   return companyId
 }
 

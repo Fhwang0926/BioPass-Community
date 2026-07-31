@@ -26,7 +26,7 @@ const system: AppRouteObject = {
 			<SvgIcon icon="ic-log" className="ant-menu-item-icon" size="24" />
 		),
 		key: "/system",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+		permissions: [PermissionAccount.ADMIN],
 		hideMenu: true,
 		section: "system",
 	},
@@ -46,7 +46,7 @@ const system: AppRouteObject = {
 			meta: {
 				label: "sys.menu.systemLog",
 				key: "/system/log",
-				permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+				permissions: [PermissionAccount.ADMIN],
 				hideMenu: false,
 				section: "system",
 			},
@@ -62,7 +62,7 @@ const system: AppRouteObject = {
 					meta: {
 						label: "sys.menu.log.mail",
 						key: "/system/log/mail",
-						permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+						permissions: [PermissionAccount.ADMIN],
 						hideMenu: false,
 						section: "system",
 					},
@@ -73,7 +73,7 @@ const system: AppRouteObject = {
 					meta: {
 						label: "sys.menu.log.audit",
 						key: "/system/log/audit",
-						permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+						permissions: [PermissionAccount.ADMIN],
 						hideMenu: false,
 						section: "system",
 					},
@@ -84,7 +84,7 @@ const system: AppRouteObject = {
 					meta: {
 						label: "sys.menu.log.alarm",
 						key: "/system/log/alarm",
-						permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN],
+						permissions: [PermissionAccount.ADMIN],
 						hideMenu: false,
 						section: "system",
 					},

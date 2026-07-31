@@ -78,7 +78,7 @@ export interface User {
 	/** SHA512 hash of phone (backend returns as phoneSha512) */
 	phone_sha512?: string;
 	phoneSha512?: string;
-	permissions: 'user' | 'admin' | 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+	permissions: 'user' | 'admin' | 'USER' | 'ADMIN';
 	company_id?: number;
 	is_active: boolean;
 	is_verify: boolean;

@@ -23,7 +23,7 @@ const account: AppRouteObject = {
 			<Iconify icon="solar:user-id-bold" size={24} />
 		),
 		key: "/management/account",
-		permissions: [PermissionAccount.SUPER_ADMIN, PermissionAccount.ADMIN, PermissionAccount.USER],
+		permissions: [PermissionAccount.ADMIN, PermissionAccount.USER],
 		hideMenu: false,
 		section: "myInfo",
 	},

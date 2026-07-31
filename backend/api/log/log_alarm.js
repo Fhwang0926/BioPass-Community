@@ -5,14 +5,14 @@ import Router from 'koa-router'
 import _ from 'lodash'
 import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
-import { isSuperAdmin as _isSuperAdmin, getUserRole, ROLES, hasSystemAdminPermission, createPermissionError } from '../../service/permission.js'
+import { getUserRole, ROLES, isAdmin, createPermissionError } from '../../service/permission.js'
+import { getProfileCompanyId } from '../../service/serviceScope.js'
 
 const route = new Router()
 
 /** 알림 단건 접근 권한 — search와 동일한 범위 적용 */
 function assertCanAccessAlarm(profile, notification) {
   const userRole = getUserRole(profile)
-  if (userRole === ROLES.SUPER_ADMIN) return
   if (userRole === ROLES.ADMIN) {
     if (notification.companyId === profile.companyId) return
     throw createPermissionError('access notification')
@@ -27,12 +27,9 @@ route.post('/search', async (ctx) => {
     const conditions = []
     const profile = ctx.request.profile || {}
     const userRole = getUserRole(profile)
-    const isSystemAdmin = userRole === ROLES.SUPER_ADMIN
     const isGroupAdmin = userRole === ROLES.ADMIN
 
-    if (isSystemAdmin) {
-      // full access
-    } else if (isGroupAdmin) {
+    if (isGroupAdmin) {
       conditions.push(eq(sql.schema.logAlarm.companyId, profile.companyId))
     } else {
       conditions.push(eq(sql.schema.logAlarm.userId, profile.id))
@@ -92,8 +89,12 @@ route.post('/search', async (ctx) => {
 route.post('/create', async (ctx) => {
   try {
     const profile = ctx.request.profile || {}
-    if (!hasSystemAdminPermission(profile)) {
+    if (!isAdmin(profile)) {
       throw createPermissionError('create notification')
+    }
+    const companyId = getProfileCompanyId(profile)
+    if (!companyId) {
+      throw createPermissionError('create notification: company scope is required')
     }
     const body = ctx.request.body
     if (!body.user_id || !body.title || !body.content) {
@@ -102,7 +103,7 @@ route.post('/create', async (ctx) => {
 
     const notification = await sql.db.insert(sql.schema.logAlarm).values({
       userId: body.user_id,
-      companyId: body.company_id,
+      companyId,
       type: body.type || 'system',
       title: body.title,
       content: body.content,

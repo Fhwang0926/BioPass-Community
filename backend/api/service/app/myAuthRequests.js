@@ -6,8 +6,6 @@ import { logSuccess, logFailure } from '../../../service/audit.js'
 import { AuthRequestStatus } from '../../../service/stateMachine.js'
 import { transitionAuthRequest } from '../../../service/transition.js'
 
-const PLACEHOLDER_USER_ID = '0'
-
 async function handleMyAuthRequests(ctx) {
   try {
     const profile = ctx.request.profile
@@ -18,23 +16,9 @@ async function handleMyAuthRequests(ctx) {
     }
     const userId = profile.id
 
-    // 딥링크/푸시로 받은 request_id가 있으면, 해당 요청이 미연결(user_id '0')일 때 현재 사용자로 연결
-    const requestId = ctx.request.query?.request_id || ctx.request.body?.request_id
-    if (requestId && typeof requestId === 'string' && requestId.trim()) {
-      const reqRow = await sql.db
-        .select({ id: sql.schema.authRequests.id, userId: sql.schema.authRequests.userId, status: sql.schema.authRequests.status, expiresAt: sql.schema.authRequests.expiresAt })
-        .from(sql.schema.authRequests)
-        .where(eq(sql.schema.authRequests.id, requestId.trim()))
-        .limit(1)
-        .get()
-      if (reqRow && String(reqRow.userId) === PLACEHOLDER_USER_ID && reqRow.status === AuthRequestStatus.PENDING && reqRow.expiresAt > Date.now()) {
-        await sql.db
-          .update(sql.schema.authRequests)
-          .set({ userId })
-          .where(eq(sql.schema.authRequests.id, reqRow.id))
-          .catch(() => {})
-      }
-    }
+    // Do not claim placeholder (user_id '0') requests via request_id — that was an IDOR
+    // (any app JWT holder who obtained the id could bind and approve). Binding happens
+    // only through email verification / authorize resolution of a known user.
 
     const now = Date.now()
     const expiredPending = await sql.db

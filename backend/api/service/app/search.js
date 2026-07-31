@@ -3,7 +3,7 @@
 import { eq, and, like, desc } from 'drizzle-orm'
 import { sql } from '../../../lib/index.js'
 import { logSuccess, logFailure } from '../../../service/audit.js'
-import { hasServiceAccessPermission, createPermissionError } from '../../../service/permission.js'
+import { requireServiceCompanyScope } from '../../../service/serviceScope.js'
 
 export function register(route) {
   route.post('/search', async (ctx) => {
@@ -13,15 +13,17 @@ export function register(route) {
         ctx.body = { error: 'unauthorized', error_description: '인증이 필요합니다.' }
         return
       }
-      if (!hasServiceAccessPermission(ctx.request.profile)) {
-        throw createPermissionError('list applications')
-      }
+
+      const companyId = requireServiceCompanyScope(ctx.request.profile, 'list applications')
 
       const body = ctx.request.body || {}
       const page = parseInt(body.page) || 1
       const limit = Math.min(parseInt(body.limit) || 20, 100)
       const offset = (page - 1) * limit
-      const whereConditions = [eq(sql.schema.sysApplication.isDel, false)]
+      const whereConditions = [
+        eq(sql.schema.sysApplication.isDel, false),
+        eq(sql.schema.sysApplication.companyId, companyId)
+      ]
       if (body.name) whereConditions.push(like(sql.schema.sysApplication.name, `%${body.name}%`))
       if (body.client_id) whereConditions.push(like(sql.schema.sysApplication.clientId, `%${body.client_id}%`))
       if (body.is_active !== undefined) whereConditions.push(eq(sql.schema.sysApplication.isActive, body.is_active))

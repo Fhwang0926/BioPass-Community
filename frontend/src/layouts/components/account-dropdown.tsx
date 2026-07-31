@@ -51,7 +51,7 @@ export default function AccountDropdown() {
 				<div className="max-w-56 break-all text-gray">{email}</div>
 			</div>
 			<Divider style={{ margin: 0 }} />
-			{React.cloneElement(menu as React.ReactElement, { style: menuStyle })}
+			{React.cloneElement(menu as React.ReactElement<{ style?: React.CSSProperties }>, { style: menuStyle })}
 		</div>
 	);
 

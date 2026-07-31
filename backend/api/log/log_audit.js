@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { sql, func as _func } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
 import { isAdmin } from '../../service/permission.js'
+import { getProfileCompanyId } from '../../service/serviceScope.js'
 
 const route = new Router()
 
@@ -82,6 +83,27 @@ route.post('/search', async (ctx) => {
     // 관리자가 아니면 자신의 로그만 볼 수 있음
     if (!isAdmin(profile)) {
       conditions.push(eq(sql.schema.logAudit.userId, profile.id))
+    } else {
+      // Admins only see audit rows for users in their company (no company_id on log_audit)
+      const companyId = getProfileCompanyId(profile)
+      if (!companyId) {
+        conditions.push(eq(sql.schema.logAudit.userId, profile.id))
+      } else {
+        const companyUsers = await sql.db
+          .select({ id: sql.schema.sysUser.id })
+          .from(sql.schema.sysUser)
+          .where(and(
+            eq(sql.schema.sysUser.companyId, companyId),
+            eq(sql.schema.sysUser.isDel, false)
+          ))
+          .all()
+        const userIds = companyUsers.map((u) => u.id).filter((id) => id != null)
+        if (!userIds.length) {
+          conditions.push(eq(sql.schema.logAudit.userId, profile.id))
+        } else {
+          conditions.push(inArray(sql.schema.logAudit.userId, userIds))
+        }
+      }
     }
 
     const offset = ctx.request.body?.option?.offset || 0
@@ -185,6 +207,29 @@ route.get('/:id', async (ctx) => {
     if (!audit) {
       ctx.body = await logFailure(ctx, 'audit_get', 'Audit log not found', 'Audit log not found')
       return
+    }
+
+    const profile = ctx.request.profile
+    if (!isAdmin(profile)) {
+      if (audit.userId !== profile.id) {
+        ctx.status = 403
+        ctx.body = await logFailure(ctx, 'audit_get', 'Forbidden', 'No permission to view this audit log')
+        return
+      }
+    } else {
+      const companyId = getProfileCompanyId(profile)
+      if (audit.userId && companyId) {
+        const owner = await sql.db.select({ companyId: sql.schema.sysUser.companyId })
+          .from(sql.schema.sysUser)
+          .where(eq(sql.schema.sysUser.id, audit.userId))
+          .limit(1)
+          .get()
+        if (!owner || Number(owner.companyId) !== Number(companyId)) {
+          ctx.status = 403
+          ctx.body = await logFailure(ctx, 'audit_get', 'Forbidden', 'No permission to view this audit log')
+          return
+        }
+      }
     }
 
     // 사용자 정보 추가 및 snake_case 변환

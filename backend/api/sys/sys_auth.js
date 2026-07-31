@@ -8,7 +8,7 @@ import moment from 'moment-timezone'
 import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
 import { getCompanyAuthAppIds, requireAdminCompanyScope } from '../../service/serviceScope.js'
-import { hashPassword, verifyPassword, needsPasswordRehash, isClientPasswordHash } from '../../util/password.js'
+import { hashPassword, verifyPassword, needsPasswordRehash, isClientPasswordHash, assertPasswordPolicy } from '../../util/password.js'
 import { hashPhoneSha512 } from '../../util/phone.js'
 
 const route = new Router()
@@ -216,6 +216,13 @@ route.post('/setup', async (ctx) => {
     if (!email || !name || !password) {
       ctx.status = 400
       ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', 'name, email, and password are required')
+      return
+    }
+
+    const passwordPolicy = assertPasswordPolicy(password)
+    if (!passwordPolicy.ok) {
+      ctx.status = 400
+      ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', passwordPolicy.message)
       return
     }
 

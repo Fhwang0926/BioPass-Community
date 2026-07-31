@@ -6,6 +6,7 @@ import config from '../../../config.js'
 import { sql } from '../../../lib/index.js'
 import { logSuccess, logFailure } from '../../../service/audit.js'
 import { consumeAuthCode } from '../../../service/transition.js'
+import { timingSafeEqualString } from '../../../util/cryptoEqual.js'
 
 function parseExpiresToSeconds(expires) {
   if (!expires || typeof expires !== 'string') return 31536000
@@ -67,7 +68,7 @@ export function register(route) {
       // client_secret 검증을 건너뛰면 안 된다(탈취된 authorization code만으로 토큰 발급 가능). 따라서
       // confidential client 교환은 항상 client_secret을 검증한다.
       // (추후 /authorize 에서 code_challenge 를 저장하고 여기서 S256 검증을 구현하면 PKCE 공개 클라이언트 허용 가능)
-      if (client_secret !== application.clientSecret) {
+      if (!timingSafeEqualString(client_secret, application.clientSecret)) {
         ctx.status = 401
         ctx.body = { error: 'invalid_client', error_description: '유효하지 않은 client_secret입니다.' }
         return

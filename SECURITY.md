@@ -31,7 +31,7 @@ We will acknowledge reports as soon as practical and coordinate a fix or disclos
 
 - Set a strong `AUTH_SECRET` (`openssl rand -hex 32`)
 - Complete initial admin setup at `/#/setup` (or seed with `INIT_ADMIN_EMAIL` + `INIT_ADMIN_PASSWORD`)
-- Change `POSTGRES_PASSWORD` (and matching `DATABASE_URL`) for any non-local deploy
+- Set a strong `POSTGRES_PASSWORD` (Compose requires it; keep `DATABASE_URL` in sync)
 - Keep the API on loopback (`API_HOST_BIND=127.0.0.1`, Compose default) and terminate TLS on a reverse proxy
 - Set `CORS_ORIGINS` / `PUBLIC_BASE_URL` to your real origin(s)
 - Set `TRUST_PROXY=1` only when behind a trusted reverse proxy

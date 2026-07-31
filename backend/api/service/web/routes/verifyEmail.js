@@ -8,6 +8,7 @@ import { logSuccess, logFailure } from '../../../../service/audit.js'
 import { requestAuthNotification } from '../../../../service/notification.js'
 import { AuthRequestStatus } from '../../../../service/stateMachine.js'
 import { createAuthCode, transitionAuthRequest } from '../../../../service/transition.js'
+import { consumeRateLimit } from '../../../../lib/rateLimit.js'
 import { WEB_AUTH_FROM } from '../constants.js'
 import { hasRegisteredPushDevice, findUserWithPushDeviceByEmail } from '../device.js'
 import {
@@ -181,6 +182,48 @@ function buildCallbackUrl(redirectUri, code, state = '') {
   return redirectUri + sep + 'code=' + encodeURIComponent(code) + (state ? '&state=' + encodeURIComponent(state) : '')
 }
 
+/** Registered OAuth callback for an auth request (never trust client redirect_uri). */
+async function resolveRegisteredRedirectUri(requestId) {
+  if (!requestId) return null
+  const authReq = await sql.db
+    .select({ appId: sql.schema.authRequests.appId })
+    .from(sql.schema.authRequests)
+    .where(eq(sql.schema.authRequests.id, requestId))
+    .limit(1)
+    .get()
+  if (!authReq?.appId) return null
+
+  const appRow = await sql.db
+    .select({
+      clientId: sql.schema.apps.clientId,
+      redirectUri: sql.schema.apps.redirectUri
+    })
+    .from(sql.schema.apps)
+    .where(eq(sql.schema.apps.id, authReq.appId))
+    .limit(1)
+    .get()
+  if (!appRow) return null
+
+  const application = await sql.db
+    .select({ callbackUrl: sql.schema.sysApplication.callbackUrl })
+    .from(sql.schema.sysApplication)
+    .where(and(
+      eq(sql.schema.sysApplication.clientId, appRow.clientId),
+      eq(sql.schema.sysApplication.isDel, false)
+    ))
+    .limit(1)
+    .get()
+
+  const registered = (application?.callbackUrl || appRow.redirectUri || '').trim()
+  return registered || null
+}
+
+function assertRedirectUriMatch(provided, registered) {
+  if (!registered) return false
+  if (!provided) return true
+  return String(provided).trim() === registered
+}
+
 export function register(route) {
   route.post('/auth-request-status', async (ctx) => {
     const body = ctx.request.body || {}
@@ -230,9 +273,19 @@ export function register(route) {
     }
 
     if (authRequest.status === AuthRequestStatus.APPROVED) {
-      if (!redirectUri) {
+      const registeredRedirect = await resolveRegisteredRedirectUri(requestId)
+      if (!registeredRedirect) {
         ctx.status = 400
         ctx.body = { status: authRequest.status, error: 'invalid_request', error_description: text.redirectUriMissing }
+        return
+      }
+      if (!assertRedirectUriMatch(redirectUri, registeredRedirect)) {
+        ctx.status = 400
+        ctx.body = {
+          status: authRequest.status,
+          error: 'invalid_request',
+          error_description: text.redirectUriMismatch
+        }
         return
       }
 
@@ -243,10 +296,10 @@ export function register(route) {
         return
       }
 
-      const callbackUrl = buildCallbackUrl(redirectUri, codeResult.code, state)
+      const callbackUrl = buildCallbackUrl(registeredRedirect, codeResult.code, state)
       await logSuccess(ctx, 'auth_request_status', 'App authentication completed', { request_id: requestId })
       ctx.body = {
-        status: AuthRequestStatus.APPROVED,
+        status: authRequest.status,
         approved: true,
         redirect_url: callbackUrl
       }
@@ -495,6 +548,17 @@ export function register(route) {
       return
     }
 
+    const verifyAttempt = consumeRateLimit({
+      key: `verify-email:${requestId}:${email}`,
+      limit: 5,
+      windowMs: 15 * 60 * 1000
+    })
+    if (!verifyAttempt.allowed) {
+      ctx.set('Retry-After', String(verifyAttempt.retryAfterSec))
+      await sendVerifyError(429, 'too_many_requests', text.js?.tooManyAttempts || 'Too many verification attempts. Try again later.', 'Verify email rate limited')
+      return
+    }
+
     const codeNum = parseInt(code, 10)
     const logRow = await sql.db
       .select()
@@ -522,14 +586,14 @@ export function register(route) {
         .limit(1)
         .get()
       if (alreadyUsedRow) {
-        await sendVerifyError(400, 'code_already_used', text.js.codeAlreadyUsed, `Verification code already used (input: ${code})`)
+        await sendVerifyError(400, 'code_already_used', text.js.codeAlreadyUsed, 'Verification code already used')
       } else {
-        await sendVerifyError(400, 'invalid_code', text.invalidCode, `Invalid verification code (input: ${code})`)
+        await sendVerifyError(400, 'invalid_code', text.invalidCode, 'Invalid verification code')
       }
       return
     }
     if (logRow.content !== requestId) {
-      await sendVerifyError(400, 'invalid_code', text.invalidCode, `Invalid verification code (input: ${code})`)
+      await sendVerifyError(400, 'invalid_code', text.invalidCode, 'Invalid verification code')
       return
     }
 
@@ -578,25 +642,31 @@ export function register(route) {
       .set({ isClear: true, updatedAt: new Date() })
       .where(eq(sql.schema.logMail.id, logRow.id))
 
+    const registeredRedirect = await resolveRegisteredRedirectUri(requestId)
+    if (!registeredRedirect) {
+      await sendVerifyError(400, 'invalid_request', text.redirectUriMissing, 'Missing registered redirect_uri')
+      return
+    }
+    const providedRedirect = redirectUriFromBody || body.redirect_uri || ''
+    if (!assertRedirectUriMatch(providedRedirect, registeredRedirect)) {
+      await sendVerifyError(400, 'invalid_request', text.redirectUriMismatch, 'redirect_uri mismatch')
+      return
+    }
+
     const codeResult = await createAuthCode({ authRequestId: requestId, expiresInSeconds: 180 })
     if (!codeResult.success || !codeResult.code) {
       await sendVerifyError(500, 'server_error', text.authCodeIssue, 'Auth code creation failed')
       return
     }
 
-    const redirectUri = redirectUriFromBody || body.redirect_uri || ''
     const state = stateFromBody || body.state || ''
-    const callbackUrl = buildCallbackUrl(redirectUri, codeResult.code, state)
-    if (callbackUrl && redirectUri) {
-      await logSuccess(ctx, 'verify_email_code', 'Email verification successful', { email, request_id: requestId })
+    const callbackUrl = buildCallbackUrl(registeredRedirect, codeResult.code, state)
+    await logSuccess(ctx, 'verify_email_code', 'Email verification successful', { email, request_id: requestId })
 
-      if (acceptsJson) {
-        ctx.body = { success: true, redirect_url: callbackUrl }
-      } else {
-        ctx.redirect(callbackUrl)
-      }
+    if (acceptsJson) {
+      ctx.body = { success: true, redirect_url: callbackUrl }
     } else {
-      await sendVerifyError(400, 'invalid_request', text.redirectUriMissing, 'Missing redirect_uri')
+      ctx.redirect(callbackUrl)
     }
   })
 }

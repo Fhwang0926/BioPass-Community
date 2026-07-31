@@ -106,4 +106,29 @@ export const needsPasswordRehash = (storedHash) => {
   return !String(storedHash || '').startsWith(SCRYPT_PREFIX)
 }
 
+/** Minimum plaintext password length for console accounts. */
+export const MIN_PASSWORD_LENGTH = 12
+
+/**
+ * Validate console password policy.
+ * Client-prehashed SHA-512 hex cannot be checked for complexity — callers must
+ * enforce length in the UI before hashing. Plaintext passwords are checked here.
+ * @returns {{ ok: true } | { ok: false, message: string }}
+ */
+export function assertPasswordPolicy (password) {
+  if (!password || typeof password !== 'string') {
+    return { ok: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
+  }
+  if (isClientPasswordHash(password)) {
+    return { ok: true }
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return { ok: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
+  }
+  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    return { ok: false, message: 'Password must include letters and numbers' }
+  }
+  return { ok: true }
+}
+
 export default hashPassword

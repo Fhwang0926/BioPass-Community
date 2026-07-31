@@ -1,6 +1,6 @@
 # BioPass Community — full stack: PostgreSQL (db) + API/Admin UI (api)
 #
-#   cp .env.example .env   # set AUTH_SECRET (and optionally POSTGRES_PASSWORD)
+#   cp .env.example .env   # set AUTH_SECRET and POSTGRES_PASSWORD
 #   docker compose up --build -d
 #
 # API is bound to 127.0.0.1 by default. For a public VPS put a reverse proxy
@@ -11,7 +11,7 @@ name: biopass
 x-api-environment: &api-environment
   NODE_ENV: production
   PORT: "3030"
-  DATABASE_URL: postgresql://biopass:${POSTGRES_PASSWORD:-biopass}@db:5432/biopass
+  DATABASE_URL: postgresql://biopass:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/biopass
   AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env — openssl rand -hex 32}
   PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3030}
   FRONTEND_ORIGIN: ${PUBLIC_BASE_URL:-http://localhost:3030}
@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: biopass
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-biopass}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: biopass
     ports:
       - "127.0.0.1:5432:5432"

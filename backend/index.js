@@ -6,10 +6,10 @@ import https from 'https'
 import os from 'os'
 import cors from '@koa/cors'
 import chalk from 'chalk'
+import { eq } from 'drizzle-orm'
 import jwt from 'jsonwebtoken'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
-import nocache from 'koa-no-cache'
 import Router from 'koa-router'
 import send from 'koa-send'
 import serve from 'koa-static-server'
@@ -120,6 +120,19 @@ const run = () => {
   // Body parser
   app.use(bodyParser({ jsonLimit: '2mb', formLimit: '2mb' }))
 
+  // Baseline security headers (TLS/HSTS still belong on the reverse proxy)
+  app.use(async (ctx, next) => {
+    ctx.set('X-Content-Type-Options', 'nosniff')
+    ctx.set('X-Frame-Options', 'DENY')
+    ctx.set('Referrer-Policy', 'no-referrer')
+    ctx.set('Cross-Origin-Opener-Policy', 'same-origin')
+    ctx.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+    if (process.env.NODE_ENV === 'production') {
+      ctx.set('Content-Security-Policy', "frame-ancestors 'none'")
+    }
+    await next()
+  })
+
   // Request logger (path only — never log raw query strings with OAuth codes)
   app.use(async (ctx, next) => {
     const start = Date.now()
@@ -128,8 +141,15 @@ const run = () => {
     console.log(`[${ctx.method}] ${ctx.path} ${ctx.status} ${ms}ms`)
   })
 
-  // No-cache middleware
-  app.use(nocache({ paths: ['/api'] }))
+  // No-cache for API responses (replaces koa-no-cache / vulnerable path-to-regexp)
+  app.use(async (ctx, next) => {
+    await next()
+    if (ctx.path.startsWith('/api')) {
+      ctx.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      ctx.set('Pragma', 'no-cache')
+      ctx.set('Expires', '0')
+    }
+  })
 
   // Middleware to extract client IP
   app.use(fromIpMiddleware)
@@ -155,6 +175,14 @@ const run = () => {
         : ''
     ),
     { limit: 30, windowMs: 15 * 60 * 1000, message: 'Too many verification requests.' }
+  ))
+  app.use(rateLimitMiddleware(
+    (ctx) => (ctx.path === '/api/web/verify-email' && ctx.method === 'POST' ? `verifyemail:${clientKey(ctx)}` : ''),
+    { limit: 40, windowMs: 15 * 60 * 1000, message: 'Too many verification attempts.' }
+  ))
+  app.use(rateLimitMiddleware(
+    (ctx) => (ctx.path === '/api/app/check-site' ? `checksite:${clientKey(ctx)}` : ''),
+    { limit: 60, windowMs: 15 * 60 * 1000, message: 'Too many site check requests.' }
   ))
 
   // Token validation middleware
@@ -286,8 +314,42 @@ const tokenValidationMiddleware = async (ctx, next) => {
 
     const token = authHeader.replace(/Bearer /gi, '')
     const profile = jwt.verify(token, config.auth.secret).profile
+    if (!profile?.id) {
+      ctx.throw(401, 'Unauthorized')
+    }
 
-    ctx.request.profile = profile
+    // Re-load console user so demotion / disable takes effect before access-token expiry
+    const dbUser = await sql.db
+      .select({
+        id: sql.schema.sysUser.id,
+        email: sql.schema.sysUser.email,
+        phone: sql.schema.sysUser.phone,
+        name: sql.schema.sysUser.name,
+        permissions: sql.schema.sysUser.permissions,
+        companyId: sql.schema.sysUser.companyId,
+        isActive: sql.schema.sysUser.isActive,
+        isDel: sql.schema.sysUser.isDel,
+        isAdmin: sql.schema.sysUser.isAdmin
+      })
+      .from(sql.schema.sysUser)
+      .where(eq(sql.schema.sysUser.id, profile.id))
+      .limit(1)
+      .get()
+
+    if (!dbUser || dbUser.isDel || !dbUser.isActive) {
+      ctx.throw(401, 'Unauthorized')
+    }
+
+    const normalizedPermission = String(dbUser.permissions || 'USER').trim().toUpperCase()
+    ctx.request.profile = {
+      id: dbUser.id,
+      email: dbUser.email,
+      phone: dbUser.phone,
+      name: dbUser.name,
+      permissions: normalizedPermission === 'SUPER_ADMIN' ? 'ADMIN' : dbUser.permissions,
+      companyId: dbUser.companyId,
+      isAdmin: normalizedPermission === 'ADMIN' || normalizedPermission === 'SUPER_ADMIN'
+    }
     return next()
   } catch (err) {
     const requestPath = `${ctx.request.method} ${sanitizeUrlForLog(ctx.request.url)}`

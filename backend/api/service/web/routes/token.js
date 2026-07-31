@@ -6,6 +6,7 @@ import config from '../../../../config.js'
 import { sql } from '../../../../lib/index.js'
 import { logSuccess, logFailure } from '../../../../service/audit.js'
 import { consumeAuthCode } from '../../../../service/transition.js'
+import { timingSafeEqualString } from '../../../../util/cryptoEqual.js'
 import { renderErrorPage } from '../render.js'
 
 function resolveVerifiedUser(profile, user) {
@@ -82,7 +83,7 @@ export function register(route) {
       // 인증 우회 방지: PKCE(code_challenge)가 서버에 저장/검증되지 않으므로 code_verifier 제공만으로
       // client_secret 검증을 건너뛰면 안 된다(탈취된 authorization code만으로 토큰 발급 가능). 따라서
       // confidential client 교환은 항상 client_secret을 검증한다.
-      if (client_secret !== application.clientSecret) {
+      if (!timingSafeEqualString(client_secret, application.clientSecret)) {
         sendTokenError(401, 'invalid_client', '유효하지 않은 client_secret입니다.')
         return
       }
@@ -222,7 +223,7 @@ export function register(route) {
         sendError(401, 'invalid_client', '비활성화된 애플리케이션입니다.')
         return
       }
-      if (application.clientSecret !== client_secret) {
+      if (!timingSafeEqualString(client_secret, application.clientSecret)) {
         sendError(401, 'invalid_client', '유효하지 않은 client_secret입니다.')
         return
       }

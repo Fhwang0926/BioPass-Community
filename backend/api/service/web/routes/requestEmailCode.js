@@ -301,7 +301,7 @@ export function register(route) {
       await transitionAuthRequest({
         authRequestId: requestId,
         newStatus: AuthRequestStatus.PENDING,
-        metadata: { source: 'email_code_sent', email: normalizedEmail, code }
+        metadata: { source: 'email_code_sent', email: normalizedEmail }
       }).catch((err) => {
         console.warn('[web] CREATED→PENDING transition failed (non-fatal):', err?.message)
       })

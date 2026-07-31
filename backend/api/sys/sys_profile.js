@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken'
 import Router from 'koa-router'
 import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
-import { hasUserManagementPermission, createPermissionError } from '../../service/permission.js'
-import { hashPassword, verifyPassword, isClientPasswordHash } from '../../util/password.js'
+import { hasUserManagementPermission, createPermissionError, isAdmin } from '../../service/permission.js'
+import { hashPassword, verifyPassword, isClientPasswordHash, assertPasswordPolicy } from '../../util/password.js'
 import { hashPhoneSha512 } from '../../util/phone.js'
 
 const route = new Router()
@@ -137,11 +137,18 @@ route.post('/', async (ctx) => {
       if (!verifyPassword(user.email, current, user.password, currentHashed)) {
         return ctx.throw(400, 'Invalid current password')
       }
+      const policy = assertPasswordPolicy(next)
+      if (!policy.ok) {
+        return ctx.throw(400, policy.message)
+      }
       updateData.password = hashPassword(user.email, next, isClientPasswordHash(next))
     }
 
-    // Update Company if provided
+    // Company rename is admin-only (organization scope)
     if (ctx.request.body.company?.name) {
+      if (!isAdmin(profile)) {
+        return ctx.throw(403, 'Only organization admins can update the company name')
+      }
       await sql.db.update(sql.schema.sysCompany)
         .set({
           name: ctx.request.body.company.name,

@@ -53,16 +53,11 @@ export function register(route) {
       )
       const matched = matchedSys || matchedLegacy
 
-      if (!matched) {
-        ctx.body = await logSuccess(ctx, 'check_site', 'Site check completed', { result: true, supported: false, url: origin })
-        return
-      }
+      // Only return a boolean — do not leak app_name / client_id to unauthenticated callers.
       ctx.body = await logSuccess(ctx, 'check_site', 'Site check completed', {
         result: true,
-        supported: true,
-        url: origin,
-        app_name: matched.name,
-        client_id: matched.clientId
+        supported: Boolean(matched),
+        url: origin
       })
     } catch (e) {
       ctx.body = await logFailure(ctx, 'check_site', 'Check site failed', e)

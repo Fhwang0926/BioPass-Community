@@ -7,7 +7,7 @@ import moment from 'moment-timezone'
 import { sql, smtp } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
 import { hasUserManagementPermission, createPermissionError } from '../../service/permission.js'
-import { hashPassword, isClientPasswordHash } from '../../util/password.js'
+import { hashPassword, isClientPasswordHash, assertPasswordPolicy } from '../../util/password.js'
 import { hashPhoneSha512 } from '../../util/phone.js'
 
 const route = new Router()
@@ -355,6 +355,10 @@ route.post('/create', async (ctx) => {
     if (!body.password) {
       return ctx.throw(400, 'Password is required')
     }
+    const passwordPolicy = assertPasswordPolicy(body.password)
+    if (!passwordPolicy.ok) {
+      return ctx.throw(400, passwordPolicy.message)
+    }
 
     // 이메일 형식 검증
     if (!isValidEmail(body.email)) {
@@ -627,6 +631,10 @@ route.patch('/:id', async (ctx) => {
 
     // 비밀번호 변경 처리
     if (body.new_password) {
+      const passwordPolicy = assertPasswordPolicy(body.new_password)
+      if (!passwordPolicy.ok) {
+        return ctx.throw(400, passwordPolicy.message)
+      }
       const emailForHash = updateData.email || user.email
       updateData.password = hashPassword(emailForHash, body.new_password, isClientPasswordHash(body.new_password))
     }

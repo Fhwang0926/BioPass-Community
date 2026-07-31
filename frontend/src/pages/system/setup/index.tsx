@@ -154,7 +154,11 @@ export default function SetupPage() {
 							name="password"
 							rules={[
 								{ required: true, message: "비밀번호를 입력하세요" },
-								{ min: 8, message: "비밀번호는 8자 이상이어야 합니다" },
+								{ min: 12, message: "비밀번호는 12자 이상이어야 합니다" },
+								{
+									pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/,
+									message: "비밀번호는 영문과 숫자를 포함해야 합니다",
+								},
 							]}
 						>
 							<Input.Password placeholder="••••••••" autoComplete="new-password" />

@@ -1,6 +1,6 @@
 import Card from "@/components/card";
 import { Timeline, Typography, DatePicker, Row, Col, Space, Tag, Spin, Button, message } from "antd";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type ReactElement } from "react";
 import { themeVars } from "@/theme/theme.css";
 import dayjs, { Dayjs } from "dayjs";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ function renderContentWithLinks(content: string, t?: (key: string, options?: { d
 	}
 	
 	// 링크를 찾아서 교체
-	const parts: (string | JSX.Element)[] = [];
+	const parts: (string | ReactElement)[] = [];
 	let lastIndex = 0;
 	
 	matches.forEach((url, index) => {

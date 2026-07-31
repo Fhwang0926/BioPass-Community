@@ -1,5 +1,5 @@
 import { Badge, Button, Drawer, Tag, Spin, Empty } from "antd";
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, type ReactElement, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -225,7 +225,7 @@ function renderContentWithLinks(content: string, t?: (key: string, options?: { d
 	}
 	
 	// 링크를 찾아서 교체
-	const parts: (string | JSX.Element)[] = [];
+	const parts: (string | ReactElement)[] = [];
 	let lastIndex = 0;
 	
 	matches.forEach((url, index) => {

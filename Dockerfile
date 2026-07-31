@@ -49,11 +49,14 @@ COPY LICENSE NOTICE ./
 
 RUN chmod +x /app/docker-entrypoint.sh \
   && mkdir -p /app/upload /app/json \
+  && chown -R node:node /app \
   && test -f /app/index.js \
   && test -f /app/wwwroot/index.html \
   && test -f /app/LICENSE \
   && test -f /app/NOTICE \
   && test -x /app/docker-entrypoint.sh
+
+USER node
 
 EXPOSE 3030
 HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \

@@ -25,9 +25,9 @@
 This repo is the **server**. End users install **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** (App Store · iOS 15+) and approve login requests against your deployment. Google Play is not published yet.
 
 <p align="center">
-  <img src="docs/assets/flow-download.svg" width="180" alt="Install" />
-  <img src="docs/assets/flow-approve.svg" width="180" alt="Approve" />
-  <img src="docs/assets/flow-done.svg" width="180" alt="Done" />
+  <img src="docs/assets/flow-download.png" width="180" alt="1. Install Bio Pass" />
+  <img src="docs/assets/flow-approve.png" width="180" alt="2. Approve with biometrics" />
+  <img src="docs/assets/flow-done.png" width="180" alt="3. Sign-in completes" />
 </p>
 
 ## Install

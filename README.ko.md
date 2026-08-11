@@ -33,7 +33,7 @@ Google Play는 아직 출시되지 않았습니다.
 
 <p align="center">
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
-    <img src="docs/assets/bio-pass-app-icon.jpg" width="72" alt="Bio Pass 앱 아이콘" />
+    <img src="docs/assets/logo.png" width="72" alt="Bio Pass 로고" />
   </a>
 </p>
 

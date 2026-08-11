@@ -33,7 +33,7 @@ Google Play is not published yet.
 
 <p align="center">
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
-    <img src="docs/assets/bio-pass-app-icon.jpg" width="72" alt="Bio Pass app icon" />
+    <img src="docs/assets/logo.png" width="72" alt="Bio Pass logo" />
   </a>
 </p>
 

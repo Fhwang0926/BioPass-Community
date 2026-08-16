@@ -11,8 +11,12 @@
 #   IMAGE_TAG=dev docker compose -f docker-compose.ghcr.yml up -d
 #   docker pull ghcr.io/fhwang0926/biopass-community:latest
 # Forks: set BIOPASS_IMAGE=ghcr.io/<owner>/biopass-community
+#
+# Project name is `biopass-community` to avoid colliding with older
+# deployments that used Compose project name `biopass` (network biopass_default).
+# One-time cleanup if needed: docker network rm biopass_default
 
-name: biopass
+name: biopass-community
 
 x-api-environment: &api-environment
   NODE_ENV: production
@@ -51,6 +55,7 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    networks: [internal]
     environment:
       POSTGRES_USER: biopass
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
@@ -70,6 +75,7 @@ services:
     image: ${BIOPASS_IMAGE:-ghcr.io/fhwang0926/biopass-community}:${IMAGE_TAG:-latest}
     pull_policy: always
     restart: unless-stopped
+    networks: [internal]
     ports:
       - "${API_HOST_BIND:-127.0.0.1}:${API_PORT:-3030}:3030"
     environment:
@@ -93,6 +99,10 @@ services:
       timeout: 5s
       retries: 8
       start_period: 45s
+
+networks:
+  internal:
+    driver: bridge
 
 volumes:
   biopass_pg:

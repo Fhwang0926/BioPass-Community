@@ -11,13 +11,14 @@
 
 <p align="center">
   <strong>Self-hosted biometric MFA for your apps</strong><br/>
-  Run the OAuth API and admin console yourself.<br/>
-  Users approve logins on their phone with fingerprint or Face ID
-  via the <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">Bio Pass</a> app.
+  Run the OAuth API and admin console on your own infrastructure.<br/>
+  End users approve sign-ins with fingerprint or Face ID via
+  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">Bio Pass</a>.
 </p>
 
 <p align="center">
-  <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community" /></a>
+  <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community?label=release" /></a>
+  <a href="https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community"><img alt="GHCR" src="https://img.shields.io/badge/GHCR-biopass--community-2496ED?logo=docker&logoColor=white" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" /></a>
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
 </p>
@@ -27,13 +28,13 @@
 | Piece | Role |
 |-------|------|
 | **This repository** | Self-hosted **server** — OAuth authorize/token, email OTP, admin UI, multi-app management |
-| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** (App Store) | Companion **mobile app** — receive login requests and approve/deny with biometrics |
+| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** | Companion **mobile app** (App Store · iOS 15+) — approve/deny login requests with biometrics |
 
 Google Play is not published yet.
 
 <p align="center">
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
-    <img src="docs/assets/logo.png" width="72" alt="Bio Pass logo" />
+    <img src="docs/assets/logo.png" width="72" alt="BioPass logo" />
   </a>
 </p>
 
@@ -43,15 +44,15 @@ Google Play is not published yet.
   <img src="docs/assets/flow-done.png" width="170" alt="3. Login completes" />
 </p>
 
-1. User installs Bio Pass and registers against **your** server (`PUBLIC_BASE_URL`).
-2. Your site starts OAuth → user gets a push / deep link → approve with biometrics.
+1. Install Bio Pass and register against **your** server (`PUBLIC_BASE_URL`).
+2. Your app starts OAuth → push / deep link → approve with biometrics.
 3. Browser returns to your app with `redirect_uri?code=…`.
 
-Email OTP works without the app if SMTP is configured.
+Email OTP works without the mobile app if SMTP is configured.
 
 ## Install
 
-Requires [Docker Compose](https://docs.docker.com/compose/) v2.
+Needs [Docker Compose](https://docs.docker.com/compose/) v2.
 
 ```bash
 git clone https://github.com/Fhwang0926/BioPass-Community.git
@@ -59,58 +60,65 @@ cd BioPass-Community
 cp .env.example .env
 ```
 
-In `.env`, set:
+Set required values in `.env`:
 
-- `AUTH_SECRET` — e.g. `openssl rand -hex 32`
+- `AUTH_SECRET` — `openssl rand -hex 32`
 - `POSTGRES_PASSWORD` — strong database password
 
-**Option A — build from source**
+### A) Build from source
 
 ```bash
 docker compose up --build -d
 ```
 
-**Option B — pull a release image from GHCR**
+### B) Pull from GHCR
 
-Image: `ghcr.io/fhwang0926/biopass-community`  
-Latest version: [Releases](https://github.com/Fhwang0926/BioPass-Community/releases/latest)
+Image: [`ghcr.io/fhwang0926/biopass-community`](https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community)  
+Check the current version on [Releases](https://github.com/Fhwang0926/BioPass-Community/releases/latest) (badge above).
+
+| Tag | When it is published |
+|-----|----------------------|
+| `latest`, `X.Y.Z`, `X.Y` | Git tag `vX.Y.Z` only |
+| `dev`, `dev.YYYYMMDD` | Every push to the `dev` branch (UTC date) |
+
+`main` pushes do **not** publish images.
 
 ```bash
-# Latest stable (updated only when a v*.*.* tag is published)
+# Stable (pin a release — recommended)
 docker pull ghcr.io/fhwang0926/biopass-community:latest
-
-# Pin a release (recommended)
 docker pull ghcr.io/fhwang0926/biopass-community:0.1.0
 
 IMAGE_TAG=0.1.0 docker compose -f docker-compose.ghcr.yml up -d
-```
 
-**Dev preview images** (every push to `dev`):
-
-```bash
+# Dev preview
 docker pull ghcr.io/fhwang0926/biopass-community:dev
-docker pull ghcr.io/fhwang0926/biopass-community:dev.20260803   # UTC date snapshot
 IMAGE_TAG=dev docker compose -f docker-compose.ghcr.yml up -d
 ```
 
-Release images are published only from git tags (`vX.Y.Z`). `main` pushes do not publish images.
+Open http://localhost:3030 → **`/#/setup`** → **`/#/login`**.
 
-Open http://localhost:3030 → **`/#/setup`** (first admin) → **`/#/login`**.
+Optional env (`PUBLIC_BASE_URL`, SMTP, Firebase): [`.env.example`](.env.example).  
+Production hardening: [SECURITY.md](SECURITY.md).
 
-Optional: `PUBLIC_BASE_URL`, SMTP, Firebase — see [`.env.example`](.env.example).  
-Production checklist: [SECURITY.md](SECURITY.md).
+### Publish a release image
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+# → GHCR tags: 0.2.0, 0.2, latest
+```
 
 ## Use
 
 1. Create an **Application** in the admin console (client id / secret, callback URL).
-2. Set `PUBLIC_BASE_URL` to your public HTTPS origin (phones and OAuth clients use this).
-3. End users install Bio Pass, sign in with email, and approve MFA prompts.
+2. Set `PUBLIC_BASE_URL` to your public HTTPS origin.
+3. Users install Bio Pass, sign in with email, and approve MFA prompts.
 
 ```text
 Your app  →  /api/web/authorize  →  Bio Pass (approve)  →  redirect_uri?code=…
 ```
 
-Stack: Node.js 22, Koa, PostgreSQL, React (Vite) admin.  
+Stack: Node.js 22 · Koa · PostgreSQL · React (Vite) admin.  
 Roles: `ADMIN` / `USER` (console), `APP` (mobile). Single-organization self-host.
 
 ## Develop

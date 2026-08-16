@@ -10,14 +10,15 @@
 </p>
 
 <p align="center">
-  <strong>직접 운영하는 생체인증 MFA / OAuth</strong><br/>
+  <strong>직접 운영하는 생체인증 MFA</strong><br/>
   OAuth API와 관리자 콘솔을 직접 호스팅합니다.<br/>
   사용자는 <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">Bio Pass</a> 앱에서
   지문·Face ID로 로그인을 승인합니다.
 </p>
 
 <p align="center">
-  <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="최신 릴리즈" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community" /></a>
+  <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="최신 릴리즈" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community?label=release" /></a>
+  <a href="https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community"><img alt="GHCR" src="https://img.shields.io/badge/GHCR-biopass--community-2496ED?logo=docker&logoColor=white" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" /></a>
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
 </p>
@@ -27,13 +28,13 @@
 | 구성 | 역할 |
 |------|------|
 | **이 저장소** | 셀프호스팅 **서버** — OAuth 인가/토큰, 이메일 OTP, 관리자 UI, 다중 앱 관리 |
-| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** (App Store) | 연동 **모바일 앱** — 로그인 요청을 받아 생체인증으로 승인/거절 |
+| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** | 연동 **모바일 앱** (App Store · iOS 15+) — 생체인증으로 로그인 요청 승인/거절 |
 
 Google Play는 아직 출시되지 않았습니다.
 
 <p align="center">
   <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
-    <img src="docs/assets/logo.png" width="72" alt="Bio Pass 로고" />
+    <img src="docs/assets/logo.png" width="72" alt="BioPass 로고" />
   </a>
 </p>
 
@@ -43,7 +44,7 @@ Google Play는 아직 출시되지 않았습니다.
   <img src="docs/assets/flow-done.png" width="170" alt="3. 로그인 완료" />
 </p>
 
-1. 사용자가 Bio Pass를 설치하고 **여러분 서버**(`PUBLIC_BASE_URL`)에 등록합니다.
+1. Bio Pass를 설치하고 **여러분 서버**(`PUBLIC_BASE_URL`)에 등록합니다.
 2. 서비스가 OAuth를 시작하면 푸시/딥링크로 요청이 오고, 생체인증으로 승인합니다.
 3. 브라우저가 `redirect_uri?code=…` 로 돌아와 로그인이 완료됩니다.
 
@@ -59,58 +60,65 @@ cd BioPass-Community
 cp .env.example .env
 ```
 
-`.env`에 다음을 설정합니다.
+`.env`에 필수 값을 설정합니다.
 
-- `AUTH_SECRET` — 예: `openssl rand -hex 32`
+- `AUTH_SECRET` — `openssl rand -hex 32`
 - `POSTGRES_PASSWORD` — 강한 DB 비밀번호
 
-**A) 소스에서 빌드**
+### A) 소스에서 빌드
 
 ```bash
 docker compose up --build -d
 ```
 
-**B) GHCR에서 릴리즈 이미지 pull**
+### B) GHCR에서 pull
 
-이미지: `ghcr.io/fhwang0926/biopass-community`  
-최신 버전: [Releases](https://github.com/Fhwang0926/BioPass-Community/releases/latest)
+이미지: [`ghcr.io/fhwang0926/biopass-community`](https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community)  
+현재 버전은 [Releases](https://github.com/Fhwang0926/BioPass-Community/releases/latest)(상단 배지)에서 확인하세요.
+
+| 태그 | 배포 시점 |
+|------|-----------|
+| `latest`, `X.Y.Z`, `X.Y` | git 태그 `vX.Y.Z`일 때만 |
+| `dev`, `dev.YYYYMMDD` | `dev` 브랜치 푸시마다 (UTC 날짜) |
+
+`main` 푸시만으로는 이미지가 배포되지 **않습니다**.
 
 ```bash
-# 최신 안정 버전 (v*.*.* 태그가 올라올 때만 갱신)
+# 안정 버전 (버전 고정 권장)
 docker pull ghcr.io/fhwang0926/biopass-community:latest
-
-# 버전 고정 (권장)
 docker pull ghcr.io/fhwang0926/biopass-community:0.1.0
 
 IMAGE_TAG=0.1.0 docker compose -f docker-compose.ghcr.yml up -d
-```
 
-**개발용 이미지** (`dev` 브랜치 푸시마다 빌드):
-
-```bash
+# 개발용 미리보기
 docker pull ghcr.io/fhwang0926/biopass-community:dev
-docker pull ghcr.io/fhwang0926/biopass-community:dev.20260803   # UTC 날짜 스냅샷
 IMAGE_TAG=dev docker compose -f docker-compose.ghcr.yml up -d
 ```
 
-릴리즈 이미지는 git 태그(`vX.Y.Z`)일 때만 배포됩니다. `main` 푸시만으로는 이미지가 올라가지 않습니다.
+http://localhost:3030 → **`/#/setup`** → **`/#/login`**.
 
-http://localhost:3030 접속 → **`/#/setup`** (최초 관리자) → **`/#/login`**.
-
-선택: `PUBLIC_BASE_URL`, SMTP, Firebase — [`.env.example`](.env.example) 참고.  
+선택 env (`PUBLIC_BASE_URL`, SMTP, Firebase): [`.env.example`](.env.example).  
 운영 보안: [SECURITY.md](SECURITY.md).
+
+### 릴리즈 이미지 배포
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+# → GHCR 태그: 0.2.0, 0.2, latest
+```
 
 ## 사용
 
 1. 관리자 콘솔에서 **Application**을 만듭니다 (client id/secret, 콜백 URL).
-2. `PUBLIC_BASE_URL`을 공개 HTTPS 주소로 맞춥니다 (앱·OAuth 클라이언트가 사용).
+2. `PUBLIC_BASE_URL`을 공개 HTTPS 주소로 설정합니다.
 3. 사용자는 Bio Pass를 설치하고 이메일로 로그인한 뒤 MFA 요청을 승인합니다.
 
 ```text
 내 서비스  →  /api/web/authorize  →  Bio Pass (승인)  →  redirect_uri?code=…
 ```
 
-스택: Node.js 22, Koa, PostgreSQL, React(Vite) 관리 콘솔.  
+스택: Node.js 22 · Koa · PostgreSQL · React(Vite) 관리 콘솔.  
 역할: `ADMIN` / `USER` (콘솔), `APP` (모바일). 단일 조직 셀프호스트.
 
 ## 개발

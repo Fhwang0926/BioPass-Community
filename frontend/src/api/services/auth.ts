@@ -46,6 +46,18 @@ const refresh = (timestamp: number, refreshToken?: string) =>
 const getSetupStatus = () =>
 	apiClient.get<SetupStatus>({ url: UserApi.SetupStatus });
 
+/**
+ * `logSuccess` wraps the handler payload again, so the unwrapped response is
+ * either `{ needsSetup }` or `{ result, data: { needsSetup } }`.
+ */
+const getNeedsSetup = async (): Promise<boolean> => {
+	const status = (await getSetupStatus()) as
+		| { needsSetup?: boolean; data?: { needsSetup?: boolean } }
+		| null
+		| undefined;
+	return Boolean(status?.needsSetup ?? status?.data?.needsSetup);
+};
+
 const completeSetup = (data: SetupReq) =>
 	apiClient.post<SignInRes>({ url: UserApi.Setup, data });
 
@@ -96,5 +108,6 @@ export default {
 	refresh,
 	getDashboard,
 	getSetupStatus,
+	getNeedsSetup,
 	completeSetup,
 };

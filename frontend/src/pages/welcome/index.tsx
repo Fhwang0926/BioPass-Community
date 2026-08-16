@@ -21,10 +21,7 @@ export default function WelcomePage() {
 
 	const handleGetStarted = useCallback(async () => {
 		try {
-			const status = await authService.getSetupStatus();
-			const needs =
-				Boolean((status as { needsSetup?: boolean })?.needsSetup) ||
-				Boolean((status as { data?: { needsSetup?: boolean } })?.data?.needsSetup);
+			const needs = await authService.getNeedsSetup();
 			navigate(needs ? "/setup" : "/login");
 		} catch {
 			navigate("/login");

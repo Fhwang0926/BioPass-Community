@@ -31,9 +31,9 @@ export default function SetupPage() {
 		let cancelled = false;
 		(async () => {
 			try {
-				const status = await authService.getSetupStatus();
+				const needs = await authService.getNeedsSetup();
 				if (!cancelled) {
-					setNeedsSetup(Boolean(status?.needsSetup));
+					setNeedsSetup(needs);
 				}
 			} catch {
 				if (!cancelled) setNeedsSetup(false);

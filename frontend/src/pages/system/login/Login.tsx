@@ -24,10 +24,7 @@ function Login() {
 		let cancelled = false;
 		(async () => {
 			try {
-				const status = await authService.getSetupStatus();
-				const needs =
-					Boolean((status as { needsSetup?: boolean })?.needsSetup) ||
-					Boolean((status as { data?: { needsSetup?: boolean } })?.data?.needsSetup);
+				const needs = await authService.getNeedsSetup();
 				if (!cancelled) setNeedsSetup(needs);
 			} catch {
 				if (!cancelled) setNeedsSetup(false);

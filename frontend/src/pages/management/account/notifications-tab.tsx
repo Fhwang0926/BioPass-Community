@@ -16,10 +16,10 @@ const defaultStart = dayjs().subtract(7, 'day').startOf('day');
 const defaultEnd = dayjs().endOf('day');
 
 // 알림 내용에서 링크를 감지하고 클릭 가능하게 만드는 함수
-function renderContentWithLinks(content: string, t?: (key: string, options?: { defaultValue?: string }) => string) {
+function renderContentWithLinks(content: string, t: (key: string) => string) {
 	if (!content) return content;
 	
-	const linkHint = t?.("sys.menu.notice.link_click_to_open", { defaultValue: "클릭하여 새 창에서 열기" }) || "클릭하여 새 창에서 열기";
+	const linkHint = t("sys.menu.notice.link_click_to_open");
 	
 	// http:// 또는 https://로 시작하는 링크를 찾는 정규식 (http와 https 모두 매칭)
 	const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
@@ -154,10 +154,10 @@ export default function NotificationsTab() {
 	// 알림 우선순위별 태그 매핑
 	const getPriorityTag = (priority: LogAlarm['priority']) => {
 		const tags: Record<LogAlarm['priority'], { color: string; text: string }> = {
-			low: { color: "default", text: "낮음" },
-			medium: { color: "processing", text: "중간" },
-			high: { color: "warning", text: "높음" },
-			urgent: { color: "error", text: "긴급" },
+			low: { color: "default", text: t("sys.menu.account.notifications.priority_low") },
+			medium: { color: "processing", text: t("sys.menu.account.notifications.priority_medium") },
+			high: { color: "warning", text: t("sys.menu.account.notifications.priority_high") },
+			urgent: { color: "error", text: t("sys.menu.account.notifications.priority_urgent") },
 		};
 		const { color, text } = tags[priority];
 		return <Tag color={color}>{text}</Tag>;
@@ -188,10 +188,10 @@ export default function NotificationsTab() {
 				is_read: true,
 				read_at: dayjs().toISOString(),
 			});
-			message.success("읽음 처리했습니다.");
+			message.success(t("sys.menu.account.notifications.mark_read_success"));
 			queryClient.invalidateQueries({ queryKey: ["alarms"] });
 		} catch (error) {
-			message.error("읽음 처리에 실패했습니다.");
+			message.error(t("sys.menu.account.notifications.mark_read_error"));
 		} finally {
 			setMarkingId(null);
 		}
@@ -211,10 +211,10 @@ export default function NotificationsTab() {
 					}),
 				),
 			);
-			message.success("전체 읽음 처리했습니다.");
+			message.success(t("sys.menu.account.notifications.mark_all_success"));
 			queryClient.invalidateQueries({ queryKey: ["alarms"] });
 		} catch (error) {
-			message.error("전체 읽음 처리에 실패했습니다.");
+			message.error(t("sys.menu.account.notifications.mark_all_error"));
 		} finally {
 			setMarkAllLoading(false);
 		}
@@ -224,9 +224,9 @@ export default function NotificationsTab() {
 		<Card className="!h-auto flex-col w-full">
 			<Row gutter={[16, 16]} align="middle" className="mb-6 w-full">
 				<Col span={24} md={16} className="flex flex-wrap items-center gap-3">
-					<Typography.Title level={4} className="mb-0">알림 타임라인</Typography.Title>
+					<Typography.Title level={4} className="mb-0">{t("sys.menu.account.notifications.timeline_title")}</Typography.Title>
 					<Typography.Text type="secondary" className="ml-2">
-						총 <b>{total}</b>개 / 표시 <b>{allAlarms.length > total ? total : allAlarms.length}</b>개
+						{t("sys.menu.account.notifications.total")} <b>{total}</b>{t("sys.menu.account.notifications.items")} / {t("sys.menu.account.notifications.displayed")} <b>{allAlarms.length > total ? total : allAlarms.length}</b>{t("sys.menu.account.notifications.items")}
 					</Typography.Text>
 					<Button
 						type="default"
@@ -235,7 +235,7 @@ export default function NotificationsTab() {
 						disabled={!unreadCount}
 						loading={markAllLoading}
 					>
-						전체 읽음 처리
+						{t("sys.menu.account.notifications.mark_all_read")}
 					</Button>
 				</Col>
 				<Col span={24} md={8} className="flex justify-end gap-3 flex-wrap">
@@ -263,9 +263,9 @@ export default function NotificationsTab() {
 												<Typography.Text strong>{item.title}</Typography.Text>
 												{getPriorityTag(item.priority)}
 												{item.is_read ? (
-													<Tag color="success">읽음</Tag>
+													<Tag color="success">{t("sys.menu.account.notifications.read")}</Tag>
 												) : (
-													<Tag color="warning">안읽음</Tag>
+													<Tag color="warning">{t("sys.menu.account.notifications.unread")}</Tag>
 												)}
 											</Space>
 											<div className="flex items-center gap-2">
@@ -279,7 +279,7 @@ export default function NotificationsTab() {
 														onClick={() => handleMarkOne(item)}
 														loading={markingId === item.id}
 													>
-														읽음 처리
+														{t("sys.menu.account.notifications.mark_as_read")}
 													</Button>
 												)}
 											</div>
@@ -296,7 +296,7 @@ export default function NotificationsTab() {
 						{allAlarms.length === 0 && !isLoading && (
 							<div className="w-full flex flex-col items-center justify-center py-12">
 								<Typography.Text type="secondary">
-									데이터가 없습니다. 날짜를 바꿔서 조회해보세요.
+									{t("sys.menu.account.notifications.no_data")}
 								</Typography.Text>
 							</div>
 						)}
@@ -310,7 +310,7 @@ export default function NotificationsTab() {
 									<Spin size="small" />
 								) : (
 									<Typography.Text type="secondary">
-										더 보기
+										{t("sys.menu.account.notifications.load_more")}
 									</Typography.Text>
 								)}
 							</div>

@@ -2,11 +2,11 @@ import type { IntegrationVars } from "./IntegrationContext";
 
 export type SampleLocale = "ko" | "en";
 
-/** i18n locale → Bio-Pass auth lang (ko | en) */
+/** i18n locale → BioPass auth lang (ko | en) — default aligns with app fallback en_US */
 export function resolveSampleLocale(i18nLanguage?: string): SampleLocale {
-	const lang = String(i18nLanguage || "ko").toLowerCase();
-	if (lang.startsWith("en")) return "en";
-	return "ko";
+	const lang = String(i18nLanguage || "en").toLowerCase();
+	if (lang.startsWith("ko")) return "ko";
+	return "en";
 }
 
 export function frontendLoginSample(v: IntegrationVars, locale: SampleLocale = "ko"): string {
@@ -44,7 +44,7 @@ function loginWithBioPassEmail(email) {
 export function callbackPageSample(v: IntegrationVars, locale: SampleLocale = "ko"): string {
 	if (locale === "en") {
 		return `// Frontend home — after backend callback sets an httpOnly session cookie
-// Bio-Pass redirects to ${v.redirectUri} (your backend), not the browser directly.
+// BioPass redirects to ${v.redirectUri} (your backend), not the browser directly.
 
 async function loadSession() {
   const res = await fetch('/api/auth/me', { credentials: 'include' });
@@ -58,7 +58,7 @@ async function loadSession() {
 	}
 
 	return `// 프론트 홈 — 백엔드 콜백에서 httpOnly 세션 쿠키 설정 후
-// Bio-Pass는 ${v.redirectUri}(백엔드)로 리다이렉트하며, code는 브라우저에 노출되지 않습니다.
+// BioPass는 ${v.redirectUri}(백엔드)로 리다이렉트하며, code는 브라우저에 노출되지 않습니다.
 
 async function loadSession() {
   const res = await fetch('/api/auth/me', { credentials: 'include' });
@@ -75,7 +75,7 @@ export function backendCallbackSample(v: IntegrationVars, locale: SampleLocale =
 	const callbackPath = v.redirectUri.replace(/^https?:\/\/[^/]+/, "") || "/api/auth/callback";
 
 	if (locale === "en") {
-		return `// Node.js (Express) — login start + Bio-Pass callback + token exchange (server only)
+		return `// Node.js (Express) — login start + BioPass callback + token exchange (server only)
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
@@ -85,7 +85,7 @@ const app = express();
 const BIO_PASS_API = process.env.BIO_PASS_API || '${v.apiBase}';
 const CLIENT_ID = process.env.BIO_PASS_CLIENT_ID || '${v.clientId}';
 const CLIENT_SECRET = process.env.BIO_PASS_CLIENT_SECRET; // env only — never send to browser
-const REDIRECT_URI = process.env.BIO_PASS_REDIRECT_URI || '${v.redirectUri}'; // register in Bio-Pass app
+const REDIRECT_URI = process.env.BIO_PASS_REDIRECT_URI || '${v.redirectUri}'; // register in BioPass app
 const SCOPE = process.env.BIO_PASS_SCOPE || '${v.scope}';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://your-site.com';
 
@@ -107,7 +107,7 @@ app.get('/api/auth/login', (req, res) => {
   res.redirect(\`\${BIO_PASS_API}/web/authorize?\${params.toString()}\`);
 });
 
-// 2) Bio-Pass redirects here with ?code=...&state=...
+// 2) BioPass redirects here with ?code=...&state=...
 app.get('${callbackPath}', async (req, res) => {
   try {
     const { code, state } = req.query;
@@ -144,7 +144,7 @@ app.get('/api/auth/me', (req, res) => {
 });`;
 	}
 
-	return `// Node.js (Express) — 로그인 시작 + Bio-Pass 콜백 + 토큰 교환 (서버 전용)
+	return `// Node.js (Express) — 로그인 시작 + BioPass 콜백 + 토큰 교환 (서버 전용)
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
@@ -154,7 +154,7 @@ const app = express();
 const BIO_PASS_API = process.env.BIO_PASS_API || '${v.apiBase}';
 const CLIENT_ID = process.env.BIO_PASS_CLIENT_ID || '${v.clientId}';
 const CLIENT_SECRET = process.env.BIO_PASS_CLIENT_SECRET; // 환경변수 전용 — 브라우저 노출 금지
-const REDIRECT_URI = process.env.BIO_PASS_REDIRECT_URI || '${v.redirectUri}'; // Bio-Pass 앱 Callback URL
+const REDIRECT_URI = process.env.BIO_PASS_REDIRECT_URI || '${v.redirectUri}'; // BioPass 앱 Callback URL
 const SCOPE = process.env.BIO_PASS_SCOPE || '${v.scope}';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://your-site.com';
 
@@ -176,7 +176,7 @@ app.get('/api/auth/login', (req, res) => {
   res.redirect(\`\${BIO_PASS_API}/web/authorize?\${params.toString()}\`);
 });
 
-// 2) Bio-Pass → ?code=...&state=... 로 리다이렉트
+// 2) BioPass → ?code=...&state=... 로 리다이렉트
 app.get('${callbackPath}', async (req, res) => {
   try {
     const { code, state } = req.query;
@@ -215,10 +215,10 @@ app.get('/api/auth/me', (req, res) => {
 
 export function curlAuthorizeSample(v: IntegrationVars, locale: SampleLocale = "ko"): string {
 	if (locale === "en") {
-		return `# 1. Open YOUR backend login URL in browser (not Bio-Pass directly)
+		return `# 1. Open YOUR backend login URL in browser (not BioPass directly)
 open '${v.backendLoginUrl}?email=user@example.com&lang=en'
 
-# 2. After Bio-Pass redirects to ${v.redirectUri}, exchange code on server only
+# 2. After BioPass redirects to ${v.redirectUri}, exchange code on server only
 curl -X POST '${v.apiBase}/web/token' \\
   -H 'Content-Type: application/json' \\
   -d '{
@@ -230,10 +230,10 @@ curl -X POST '${v.apiBase}/web/token' \\
   }'`;
 	}
 
-	return `# 1. 브라우저에서 자체 백엔드 로그인 URL 열기 (Bio-Pass 직접 호출 X)
+	return `# 1. 브라우저에서 자체 백엔드 로그인 URL 열기 (BioPass 직접 호출 X)
 open '${v.backendLoginUrl}?email=user@example.com&lang=ko'
 
-# 2. Bio-Pass가 ${v.redirectUri} 로 리다이렉트한 뒤, 서버에서만 code 교환
+# 2. BioPass가 ${v.redirectUri} 로 리다이렉트한 뒤, 서버에서만 code 교환
 curl -X POST '${v.apiBase}/web/token' \\
   -H 'Content-Type: application/json' \\
   -d '{
@@ -300,7 +300,7 @@ export function apiReferenceSample(locale: SampleLocale = "ko"): string {
 		return `Recommended integration
   Browser → GET your-backend/api/auth/login
   Your backend → GET /api/web/authorize (client_id, redirect_uri=backend callback)
-  Bio-Pass → GET your-backend/api/auth/callback?code=...
+  BioPass → GET your-backend/api/auth/callback?code=...
   Your backend → POST /api/web/token (client_secret server-side only)
   Your backend → redirect to frontend with session cookie
 
@@ -331,7 +331,7 @@ POST /api/web/auth-request-status
 	return `권장 연동 구조
   브라우저 → GET 자체-백엔드/api/auth/login
   자체 백엔드 → GET /api/web/authorize (client_id, redirect_uri=백엔드 콜백)
-  Bio-Pass → GET 자체-백엔드/api/auth/callback?code=...
+  BioPass → GET 자체-백엔드/api/auth/callback?code=...
   자체 백엔드 → POST /api/web/token (client_secret은 서버에서만)
   자체 백엔드 → 프론트로 세션 쿠키와 함께 리다이렉트
 

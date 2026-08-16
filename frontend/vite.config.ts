@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
 		VITE_APP_TITLE: fileEnv.VITE_APP_TITLE || "BioPass",
 		VITE_APP_BASE_PATH: fileEnv.VITE_APP_BASE_PATH || "/",
 		VITE_APP_STORE_URL:
-			fileEnv.VITE_APP_STORE_URL || "https://apps.apple.com/kr/app/bio-pass/id6760216314",
+			fileEnv.VITE_APP_STORE_URL || "https://apps.apple.com/br/app/bio-pass/id6760216314",
 		VITE_PLAY_STORE_URL: fileEnv.VITE_PLAY_STORE_URL || "",
 	};
 	const base = env.VITE_APP_BASE_PATH;

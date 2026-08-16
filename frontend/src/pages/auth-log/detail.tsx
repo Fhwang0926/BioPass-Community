@@ -10,11 +10,13 @@ import {
 	Alert,
 } from "antd";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import { Iconify } from "@/components/icon";
 import authLogService from "@/api/services/auth-log";
 
 export default function AuthLogDetailPage() {
+	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 
@@ -25,21 +27,21 @@ export default function AuthLogDetailPage() {
 	});
 
 	if (isLoading) {
-		return <div>로딩 중...</div>;
+		return <div>{t("common.loadingText")}</div>;
 	}
 
 	if (!authLog) {
-		return <div>인증 로그를 찾을 수 없습니다.</div>;
+		return <div>{t("sys.page.authLog.notFound")}</div>;
 	}
 
 	const getStatusTag = (status: string) => {
 		const statusMap: Record<string, { color: string; text: string }> = {
-			APPROVED: { color: "success", text: "승인" },
-			DENIED: { color: "error", text: "거절" },
-			EXPIRED: { color: "warning", text: "만료" },
-			BLOCKED: { color: "error", text: "차단" },
-			PENDING: { color: "processing", text: "대기" },
-			CONSUMED: { color: "default", text: "사용됨" },
+			APPROVED: { color: "success", text: t("sys.page.authLog.status.approved") },
+			DENIED: { color: "error", text: t("sys.page.authLog.status.denied") },
+			EXPIRED: { color: "warning", text: t("sys.page.authLog.status.expired") },
+			BLOCKED: { color: "error", text: t("sys.page.authLog.status.blocked") },
+			PENDING: { color: "processing", text: t("sys.page.authLog.status.pending") },
+			CONSUMED: { color: "default", text: t("sys.page.authLog.status.consumed") },
 		};
 		const statusInfo = statusMap[status] || { color: "default", text: status };
 		return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
@@ -47,17 +49,17 @@ export default function AuthLogDetailPage() {
 
 	const getEventLabel = (eventType: string) => {
 		const labelMap: Record<string, string> = {
-			CREATED: "인증 요청 생성",
-			PENDING: "대기 중",
-			EMAIL_CODE_SENT: "이메일 인증 코드 발송",
-			APPROVED_BY_DEVICE: "디바이스(바이오) 승인",
-			APPROVED_BY_EMAIL: "이메일 인증 완료",
-			APPROVED: "승인",
-			DENIED: "거절",
-			EXPIRED_BY_SYSTEM: "시간 만료",
-			EXPIRED_BY_RESEND: "재전송으로 만료",
-			BLOCKED: "차단",
-			CONSUMED: "코드 사용됨",
+			CREATED: t("sys.page.authLog.events.created"),
+			PENDING: t("sys.page.authLog.events.pending"),
+			EMAIL_CODE_SENT: t("sys.page.authLog.events.emailCodeSent"),
+			APPROVED_BY_DEVICE: t("sys.page.authLog.events.approvedByDevice"),
+			APPROVED_BY_EMAIL: t("sys.page.authLog.events.approvedByEmail"),
+			APPROVED: t("sys.page.authLog.status.approved"),
+			DENIED: t("sys.page.authLog.status.denied"),
+			EXPIRED_BY_SYSTEM: t("sys.page.authLog.events.expiredBySystem"),
+			EXPIRED_BY_RESEND: t("sys.page.authLog.events.expiredByResend"),
+			BLOCKED: t("sys.page.authLog.status.blocked"),
+			CONSUMED: t("sys.page.authLog.events.codeConsumed"),
 		};
 		return labelMap[eventType] || eventType;
 	};
@@ -116,7 +118,7 @@ export default function AuthLogDetailPage() {
 
 	/** 디바이스 유형 한글 라벨 (이메일 인증 완료 시) */
 	const getDeviceTypeLabel = (deviceType: string) => {
-		const map: Record<string, string> = { PC: "PC", Mobile: "모바일", App: "앱" };
+		const map: Record<string, string> = { PC: "PC", Mobile: t("sys.page.authLog.mobile"), App: t("sys.page.authLog.app") };
 		return map[deviceType] ?? deviceType;
 	};
 
@@ -172,7 +174,7 @@ export default function AuthLogDetailPage() {
 			<div className="mt-2 space-y-2 rounded-lg border border-gray-200/60 bg-gray-50 px-3 py-2 dark:border-gray-700/50 dark:bg-gray-800/50">
 				<div className="flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-gray-400">
 					<Iconify icon="solar:devices-bold-duotone" size={16} />
-					인증 환경
+					{t("sys.page.authLog.authEnvironment")}
 				</div>
 				<div className="flex flex-wrap items-center gap-3">
 					{deviceType && (
@@ -200,33 +202,33 @@ export default function AuthLogDetailPage() {
 				<Space>
 					<Button onClick={() => navigate("/auth-log")}>
 						<Iconify icon="solar:arrow-left-bold" size={18} className="mr-2" />
-						목록으로
+						{t("sys.menu.application.detailPage.back_to_list")}
 					</Button>
 				</Space>
 			</Card>
 
 			{/* 기본 정보 */}
-			<Card title="기본 정보">
+			<Card title={t("sys.page.authLog.basicInfo")}>
 				<Descriptions column={2} bordered>
-					<Descriptions.Item label="요청 ID">
+					<Descriptions.Item label={t("sys.page.authLog.requestId")}>
 						<code>{authLog.id}</code>
 					</Descriptions.Item>
-					<Descriptions.Item label="상태">
+					<Descriptions.Item label={t("common.statusText")}>
 						{getStatusTag(authLog.status)}
 					</Descriptions.Item>
-					<Descriptions.Item label="App">
+					<Descriptions.Item label={t("sys.page.authLog.app")}>
 						{authLog.app?.name || "-"}
 					</Descriptions.Item>
-					<Descriptions.Item label="사용자">
+					<Descriptions.Item label={t("sys.page.authLog.user")}>
 						<code>{authLog.user?.email ?? authLog.user?.name ?? "-"}</code>
 					</Descriptions.Item>
-					<Descriptions.Item label="국가">
+					<Descriptions.Item label={t("sys.page.authLog.country")}>
 						{authLog.country ? <Tag>{authLog.country}</Tag> : "-"}
 					</Descriptions.Item>
-					<Descriptions.Item label="IP 주소">
+					<Descriptions.Item label={t("sys.page.authLog.ipAddress")}>
 						<code>{authLog.requestIp || "-"}</code>
 					</Descriptions.Item>
-					<Descriptions.Item label="디바이스 / 인증 수단">
+					<Descriptions.Item label={t("sys.page.authLog.deviceAuthMethod")}>
 						{authLog.approvedDevice ? (
 							<Space size="small">
 								<Tag color={authLog.approvedDevice.platform === "ios" ? "blue" : "green"}>
@@ -252,7 +254,7 @@ export default function AuthLogDetailPage() {
 										</Space>
 									)}
 									{/* 인증 수단 */}
-									<Tag color="cyan">이메일 인증</Tag>
+									<Tag color="cyan">{t("sys.page.authLog.emailAuth")}</Tag>
 									{/* 브라우저 정보 */}
 									{browserLabel && (
 										<Space size={4}>
@@ -268,11 +270,11 @@ export default function AuthLogDetailPage() {
 							"-"
 						)}
 					</Descriptions.Item>
-					<Descriptions.Item label="요청 시간">
+					<Descriptions.Item label={t("sys.page.authLog.requestTime")}>
 						{dayjs(authLog.createdAt).format("YYYY-MM-DD HH:mm:ss")}
 					</Descriptions.Item>
 					{authLog.expiresAt && (
-						<Descriptions.Item label="만료 시간">
+						<Descriptions.Item label={t("sys.page.authLog.expiryTime")}>
 							{dayjs(authLog.expiresAt).format("YYYY-MM-DD HH:mm:ss")}
 						</Descriptions.Item>
 					)}
@@ -282,8 +284,8 @@ export default function AuthLogDetailPage() {
 			{/* 정책 차단 여부 */}
 			{authLog.blockedByPolicy && (
 				<Alert
-					message="정책에 의해 차단됨"
-					description="이 인증 요청은 보안 정책에 의해 자동으로 차단되었습니다."
+					message={t("sys.page.authLog.policyBlocked")}
+					description={t("sys.page.authLog.policyBlockedDesc")}
 					type="warning"
 					showIcon
 				/>
@@ -291,7 +293,7 @@ export default function AuthLogDetailPage() {
 
 			{/* 위험 이벤트 */}
 			{authLog.riskEvents && authLog.riskEvents.length > 0 && (
-				<Card title="위험 감지">
+				<Card title={t("sys.page.authLog.riskDetection")}>
 					<Space direction="vertical" className="w-full">
 						{authLog.riskEvents.map((risk) => (
 							<Alert
@@ -299,7 +301,7 @@ export default function AuthLogDetailPage() {
 								message={risk.riskType}
 								description={
 									<Space>
-										{risk.score && <span>점수: {risk.score}</span>}
+										{risk.score && <span>{t("sys.page.authLog.score", { score: risk.score })}</span>}
 										{risk.action && <Tag>{risk.action}</Tag>}
 										<span className="text-gray-500">
 											{dayjs(risk.createdAt).format("YYYY-MM-DD HH:mm:ss")}
@@ -316,18 +318,18 @@ export default function AuthLogDetailPage() {
 
 			{/* 승인 디바이스 */}
 			{authLog.approvedDevice && (
-				<Card title="승인 디바이스">
+				<Card title={t("sys.page.authLog.approvedDevice")}>
 					<Descriptions column={2} bordered>
-						<Descriptions.Item label="플랫폼">
+						<Descriptions.Item label={t("sys.page.userDevice.platform")}>
 							<Tag color={authLog.approvedDevice.platform === 'ios' ? 'blue' : 'green'}>
 								{authLog.approvedDevice.platform.toUpperCase()}
 							</Tag>
 						</Descriptions.Item>
-						<Descriptions.Item label="디바이스 이름">
+						<Descriptions.Item label={t("sys.page.userDevice.deviceName")}>
 							{authLog.approvedDevice.deviceName || "-"}
 						</Descriptions.Item>
-						<Descriptions.Item label="생체 인증 지원">
-							{authLog.approvedDevice.biometricCapable ? "예" : "아니오"}
+						<Descriptions.Item label={t("sys.page.authLog.biometricCapable")}>
+							{authLog.approvedDevice.biometricCapable ? t("common.yes") : t("common.no")}
 						</Descriptions.Item>
 					</Descriptions>
 				</Card>
@@ -338,7 +340,7 @@ export default function AuthLogDetailPage() {
 				title={
 					<span className="flex items-center gap-2">
 						<Iconify icon="solar:history-bold-duotone" className="text-primary" />
-						요청 → 승인까지 타임라인
+						{t("sys.page.authLog.timeline")}
 					</span>
 				}
 				className="overflow-hidden"
@@ -352,8 +354,8 @@ export default function AuthLogDetailPage() {
 						if (ms < 1000) return `${ms}ms`;
 						const s = Math.floor(ms / 1000);
 						const m = Math.floor(s / 60);
-						if (m > 0) return `${m}분 ${s % 60}초`;
-						return `${s}초`;
+						if (m > 0) return `${m}${t("common.minutesUnit")} ${s % 60}${t("common.secondsUnit")}`;
+						return `${s}${t("common.secondsUnit")}`;
 					};
 					type EventWithMeta = { id: string; eventType: string; detail: unknown; createdAt: number; ts: number; durationFromPrev: number };
 					const eventsWithMeta: EventWithMeta[] = events.map((ev, i) => {
@@ -370,7 +372,7 @@ export default function AuthLogDetailPage() {
 								<div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
 									<Iconify icon="solar:clock-circle-bold-duotone" className="text-primary" size={28} />
 								</div>
-								<span className="text-base font-semibold text-gray-700 dark:text-gray-300">총 소요 시간</span>
+								<span className="text-base font-semibold text-gray-700 dark:text-gray-300">{t("sys.page.authLog.totalDuration")}</span>
 							</div>
 							<span className="text-3xl font-bold text-primary">{formatDuration(totalMs > 1 ? totalMs : 0)}</span>
 						</div>
@@ -417,7 +419,7 @@ export default function AuthLogDetailPage() {
 												<div className={`mb-2 ${isLeft ? "text-right" : "text-left"}`}>
 													<span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
 														<span className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
-														현재 단계
+														{t("sys.page.authLog.currentStep")}
 													</span>
 												</div>
 											)}
@@ -436,7 +438,7 @@ export default function AuthLogDetailPage() {
 											{/* 구간 소요 시간 */}
 											{(index > 0 ? (
 												<div className={`mb-2 text-sm font-medium text-primary ${isLeft ? "text-right" : "text-left"}`}>
-													+{formatDuration(Number(event.durationFromPrev))} 경과
+													{t("sys.page.authLog.elapsed", { duration: formatDuration(Number(event.durationFromPrev)) })}
 												</div>
 											) : null) as React.ReactNode}
 											{/* 이메일 코드 전송 정보 */}
@@ -444,12 +446,12 @@ export default function AuthLogDetailPage() {
 												<div className="mt-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left dark:border-cyan-800 dark:bg-cyan-900/30">
 													<div className="mb-2 flex items-center gap-2 text-sm font-medium text-cyan-700 dark:text-cyan-400">
 														<Iconify icon="solar:letter-bold-duotone" size={16} />
-														<span>발송 정보</span>
+														<span>{t("sys.page.authLog.deliveryInfo")}</span>
 													</div>
 													<div className="space-y-1.5">
 														<div className="flex items-center gap-2">
 															<Iconify icon="solar:mailbox-bold-duotone" size={14} className="shrink-0 text-cyan-600" />
-															<span className="shrink-0 text-xs text-gray-500">이메일</span>
+															<span className="shrink-0 text-xs text-gray-500">{t("sys.page.authLog.email")}</span>
 														</div>
 														<code className="block truncate text-sm font-semibold text-gray-700 dark:text-gray-300" title={String(detail.email)}>
 															{String(detail.email)}
@@ -458,7 +460,7 @@ export default function AuthLogDetailPage() {
 															<>
 																<div className="mt-2 flex items-center gap-2">
 																	<Iconify icon="solar:lock-password-bold-duotone" size={14} className="shrink-0 text-cyan-600" />
-																	<span className="shrink-0 text-xs text-gray-500">인증코드</span>
+																	<span className="shrink-0 text-xs text-gray-500">{t("sys.page.authLog.verificationCode")}</span>
 																</div>
 																<code className="inline-block rounded bg-cyan-100 px-2 py-0.5 text-sm font-bold tracking-widest text-cyan-800 dark:bg-cyan-800 dark:text-cyan-200">
 																	{String(detail.code)}
@@ -541,22 +543,22 @@ export default function AuthLogDetailPage() {
 								{authLog.status === "APPROVED" ? (
 									<div className="flex items-center gap-2 rounded-full border-2 border-green-500 bg-green-50 px-6 py-2.5 shadow-md dark:bg-green-900/30">
 										<Iconify icon="solar:check-circle-bold" className="text-green-600" size={22} />
-										<span className="text-base font-bold text-green-700 dark:text-green-400">인증 완료</span>
+										<span className="text-base font-bold text-green-700 dark:text-green-400">{t("sys.page.authLog.authCompleted")}</span>
 									</div>
 								) : authLog.status === "PENDING" ? (
 									<div className="flex items-center gap-2 rounded-full border-2 border-blue-500 bg-blue-50 px-6 py-2.5 shadow-md dark:bg-blue-900/30">
 										<Iconify icon="solar:clock-circle-bold-duotone" className="text-blue-600" size={22} />
-										<span className="text-base font-bold text-blue-700 dark:text-blue-400">인증 진행중</span>
+										<span className="text-base font-bold text-blue-700 dark:text-blue-400">{t("sys.page.authLog.authInProgress")}</span>
 									</div>
 								) : authLog.status === "EXPIRED" ? (
 									<div className="flex items-center gap-2 rounded-full border-2 border-gray-400 bg-gray-100 px-6 py-2.5 shadow-md dark:border-gray-500 dark:bg-gray-800/50">
 										<Iconify icon="solar:clock-circle-bold" className="text-gray-500" size={22} />
-										<span className="text-base font-bold text-gray-600 dark:text-gray-400">시간 만료</span>
+										<span className="text-base font-bold text-gray-600 dark:text-gray-400">{t("sys.page.authLog.events.expiredBySystem")}</span>
 									</div>
 								) : authLog.status === "DENIED" ? (
 									<div className="flex items-center gap-2 rounded-full border-2 border-red-500 bg-red-50 px-6 py-2.5 shadow-md dark:bg-red-900/30">
 										<Iconify icon="solar:close-circle-bold" className="text-red-600" size={22} />
-										<span className="text-base font-bold text-red-700 dark:text-red-400">인증 거부</span>
+										<span className="text-base font-bold text-red-700 dark:text-red-400">{t("sys.page.authLog.authDenied")}</span>
 									</div>
 								) : (
 									<div className="flex items-center gap-2 rounded-full border-2 border-gray-400 bg-gray-100 px-6 py-2.5 shadow-md dark:border-gray-500 dark:bg-gray-800/50">
@@ -570,7 +572,7 @@ export default function AuthLogDetailPage() {
 					);
 				})() : (
 					<div className="rounded-xl border border-dashed border-gray-300 bg-gray-50/50 py-12 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-800/30 dark:text-gray-400">
-						이벤트가 없습니다.
+						{t("sys.page.authLog.noEvents")}
 					</div>
 				)}
 			</Card>

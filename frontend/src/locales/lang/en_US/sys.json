@@ -24,7 +24,25 @@
 			"errMsg504": "Network timeout.",
 			"errMsg505": "This HTTP version does not support the request.",
 			"sessionExpiring": "Your session is about to expire. Stay signed in?",
-			"stayLoggedIn": "Stay signed in"
+			"stayLoggedIn": "Stay signed in",
+			"sessionExtended": "Session extended",
+			"errors": {
+				"AUTH_INVALID_CREDENTIALS": "Invalid email or password.",
+				"AUTH_ACCOUNT_INACTIVE": "This account is inactive.",
+				"AUTH_UNAUTHORIZED": "You are not authorized. Please sign in again.",
+				"SETUP_REQUIRED_FIELDS": "Name, email, and password are required.",
+				"SETUP_ALREADY_COMPLETED": "Initial setup is already complete. Please sign in.",
+				"PASSWORD_TOO_SHORT": "Password must be at least 12 characters.",
+				"PASSWORD_COMPLEXITY": "Password must include letters and numbers.",
+				"PASSWORD_POLICY": "Password does not meet the security policy.",
+				"RATE_LIMITED": "Too many requests. Please try again later.",
+				"RATE_LIMIT_LOGIN": "Too many login attempts. Try again later.",
+				"RATE_LIMIT_SETUP": "Too many setup attempts. Try again later.",
+				"EMAIL_ALREADY_EXISTS": "This email is already registered.",
+				"USER_NOT_FOUND": "User not found.",
+				"COMPANY_NOT_FOUND": "Company not found.",
+				"APPLICATION_NOT_FOUND": "Application not found."
+			}
 		},
 		"login": {
 			"backSignIn": "Back to sign in",
@@ -39,6 +57,7 @@
 			"rememberMe": "Keep me signed in",
 			"sendSmsText": "Resend in {{second}}s",
 			"accountPlaceholder": "Enter your username",
+			"emailPlaceholder": "Enter your email",
 			"passwordPlaceholder": "Enter your password",
 			"confirmPasswordPlaceholder": "Confirm your password",
 			"policyPlaceholder": "Agree to continue",
@@ -48,7 +67,80 @@
 			"mobile": "Mobile",
 			"termsOfService": " Terms of Service ",
 			"privacyPolicy": " Privacy Policy ",
-			"logout": "Sign out"
+			"logout": "Sign out",
+			"signInSuccess": "Signed in successfully"
+		},
+		"setup": {
+			"title": "Set up BioPass",
+			"checking": "Checking installation status…",
+			"subtitle": "This is the first installation. Create the primary organization administrator account to start using the console.",
+			"onceAlert": "This step runs only once, when no user accounts exist.",
+			"name": "Name",
+			"namePlaceholder": "Admin",
+			"email": "Email",
+			"emailPlaceholder": "admin@example.com",
+			"companyOptional": "Organization name (optional)",
+			"companyPlaceholder": "My Organization",
+			"password": "Password",
+			"confirmPassword": "Confirm password",
+			"passwordPlaceholder": "••••••••",
+			"submit": "Create administrator and start",
+			"success": "Administrator created. Welcome!",
+			"failed": "Setup failed",
+			"responseInvalid": "The setup response did not include an access token",
+			"validation": {
+				"nameRequired": "Please enter a name",
+				"emailRequired": "Please enter an email address",
+				"emailInvalid": "Please enter a valid email address",
+				"passwordRequired": "Please enter a password",
+				"passwordMin": "Password must be at least 12 characters",
+				"passwordPattern": "Password must include letters and numbers",
+				"confirmRequired": "Please enter the password again",
+				"passwordMismatch": "Passwords do not match"
+			}
+		},
+		"welcome": {
+			"description": "Self-hosted biometric MFA and OAuth for your apps. Run the API and admin console on your own infrastructure, then approve sign-ins from the BioPass mobile app with fingerprint or Face ID.",
+			"audience": "Operators: complete first-run setup, register an OAuth application, and point clients at this server. End users: install BioPass, sign in with email, and approve login requests when prompted.",
+			"getStarted": "Get started",
+			"signIn": "Sign in",
+			"getApp": "Get the BioPass app",
+			"appDescription": "Receive push login requests and approve or deny them with biometrics. Available on the App Store today.",
+			"appStore": "Download on the App Store",
+			"googlePlay": "Get it on Google Play",
+			"googlePlaySoon": "Google Play (coming soon)",
+			"privacy": "Privacy",
+			"terms": "Terms",
+			"appStoreLink": "App Store"
+		},
+		"legal": {
+			"lastUpdated": "Last updated",
+			"privacy": {
+				"title": "Privacy Policy",
+				"description": "How personal information is processed and protected in self-hosted BioPass Community."
+			},
+			"terms": {
+				"title": "Terms of Service",
+				"description": "Terms, account responsibilities, and acceptable use for self-hosted BioPass Community deployments."
+			}
+		},
+		"error": {
+			"403": {
+				"title": "No permission",
+				"description": "Access to this page is restricted. Please contact your system administrator."
+			},
+			"404": {
+				"title": "Page not found",
+				"description": "We couldn't find the page you're looking for. Check the URL and try again."
+			},
+			"500": {
+				"title": "Internal server error",
+				"description": "Something went wrong. Please try again later."
+			},
+			"generic": {
+				"title": "A page error occurred",
+				"description": "Something went wrong while displaying this page. Please return home and try again."
+			}
 		},
 		"tab": {
 			"fullscreen": "Fullscreen",
@@ -60,6 +152,12 @@
 			"closeRight": "Close tabs to the right"
 		},
 		"menu": {
+			"search": {
+				"placeholder": "Search...",
+				"navigateHint": "to navigate",
+				"selectHint": "to select",
+				"closeHint": "to close"
+			},
 			"dashboard": "Dashboard",
 			"management": "Management",
 			"company": "Company",
@@ -112,6 +210,7 @@
 					"change_error": "Failed to change password. Please check your current password."
 				},
 				"notifications": {
+					"title": "Notifications",
 					"timeline_title": "Notification timeline",
 					"total": "Total",
 					"displayed": "Shown",
@@ -123,7 +222,13 @@
 					"read": "Read",
 					"unread": "Unread",
 					"load_more": "Load more",
-					"no_data": "No data. Try a different date range."
+					"no_data": "No data. Try a different date range.",
+					"mark_as_read": "Mark as read",
+					"mark_all_read": "Mark all as read",
+					"mark_read_success": "Marked as read.",
+					"mark_read_error": "Failed to mark as read.",
+					"mark_all_success": "All notifications marked as read.",
+					"mark_all_error": "Failed to mark all notifications as read."
 				},
 				"company": {
 					"title": "Company information",
@@ -136,7 +241,13 @@
 					"created_at": "Created",
 					"last_updated": "Last updated",
 					"company_name_required": "Please enter a company name",
-					"loading": "Loading..."
+					"loading": "Loading...",
+					"not_found": "Company information was not found.",
+					"company_name": "Company name",
+					"company_code": "Company code",
+					"business_number": "Business registration number",
+					"business_number_max": "Business registration number cannot exceed 30 characters",
+					"email": "Email"
 				}
 			},
 			"user": {
@@ -322,6 +433,17 @@
 			"application": {
 				"title": "Applications",
 				"create": "Create application",
+				"list": "Application list",
+				"new": "New application",
+				"app_name": "App name",
+				"app_name_placeholder": "Search app names",
+				"client_id_placeholder": "Search Client ID",
+				"last_auth_request": "Last auth request",
+				"create_success": "Application created successfully.",
+				"create_error": "Failed to create application.",
+				"validation_error": "Please check your entries.",
+				"secret_once": "Important: This Secret is shown only once.",
+				"go_detail": "Go to details",
 				"detail": "Application details",
 				"delete_confirm_title": "Delete application",
 				"delete_confirm_desc": "Are you sure you want to delete this?",
@@ -346,6 +468,8 @@
 					"test_url_authorize_tooltip": "Opens the authorize page in a new tab using the current Callback URL.",
 					"test_url_callback_tooltip": "Opens the registered Callback URL in a new tab.",
 					"test_url_fill_callback": "Please enter a Callback URL first.",
+					"test_email_prompt": "Enter the email address to sign in with",
+					"test_email_required": "Please enter an email address.",
 					"callback_url_required": "Please enter a Callback URL.",
 					"callback_url_invalid": "Please enter a valid URL (e.g. https://example.com/callback).",
 					"callback_url_guide": "Callback URL guide",
@@ -535,6 +659,42 @@
 				"mark_as_read": "Mark as read",
 				"last_refresh": "Last refreshed",
 				"link_click_to_open": "Click to open in a new window"
+			}
+		},
+		"page": {
+			"authFlow": {
+				"pathType": {
+					"mobile": "Mobile integration",
+					"email": "Email integration",
+					"common": "Common"
+				},
+				"edges": {
+					"pushDeviceAvailable": "email + push device available",
+					"approved": "Approval complete",
+					"resendNotification": "Resend notification",
+					"pushDeviceUnavailable": "email + no push device",
+					"enterEmailForm": "Enter email form",
+					"resendCode": "Resend code"
+				},
+				"selectStepTip": "Click a step to display its parameters."
+			},
+			"dashboard": {
+				"title": "Admin dashboard", "lastUpdated": "Last updated: {{time}}", "loadError": "Could not load authentication metrics.", "loadErrorDesc": "Refresh again later or check details in Auth logs.", "connectFirstApp": "Connect your first application", "connectFirstAppDesc": "Create an app to automatically collect auth trends, success rates, and risk events.", "createFirstApp": "Create first application", "weekRequests": "Auth requests in the last 7 days", "weekRequestsDesc": "All authentication requests created in the last 7 days", "successRate": "Authentication success rate", "successRateDesc": "Approved and completed / approved, completed, denied, and expired", "avgAuthTime": "Average authentication time", "avgAuthTimeDesc": "Average time until approval", "pendingAndRisk": "Pending requests / Risk events", "pendingAndRiskDesc": "Current pending requests and risk events from the last 7 days", "authRequests": "Authentication requests", "weekStatus": "Authentication status in the last 7 days", "noWeekData": "No authentication data for the last 7 days", "riskEvents": "Risk events", "noRiskEvents": "No risk events in the last 7 days", "applicationStatus": "Application status", "recentApps": "Recent apps", "recentCount": "Latest {{count}}", "noApps": "No registered apps", "unnamed": "Unnamed", "lastAuth": "Last auth: {{time}}", "appStatusHint": "Create an app to see its recent status.", "recentRequests": "Recent authentication requests", "noRecentRequests": "No recent authentication requests", "total": "Total",
+				"status": { "created": "Created", "pending": "Pending", "approved": "Approved", "consumed": "Completed", "denied": "Denied", "expired": "Expired", "blocked": "Blocked" },
+				"risk": { "newDevice": "New device", "countryChange": "Country change", "abuse": "Suspected abuse" }
+			},
+			"authLog": {
+				"time": "Time", "user": "User", "countryIp": "Country / IP", "device": "Device", "mobile": "Mobile", "app": "App", "email": "Email", "all": "All", "country": "Country", "countryPlaceholder": "Country code (e.g. KR)", "ipAddress": "IP address", "ipPlaceholder": "Search IP addresses", "period": "Period", "loadError": "An error occurred while loading the list.", "notFound": "Authentication log not found.", "authEnvironment": "Authentication environment", "basicInfo": "Basic information", "requestId": "Request ID", "deviceAuthMethod": "Device / Authentication method", "emailAuth": "Email authentication", "requestTime": "Request time", "expiryTime": "Expiry time", "policyBlocked": "Blocked by policy", "policyBlockedDesc": "This authentication request was automatically blocked by a security policy.", "riskDetection": "Risk detection", "score": "Score: {{score}}", "approvedDevice": "Approved device", "biometricCapable": "Biometric capable", "timeline": "Request-to-approval timeline", "totalDuration": "Total duration", "currentStep": "Current step", "elapsed": "+{{duration}} elapsed", "deliveryInfo": "Delivery information", "verificationCode": "Verification code", "authCompleted": "Authentication completed", "authInProgress": "Authentication in progress", "authDenied": "Authentication denied", "noEvents": "No events.",
+				"status": { "created": "Created", "approved": "Approved", "denied": "Denied", "expired": "Expired", "blocked": "Blocked", "pending": "Pending", "consumed": "Consumed" },
+				"events": { "created": "Authentication request created", "pending": "Pending", "emailCodeSent": "Email verification code sent", "approvedByDevice": "Approved by device (biometric)", "approvedByEmail": "Email authentication completed", "expiredBySystem": "Timed out", "expiredByResend": "Expired by resend", "codeConsumed": "Code consumed" }
+			},
+			"userDevice": {
+				"trusted": "Trusted",
+				"identifier": "Identifier", "email": "Email", "phone": "Phone", "registeredDeviceCount": "Registered devices", "lastLogin": "Last login", "normal": "Normal", "blocked": "Restricted", "suspended": "Suspended", "all": "All", "identifierType": "Identifier type", "userList": "User list", "deviceManagement": "Device management", "platform": "Platform", "deviceName": "Device name", "user": "User", "lastActivity": "Last activity", "revoked": "Revoked", "revokeSuccess": "Device revoked.", "revokeError": "Failed to revoke device.", "forceRevoke": "Force revoke", "forceRevokeDesc": "Are you sure you want to revoke this device? (Lost device response)", "logoutAllSuccess": "All devices have been signed out.", "logoutError": "Failed to sign out.", "blockSuccess": "User blocked.", "blockError": "Failed to block user.", "unblockSuccess": "User unblocked.", "unblockError": "Failed to unblock user.", "notFound": "User not found.", "loadError": "Failed to load user.", "userInfo": "User information", "unblock": "Unblock", "blockTemporarily": "Temporarily block authentication", "logoutAll": "Sign out all devices", "logoutAllDesc": "Are you sure you want to sign out all devices?", "identifierHash": "Identifier hash", "connectedDevices": "Connected devices", "authHistory": "Authentication history", "blockUntil": "Unblock date and time (optional)", "blockUntilHint": "If omitted, the user remains blocked until manually unblocked."
+			},
+			"policySecurity": {
+				"fieldRequired": "Please enter {{field}}.", "minOne": "Enter a number of at least 1.", "countryAllowlist": "Allowed country restriction", "countryAllowlistDesc": "Allow authentication requests only from selected countries. Leave empty to allow all countries.", "allowedCountries": "Allowed countries", "selectCountries": "Select countries", "ipMultiple": "Block multiple requests from the same IP", "ipMultipleDesc": "Block multiple requests from the same IP within a short period.", "maxRequests": "Maximum requests", "timeWindow": "Time window (seconds)", "failLimit": "Approval failure limit", "failLimitDesc": "Temporarily block when consecutive failures exceed the threshold.", "maxFailures": "Maximum failures", "pushBomb": "Prevent push bombing", "pushBombDesc": "Prevent too many push notifications within a short period.", "maxPushes": "Maximum pushes", "countryChange": "Country change", "countryChangeDesc": "Detect access from a different country as a risk.", "newDevice": "New device", "newDeviceDesc": "Detect access from an unregistered device as a risk.", "multipleRequests": "Multiple requests in a short period", "multipleRequestsDesc": "Detect multiple authentication requests in a short period as a risk.", "updateSuccess": "Policy updated.", "updateError": "Failed to update policy.", "basePolicies": "Base policies", "riskDetection": "Risk detection", "example3": "e.g. 3", "example5": "e.g. 5", "example10": "e.g. 10", "example60": "e.g. 60", "example300": "e.g. 300",
+				"countries": { "KR": "South Korea", "US": "United States", "JP": "Japan", "CN": "China", "GB": "United Kingdom", "DE": "Germany", "FR": "France", "CA": "Canada" }
 			}
 		},
 		"docs": "Docs",

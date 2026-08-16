@@ -1,6 +1,8 @@
 import { Button, Divider, Typography } from "antd";
 import { Link } from "react-router";
 import { Iconify } from "@/components/icon";
+import LocalePicker from "@/components/locale-picker";
+import { useTranslation } from "react-i18next";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -14,7 +16,7 @@ type LegalSection = {
 	items?: string[];
 };
 
-const privacySections: LegalSection[] = [
+const koPrivacySections: LegalSection[] = [
 	{
 		title: "1. 적용 범위",
 		body: "본 개인정보 처리방침은 셀프호스팅된 BioPass Community 웹 콘솔, 모바일 인증 앱, OAuth/API 인증 흐름을 이용할 때 처리되는 개인정보에 적용됩니다. 실제 운영 주체는 소프트웨어를 배포·운영하는 조직입니다.",
@@ -61,7 +63,7 @@ const privacySections: LegalSection[] = [
 	},
 ];
 
-const termsSections: LegalSection[] = [
+const koTermsSections: LegalSection[] = [
 	{
 		title: "1. 약관의 적용",
 		body: "본 약관은 BioPass Community 소프트웨어를 셀프호스팅하여 제공하는 웹 콘솔, 모바일 인증 앱, API, OAuth 기능을 이용하는 사용자와 조직에 적용됩니다.",
@@ -102,6 +104,89 @@ const termsSections: LegalSection[] = [
 	},
 ];
 
+const enPrivacySections: LegalSection[] = [
+	{
+		title: "1. Scope",
+		body: "This Privacy Policy applies to personal information processed through the self-hosted BioPass Community web console, mobile authentication app, and OAuth/API authentication flows. The organization deploying and operating the software is the actual service operator.",
+	},
+	{
+		title: "2. Personal information we process",
+		items: [
+			"Account data: email, name, password hash, permissions, organization identifier, and optional phone number and profile image",
+			"Application settings: app name, client_id, client_secret, callback URL, and authentication expiry and limit settings",
+			"Authentication and security logs: request ID, status, app/user identifiers, IP address, country, User-Agent, and risk events",
+			"Device data: platform, device name and identifier, push token, and biometric availability",
+			"Operational logs: email delivery, audit, and system notification records",
+		],
+	},
+	{
+		title: "3. Biometric data notice",
+		items: [
+			"BioPass servers are designed not to store fingerprint or face images, biometric templates, or raw biometric data.",
+			"Biometric verification occurs through the user's device and operating-system security features. The server stores only the minimum data needed for the result and device registration.",
+		],
+	},
+	{
+		title: "4. Purposes of processing",
+		items: [
+			"Registration, sign-in, account, and organization management",
+			"OAuth/API request creation, approval, token issuance, and verification",
+			"Device registration, push notifications, and account protection",
+			"Security policy enforcement, abuse detection, auditing, and incident analysis",
+		],
+	},
+	{
+		title: "5. Third-party processing",
+		items: ["Infrastructure providers selected by the operator, such as email, push notification, and database providers, may process limited personal information."],
+	},
+	{
+		title: "6. Retention, security, and contact",
+		items: [
+			"Personal information is retained as needed to provide the service and meet security, audit, and legal obligations.",
+			"Reasonable safeguards include password hashing, JWT-based authentication, access control, and audit logs.",
+			`Contact: ${CONTACT_EMAIL}`,
+		],
+	},
+];
+
+const enTermsSections: LegalSection[] = [
+	{
+		title: "1. Application of terms",
+		body: "These terms apply to users and organizations using the web console, mobile authentication app, API, and OAuth features provided through a self-hosted BioPass Community deployment.",
+	},
+	{
+		title: "2. Service",
+		items: [
+			"The service provides email/device authentication, mobile biometric approval, OAuth/API integration, application management, authentication logs, and security policy features.",
+			"Biometric verification uses the user's device and operating-system security features; BioPass processes authentication requests and results.",
+			"This distribution does not include commercial cloud billing or subscription features.",
+		],
+	},
+	{
+		title: "3. Account and organization management",
+		items: [
+			"Users must securely manage account information, tokens, client_secret values, and device secrets.",
+			"Organization administrators are responsible for users, apps, callback URLs, security policies, permissions, and related settings.",
+		],
+	},
+	{
+		title: "4. Acceptable use",
+		items: [
+			"The service may be used only for lawful authentication, account protection, and security purposes.",
+			"Unauthorized access, spam, phishing, malware, vulnerability exploitation, excessive traffic, and unlawful conduct are prohibited.",
+		],
+	},
+	{
+		title: "5. Open-source license",
+		body: "BioPass Community source code is governed by the repository's LICENSE (Apache-2.0) and NOTICE. The admin UI is based on the slash-admin template (MIT).",
+	},
+	{
+		title: "6. Disclaimer and limitation of liability",
+		body: "The software is provided as is, without express or implied warranties to the extent permitted by law. The operator is responsible for the security, availability, and backups of its self-hosted environment.",
+	},
+	{ title: "7. Contact", body: `Questions about these terms, privacy, or security: ${CONTACT_EMAIL}` },
+];
+
 function LegalDocument({
 	title,
 	description,
@@ -111,11 +196,13 @@ function LegalDocument({
 	description: string;
 	sections: LegalSection[];
 }) {
+	const { t } = useTranslation();
 	return (
-		<div className="mx-auto max-w-3xl px-4 py-10">
+		<div className="relative mx-auto max-w-3xl px-4 py-10">
+			<div className="absolute right-4 top-2"><LocalePicker /></div>
 			<Title level={2}>{title}</Title>
 			<Paragraph type="secondary">{description}</Paragraph>
-			<Text type="secondary">최종 업데이트: {LAST_UPDATED}</Text>
+			<Text type="secondary">{t("sys.legal.lastUpdated")}: {LAST_UPDATED}</Text>
 			<Divider />
 			{sections.map((section) => (
 				<div key={section.title} className="mb-8">
@@ -134,7 +221,7 @@ function LegalDocument({
 			))}
 			<Link to="/welcome">
 				<Button icon={<Iconify icon="solar:arrow-left-linear" size={18} />}>
-					돌아가기
+					{t("common.back")}
 				</Button>
 			</Link>
 		</div>
@@ -142,21 +229,25 @@ function LegalDocument({
 }
 
 export function PrivacyPolicyPage() {
+	const { t, i18n } = useTranslation();
+	const isKorean = i18n.resolvedLanguage === "ko_KR";
 	return (
 		<LegalDocument
-			title="개인정보 처리방침"
-			description="셀프호스팅 BioPass Community에서 처리하는 개인정보와 보호 원칙을 안내합니다."
-			sections={privacySections}
+			title={t("sys.legal.privacy.title")}
+			description={t("sys.legal.privacy.description")}
+			sections={isKorean ? koPrivacySections : enPrivacySections}
 		/>
 	);
 }
 
 export function TermsOfServicePage() {
+	const { t, i18n } = useTranslation();
+	const isKorean = i18n.resolvedLanguage === "ko_KR";
 	return (
 		<LegalDocument
-			title="서비스 이용약관"
-			description="BioPass Community 셀프호스팅 배포의 이용 조건, 계정 책임, 허용되는 사용을 안내합니다."
-			sections={termsSections}
+			title={t("sys.legal.terms.title")}
+			description={t("sys.legal.terms.description")}
+			sections={isKorean ? koTermsSections : enTermsSections}
 		/>
 	);
 }

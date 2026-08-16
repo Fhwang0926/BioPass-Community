@@ -8,6 +8,8 @@ import { getHomePageNavigatePath } from "@/router/utils";
 import { useUserActions, useUserToken } from "@/store/userStore";
 import idleService from "@/api/services/idle";
 import { hashClientPassword } from "@/utils/passwordHash";
+import LocalePicker from "@/components/locale-picker";
+import { useTranslation } from "react-i18next";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -20,6 +22,7 @@ type SetupFormValues = {
 };
 
 export default function SetupPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const token = useUserToken();
 	const { setUserInfo, setUserToken } = useUserActions();
@@ -53,7 +56,10 @@ export default function SetupPage() {
 	if (checking) {
 		return (
 			<Layout className="min-h-screen items-center justify-center bg-neutral-50">
-				<Text type="secondary">Checking installation status…</Text>
+				<div className="absolute right-2 top-0">
+					<LocalePicker />
+				</div>
+				<Text type="secondary">{t("sys.setup.checking")}</Text>
 			</Layout>
 		);
 	}
@@ -78,23 +84,20 @@ export default function SetupPage() {
 				refreshToken?: string;
 				data?: any;
 			};
-			const payload =
-				raw?.data != null && typeof raw.data === "object" && "accessToken" in raw.data
-					? raw.data
-					: raw;
+			const payload = raw?.data != null && typeof raw.data === "object" && "accessToken" in raw.data ? raw.data : raw;
 			const { user, accessToken, refreshToken } = payload as {
 				user: any;
 				accessToken: string;
 				refreshToken: string;
 			};
-			if (!accessToken) throw new Error("Setup response missing accessToken");
+			if (!accessToken) throw new Error(t("sys.setup.responseInvalid"));
 			setUserToken({ accessToken, refreshToken });
 			setUserInfo(user ?? {});
 			idleService.start(accessToken);
-			toast.success("Administrator created. Welcome!");
+			toast.success(t("sys.setup.success"));
 			navigate(getHomePageNavigatePath(), { replace: true });
 		} catch (err) {
-			toast.error((err as Error).message || "Setup failed", { position: "top-center" });
+			toast.error((err as Error).message || t("sys.setup.failed"), { position: "top-center" });
 		} finally {
 			setLoading(false);
 		}
@@ -102,23 +105,21 @@ export default function SetupPage() {
 
 	return (
 		<Layout className="min-h-screen bg-neutral-50">
+			<div className="absolute right-2 top-0">
+				<LocalePicker />
+			</div>
 			<div className="mx-auto flex w-full max-w-lg flex-col justify-center px-4 py-16">
 				<div className="mb-8 text-center">
 					<Title level={2} className="!mb-2">
-						BioPass 초기 설정
+						{t("sys.setup.title")}
 					</Title>
 					<Paragraph type="secondary" className="!mb-0">
-						첫 설치입니다. 최고 관리자(조직 관리자) 계정을 만든 뒤 콘솔을 이용할 수 있습니다.
+						{t("sys.setup.subtitle")}
 					</Paragraph>
 				</div>
 
 				<Card>
-					<Alert
-						type="info"
-						showIcon
-						className="mb-6"
-						message="이 단계는 사용자 계정이 없을 때만 한 번 실행됩니다."
-					/>
+					<Alert type="info" showIcon className="mb-6" message={t("sys.setup.onceAlert")} />
 					<Form
 						layout="vertical"
 						size="large"
@@ -127,62 +128,59 @@ export default function SetupPage() {
 						initialValues={{ company_name: "" }}
 					>
 						<Form.Item
-							label="이름"
+							label={t("sys.setup.name")}
 							name="name"
-							rules={[{ required: true, message: "이름을 입력하세요" }]}
+							rules={[{ required: true, message: t("sys.setup.validation.nameRequired") }]}
 						>
-							<Input placeholder="Admin" autoComplete="name" />
+							<Input placeholder={t("sys.setup.namePlaceholder")} autoComplete="name" />
 						</Form.Item>
 						<Form.Item
-							label="이메일"
+							label={t("sys.setup.email")}
 							name="email"
 							rules={[
-								{ required: true, message: "이메일을 입력하세요" },
-								{ type: "email", message: "올바른 이메일을 입력하세요" },
+								{ required: true, message: t("sys.setup.validation.emailRequired") },
+								{ type: "email", message: t("sys.setup.validation.emailInvalid") },
 							]}
 						>
-							<Input placeholder="admin@example.com" autoComplete="username" />
+							<Input placeholder={t("sys.setup.emailPlaceholder")} autoComplete="username" />
+						</Form.Item>
+						<Form.Item label={t("sys.setup.companyOptional")} name="company_name">
+							<Input placeholder={t("sys.setup.companyPlaceholder")} autoComplete="organization" />
 						</Form.Item>
 						<Form.Item
-							label="조직 이름 (선택)"
-							name="company_name"
-						>
-							<Input placeholder="My Organization" autoComplete="organization" />
-						</Form.Item>
-						<Form.Item
-							label="비밀번호"
+							label={t("sys.setup.password")}
 							name="password"
 							rules={[
-								{ required: true, message: "비밀번호를 입력하세요" },
-								{ min: 12, message: "비밀번호는 12자 이상이어야 합니다" },
+								{ required: true, message: t("sys.setup.validation.passwordRequired") },
+								{ min: 12, message: t("sys.setup.validation.passwordMin") },
 								{
 									pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/,
-									message: "비밀번호는 영문과 숫자를 포함해야 합니다",
+									message: t("sys.setup.validation.passwordPattern"),
 								},
 							]}
 						>
-							<Input.Password placeholder="••••••••" autoComplete="new-password" />
+							<Input.Password placeholder={t("sys.setup.passwordPlaceholder")} autoComplete="new-password" />
 						</Form.Item>
 						<Form.Item
-							label="비밀번호 확인"
+							label={t("sys.setup.confirmPassword")}
 							name="confirmPassword"
 							dependencies={["password"]}
 							rules={[
-								{ required: true, message: "비밀번호를 다시 입력하세요" },
+								{ required: true, message: t("sys.setup.validation.confirmRequired") },
 								({ getFieldValue }) => ({
 									validator(_, value) {
 										if (!value || getFieldValue("password") === value) {
 											return Promise.resolve();
 										}
-										return Promise.reject(new Error("비밀번호가 일치하지 않습니다"));
+										return Promise.reject(new Error(t("sys.setup.validation.passwordMismatch")));
 									},
 								}),
 							]}
 						>
-							<Input.Password placeholder="••••••••" autoComplete="new-password" />
+							<Input.Password placeholder={t("sys.setup.passwordPlaceholder")} autoComplete="new-password" />
 						</Form.Item>
 						<Button type="primary" htmlType="submit" block loading={loading}>
-							최고 관리자 생성 후 시작
+							{t("sys.setup.submit")}
 						</Button>
 					</Form>
 				</Card>

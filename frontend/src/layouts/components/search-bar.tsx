@@ -166,7 +166,7 @@ export default function SearchBar() {
 						ref={inputRef}
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						placeholder="Search..."
+						placeholder={t("sys.menu.search.placeholder")}
 						variant="borderless"
 						autoFocus
 						prefix={<SvgIcon icon="ic-search" size="20" />}
@@ -182,15 +182,15 @@ export default function SearchBar() {
 						<div className="flex">
 							<Tag color="cyan">↑</Tag>
 							<Tag color="cyan">↓</Tag>
-							<span>to navigate</span>
+							<span>{t("sys.menu.search.navigateHint")}</span>
 						</div>
 						<div className="flex">
 							<Tag color="cyan">↵</Tag>
-							<span>to select</span>
+							<span>{t("sys.menu.search.selectHint")}</span>
 						</div>
 						<div className="flex">
 							<Tag color="cyan">ESC</Tag>
-							<span>to close</span>
+							<span>{t("sys.menu.search.closeHint")}</span>
 						</div>
 					</div>
 				}

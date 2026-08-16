@@ -54,21 +54,21 @@ export default function ApplicationCreatePage() {
 			// apiClient 인터셉터가 result/data 한 depth 풀어서 반환 → response는 생성된 앱 객체
 			if (response && (response as { id?: number }).id) {
 				setCreatedApp(response);
-				toast.success("애플리케이션이 생성되었습니다.");
+				toast.success(t("sys.menu.application.create_success"));
 				await queryClient.invalidateQueries({
 					queryKey: ["application"],
 					refetchType: "active",
 				});
 			}
 		} catch (error) {
-			toast.error("애플리케이션 생성에 실패했습니다.");
+			toast.error(t("sys.menu.application.create_error"));
 		} finally {
 			setSubmitting(false);
 		}
 	};
 
 	const handleFinishFailed: FormProps["onFinishFailed"] = (errorInfo) => {
-		toast.error("입력값을 확인해 주세요.");
+		toast.error(t("sys.menu.application.validation_error"));
 		const first = errorInfo?.errorFields?.[0];
 		if (first?.name?.length) {
 			form.scrollToField(first.name, { behavior: "smooth", block: "center" });
@@ -77,7 +77,7 @@ export default function ApplicationCreatePage() {
 
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text);
-		toast.success("복사되었습니다.");
+		toast.success(t("common.copied"));
 	};
 
 	if (createdApp) {
@@ -85,7 +85,7 @@ export default function ApplicationCreatePage() {
 			<Space direction="vertical" size="large" className="w-full">
 				<Card>
 					<Alert
-						message="애플리케이션이 성공적으로 생성되었습니다!"
+						message={t("sys.menu.application.create_success")}
 						description={
 							<Space direction="vertical" className="w-full mt-4">
 								<div>
@@ -96,13 +96,13 @@ export default function ApplicationCreatePage() {
 										icon={<CopyOutlined />}
 										onClick={() => copyToClipboard(createdApp.clientId)}
 									>
-										복사
+										{t("common.copy")}
 									</Button>
 								</div>
 								<div>
 									<strong>Client Secret:</strong>{" "}
 									<Alert
-										message="중요: 이 Secret은 이번에만 표시됩니다!"
+										message={t("sys.menu.application.secret_once")}
 										description={
 											<Space>
 												<code className="bg-yellow-100 px-2 py-1 rounded">
@@ -113,7 +113,7 @@ export default function ApplicationCreatePage() {
 													icon={<CopyOutlined />}
 													onClick={() => copyToClipboard(createdApp.clientSecret)}
 												>
-													복사
+													{t("common.copy")}
 												</Button>
 											</Space>
 										}
@@ -131,10 +131,10 @@ export default function ApplicationCreatePage() {
 				<Card>
 					<Space>
 						<Button type="primary" onClick={() => navigate(`/service/application/${createdApp.id}`)}>
-							상세 페이지로 이동
+							{t("sys.menu.application.go_detail")}
 						</Button>
 						<Button onClick={() => navigate("/service/application")}>
-							목록으로
+							{t("sys.menu.application.detailPage.back_to_list")}
 						</Button>
 					</Space>
 				</Card>
@@ -148,7 +148,7 @@ export default function ApplicationCreatePage() {
 				<Space>
 					<Button onClick={() => navigate("/service/application")}>
 						<Iconify icon="solar:arrow-left-bold" size={18} className="mr-2" />
-						목록으로
+						{t("sys.menu.application.detailPage.back_to_list")}
 					</Button>
 				</Space>
 			</Card>
@@ -170,17 +170,17 @@ export default function ApplicationCreatePage() {
 					title={
 						<Space>
 							<Iconify icon="solar:lock-password-bold-duotone" size={24} />
-							<span>기본 정보</span>
+							<span>{t("sys.menu.application.detailPage.basic_info")}</span>
 						</Space>
 					}
 				>
 					<Row gutter={16}>
 						<Col span={24}>
 							<Form.Item
-								label="사이트 도메인"
+								label={t("sys.menu.application.detailPage.site_domain")}
 								name="name"
 								rules={[
-									{ required: true, message: "사이트 도메인을 입력하세요." },
+									{ required: true, message: t("sys.menu.application.detailPage.site_domain_required") },
 									{
 										validator: (_, value) => {
 											if (!value) return Promise.resolve();
@@ -193,11 +193,11 @@ export default function ApplicationCreatePage() {
 											if (domainPattern.test(normalized)) {
 												return Promise.resolve();
 											}
-											return Promise.reject(new Error("올바른 도메인 형식을 입력하세요. (예: example.com)"));
+											return Promise.reject(new Error(t("sys.menu.application.detailPage.site_domain_invalid")));
 										}
 									}
 								]}
-								tooltip="애플리케이션의 사이트 도메인을 입력하세요. (예: example.com, myapp.co.kr)"
+								tooltip={t("sys.menu.application.detailPage.site_domain_tooltip")}
 							>
 								<Input 
 									placeholder="example.com"
@@ -207,13 +207,13 @@ export default function ApplicationCreatePage() {
 						</Col>
 						<Col span={24}>
 							<Form.Item 
-								label="Callback URL" 
+								label={t("sys.menu.application.detailPage.callback_url")}
 								name="callback_url"
 								rules={[
-									{ required: true, message: "Callback URL을 입력하세요." },
+									{ required: true, message: t("sys.menu.application.detailPage.callback_url_required") },
 									{
 										type: "url",
-										message: "올바른 URL 형식을 입력하세요. (예: https://example.com/callback)"
+										message: t("sys.menu.application.detailPage.callback_url_invalid")
 									}
 								]}
 							>
@@ -342,11 +342,11 @@ export default function ApplicationCreatePage() {
 						</Col>
 						<Col span={24}>
 							<Form.Item
-								label="상태"
+								label={t("common.statusText")}
 								name="is_active"
 								valuePropName="checked"
 							>
-								<Switch checkedChildren="활성" unCheckedChildren="중지" />
+								<Switch checkedChildren={t("common.active")} unCheckedChildren={t("common.inactive")} />
 							</Form.Item>
 						</Col>
 					</Row>
@@ -357,27 +357,27 @@ export default function ApplicationCreatePage() {
 					title={
 						<Space>
 							<Iconify icon="solar:key-bold-duotone" size={24} />
-							<span>인증 설정</span>
+							<span>{t("sys.menu.application.detailPage.auth_settings")}</span>
 						</Space>
 					}
 				>
 					<Row gutter={16}>
 						<Col span={24}>
 							<Form.Item
-								label="로그인 식별자"
+								label={t("sys.menu.application.detailPage.login_identifier")}
 								name="login_identifier"
 								rules={[{ required: true }]}
 							>
 								<Select>
-									<Select.Option value="email">이메일</Select.Option>
-									<Select.Option value="phone">전화번호</Select.Option>
-									<Select.Option value="both">둘 다</Select.Option>
+									<Select.Option value="email">{t("sys.menu.application.detailPage.login_identifier_email")}</Select.Option>
+									<Select.Option value="phone">{t("sys.menu.application.detailPage.login_identifier_phone")}</Select.Option>
+									<Select.Option value="both">{t("sys.menu.application.detailPage.login_identifier_both")}</Select.Option>
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24}>
 							<Form.Item
-								label="인증 요청 만료 시간 (초)"
+								label={t("sys.menu.application.detailPage.auth_request_expiry")}
 								name="auth_request_expiry"
 								rules={[{ required: true }]}
 							>
@@ -386,9 +386,9 @@ export default function ApplicationCreatePage() {
 						</Col>
 						<Col span={24}>
 							<Form.Item
-								label="동일 사용자 중복 요청 제한"
+								label={t("sys.menu.application.detailPage.duplicate_request_limit")}
 								name="duplicate_request_limit"
-								tooltip="0이면 제한 없음"
+								tooltip={t("sys.menu.application.detailPage.duplicate_request_limit_tooltip")}
 							>
 								<InputNumber min={0} style={{ width: "100%" }} />
 							</Form.Item>
@@ -403,10 +403,10 @@ export default function ApplicationCreatePage() {
 							loading={submitting}
 							onClick={() => form.submit()}
 						>
-							생성
+							{t("common.create")}
 						</Button>
 						<Button onClick={() => navigate("/service/application")} disabled={submitting}>
-							취소
+							{t("common.cancelText")}
 						</Button>
 					</Space>
 				</Card>

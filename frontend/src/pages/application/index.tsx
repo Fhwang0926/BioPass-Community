@@ -17,12 +17,13 @@ import type { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import { IconButton, Iconify } from "@/components/icon";
-import { t } from "@/locales/i18n";
 import applicationService, { type Application, type ApplicationListResponse, type SearchParams } from "@/api/services/application";
 
 export default function ApplicationPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [searchForm] = Form.useForm();
 	const queryClient = useQueryClient();
@@ -35,7 +36,7 @@ export default function ApplicationPage() {
 
 	const columns: ColumnsType<Application> = [
 		{ 
-			title: "App 이름", 
+			title: t("sys.menu.application.app_name"),
 			dataIndex: "name", 
 			width: 200,
 			render: (text, record) => (
@@ -50,7 +51,7 @@ export default function ApplicationPage() {
 		},
 		{ title: "Client ID", dataIndex: "clientId", width: 250 },
 		{
-			title: t("common.statusText", { defaultValue: "상태" }),
+			title: t("common.statusText"),
 			dataIndex: "isActive",
 			width: 100,
 			render: (isActive) => (
@@ -60,13 +61,13 @@ export default function ApplicationPage() {
 			),
 		},
 		{
-			title: "최근 인증 요청 시간",
+			title: t("sys.menu.application.last_auth_request"),
 			dataIndex: "lastAuthRequestAt",
 			width: 180,
 			render: (date) => date ? dayjs(date).format("YYYY-MM-DD HH:mm:ss") : "-",
 		},
 		{
-			title: t("common.actionText", { defaultValue: "작업" }),
+			title: t("common.actionText"),
 			key: "operation",
 			width: 120,
 			render: (_, record) => (
@@ -156,18 +157,18 @@ export default function ApplicationPage() {
 				<Form form={searchForm} onFinish={onSearch} layout="inline">
 					<Row gutter={[16, 16]} className="w-full">
 						<Col span={24} lg={8}>
-							<Form.Item name="name" label="App 이름">
-								<Input placeholder="App 이름 검색" />
+							<Form.Item name="name" label={t("sys.menu.application.app_name")}>
+								<Input placeholder={t("sys.menu.application.app_name_placeholder")} />
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={8}>
 							<Form.Item name="client_id" label="Client ID">
-								<Input placeholder="Client ID 검색" />
+								<Input placeholder={t("sys.menu.application.client_id_placeholder")} />
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={8}>
-							<Form.Item name="is_active" label={t("common.statusText", { defaultValue: "상태" })}>
-								<Select allowClear placeholder={t("common.statusPlaceholder", { defaultValue: "상태 선택" })}>
+							<Form.Item name="is_active" label={t("common.statusText")}>
+								<Select allowClear placeholder={t("common.statusPlaceholder")}>
 									<Select.Option value={true}>
 										<Tag color="success">{t("sys.menu.application.detailPage.active")}</Tag>
 									</Select.Option>
@@ -190,10 +191,10 @@ export default function ApplicationPage() {
 			</Card>
 
 			<Card
-				title="애플리케이션 목록"
+				title={t("sys.menu.application.list")}
 				extra={
 					<Button type="primary" onClick={onCreate}>
-						새 애플리케이션
+						{t("sys.menu.application.new")}
 					</Button>
 				}
 			>

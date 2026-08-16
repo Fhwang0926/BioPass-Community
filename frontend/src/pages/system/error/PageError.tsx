@@ -9,10 +9,12 @@ import { useRouter } from "@/router/hooks";
 
 import { themeVars } from "@/theme/theme.css";
 import type { FallbackProps } from "react-error-boundary";
+import { useTranslation } from "react-i18next";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
 export default function PageError({ error, resetErrorBoundary }: FallbackProps) {
+	const { t } = useTranslation();
 	const { replace } = useRouter();
 
 	const goHome = () => {
@@ -22,21 +24,24 @@ export default function PageError({ error, resetErrorBoundary }: FallbackProps) 
 	return (
 		<div>
 			<Helmet>
-				<title>Sorry, Page error occurred!</title>
+				<title>{t("sys.error.generic.title")}</title>
 			</Helmet>
 
 			<div className="m-auto flex h-screen max-w-[400px] items-center justify-center">
 				<MotionContainer className="flex flex-col items-center justify-center px-2">
 					<m.div variants={varBounce().in}>
 						<Typography.Title level={3} className="text-center">
-							Sorry, Page error occurred!
+							{t("sys.error.generic.title")}
 						</Typography.Title>
 					</m.div>
 
 					<m.div variants={varBounce().in}>
 						<Typography.Paragraph type="secondary" className="text-center">
-							{error.toString()}
+							{t("sys.error.generic.description")}
 						</Typography.Paragraph>
+						{import.meta.env.DEV && (
+							<Typography.Text type="secondary">{error.toString()}</Typography.Text>
+						)}
 					</m.div>
 
 					<m.div variants={varBounce().in}>
@@ -216,7 +221,7 @@ export default function PageError({ error, resetErrorBoundary }: FallbackProps) 
 						onClick={goHome}
 						type="button"
 					>
-						Go to Home
+						{t("common.goHome")}
 					</button>
 				</MotionContainer>
 			</div>

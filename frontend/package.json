@@ -10,6 +10,7 @@
 		"dev:prod": "vite --mode production",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
+		"i18n:check": "node ../scripts/check-i18n.mjs",
 		"prepare": "node ../scripts/install-git-hooks.js"
 	},
 	"dependencies": {

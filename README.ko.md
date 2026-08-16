@@ -12,7 +12,7 @@
 <p align="center">
   <strong>직접 운영하는 생체인증 MFA</strong><br/>
   OAuth API와 관리자 콘솔을 직접 호스팅합니다.<br/>
-  사용자는 <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">Bio Pass</a> 앱에서
+  사용자는 <a href="https://apps.apple.com/br/app/bio-pass/id6760216314">Bio Pass</a> 앱에서
   지문·Face ID로 로그인을 승인합니다.
 </p>
 
@@ -20,7 +20,7 @@
   <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="최신 릴리즈" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community?label=release" /></a>
   <a href="https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community"><img alt="GHCR" src="https://img.shields.io/badge/GHCR-biopass--community-2496ED?logo=docker&logoColor=white" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" /></a>
-  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
+  <a href="https://apps.apple.com/br/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
 </p>
 
 ## 구성
@@ -28,12 +28,12 @@
 | 구성 | 역할 |
 |------|------|
 | **이 저장소** | 셀프호스팅 **서버** — OAuth 인가/토큰, 이메일 OTP, 관리자 UI, 다중 앱 관리 |
-| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** | 연동 **모바일 앱** (App Store · iOS 15+) — 생체인증으로 로그인 요청 승인/거절 |
+| **[Bio Pass](https://apps.apple.com/br/app/bio-pass/id6760216314)** | 연동 **모바일 앱** (App Store · iOS 15+) — 생체인증으로 로그인 요청 승인/거절 |
 
 Google Play는 아직 출시되지 않았습니다.
 
 <p align="center">
-  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
+  <a href="https://apps.apple.com/br/app/bio-pass/id6760216314">
     <img src="docs/assets/logo.png" width="72" alt="BioPass 로고" />
   </a>
 </p>

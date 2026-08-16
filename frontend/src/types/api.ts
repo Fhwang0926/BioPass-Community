@@ -1,7 +1,8 @@
 export interface Result<T = any> {
 	status: number;
 	result: boolean; // 성공 여부	
-	message?: string; // 에러 메시지
+	message?: string; // 에러 메시지 (영문 폴백)
+	code?: string; // 안정적인 오류 코드 (프론트 i18n용)
 	data?: T; // 데이터
 }
 

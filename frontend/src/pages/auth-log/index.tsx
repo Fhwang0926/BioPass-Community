@@ -16,12 +16,14 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import authLogService, { type AuthLog, type AuthLogListResponse, type SearchParams } from "@/api/services/auth-log";
 
 const { RangePicker } = DatePicker;
 
 export default function AuthLogPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [searchForm] = Form.useForm();
 	const [pagination, setPagination] = useState({
@@ -33,13 +35,13 @@ export default function AuthLogPage() {
 
 	const getStatusTag = (status: string) => {
 		const statusMap: Record<string, { color: string; text: string }> = {
-			CREATED: { color: "processing", text: "생성" },
-			APPROVED: { color: "success", text: "승인" },
-			DENIED: { color: "error", text: "거절" },
-			EXPIRED: { color: "warning", text: "만료" },
-			BLOCKED: { color: "error", text: "차단" },
-			PENDING: { color: "processing", text: "대기" },
-			CONSUMED: { color: "default", text: "사용됨" },
+			CREATED: { color: "processing", text: t("sys.page.authLog.status.created") },
+			APPROVED: { color: "success", text: t("sys.page.authLog.status.approved") },
+			DENIED: { color: "error", text: t("sys.page.authLog.status.denied") },
+			EXPIRED: { color: "warning", text: t("sys.page.authLog.status.expired") },
+			BLOCKED: { color: "error", text: t("sys.page.authLog.status.blocked") },
+			PENDING: { color: "processing", text: t("sys.page.authLog.status.pending") },
+			CONSUMED: { color: "default", text: t("sys.page.authLog.status.consumed") },
 		};
 		const statusInfo = statusMap[status] || { color: "default", text: status };
 		return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
@@ -47,31 +49,31 @@ export default function AuthLogPage() {
 
 	const columns: ColumnsType<AuthLog> = [
 		{
-			title: "시간",
+			title: t("sys.page.authLog.time"),
 			dataIndex: "createdAt",
 			width: 180,
 			render: (timestamp) => dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss"),
 			sorter: true,
 		},
 		{
-			title: "사용자",
+			title: t("sys.page.authLog.user"),
 			dataIndex: "maskedUser",
 			width: 200,
 			render: (text) => <code className="text-sm">{text || "-"}</code>,
 		},
 		{
-			title: "App",
+			title: t("sys.page.authLog.app"),
 			dataIndex: "appName",
 			width: 150,
 		},
 		{
-			title: "상태",
+			title: t("common.statusText"),
 			dataIndex: "status",
 			width: 100,
 			render: (status) => getStatusTag(status),
 		},
 		{
-			title: "국가 / IP",
+			title: t("sys.page.authLog.countryIp"),
 			width: 200,
 			render: (_, record) => (
 				<Space direction="vertical" size="small">
@@ -81,11 +83,11 @@ export default function AuthLogPage() {
 			),
 		},
 		{
-			title: "디바이스",
+			title: t("sys.page.authLog.device"),
 			width: 180,
 			render: (_, record) => {
 				const getDeviceTypeLabel = (dt: string) => {
-					const map: Record<string, string> = { PC: "PC", Mobile: "모바일", App: "앱" };
+				const map: Record<string, string> = { PC: "PC", Mobile: t("sys.page.authLog.mobile"), App: t("sys.page.authLog.app") };
 					return map[dt] ?? dt;
 				};
 				const parseBrowserLabel = (ua: string): string => {
@@ -107,7 +109,7 @@ export default function AuthLogPage() {
 						{record.devicePlatform && record.devicePlatform !== "-" && (
 							<Space size="small" wrap>
 								<Tag color={record.devicePlatform === "email" ? "cyan" : record.devicePlatform === "ios" ? "blue" : "green"}>
-									{record.devicePlatform === "email" ? "이메일" : record.devicePlatform.toUpperCase()}
+									{record.devicePlatform === "email" ? t("sys.page.authLog.email") : record.devicePlatform.toUpperCase()}
 								</Tag>
 								{record.devicePlatform === "email" && record.deviceType && (
 									<Tag color={record.deviceType === "PC" ? "blue" : record.deviceType === "Mobile" ? "geekblue" : "green"}>
@@ -128,7 +130,7 @@ export default function AuthLogPage() {
 			},
 		},
 		{
-			title: "작업",
+			title: t("common.actionText"),
 			key: "operation",
 			width: 100,
 			render: (_, record) => (
@@ -136,7 +138,7 @@ export default function AuthLogPage() {
 					type="link"
 					onClick={() => navigate(`/auth-log/${record.id}`)}
 				>
-					상세
+					{t("common.detail")}
 				</Button>
 			),
 		},
@@ -203,38 +205,34 @@ export default function AuthLogPage() {
 				<Form form={searchForm} onFinish={onSearch} layout="inline">
 					<Row gutter={[16, 16]} className="w-full">
 						<Col span={24} lg={6}>
-							<Form.Item name="status" label="상태">
-								<Select allowClear placeholder="전체">
-									<Select.Option value="CREATED">생성</Select.Option>
-									<Select.Option value="APPROVED">승인</Select.Option>
-									<Select.Option value="DENIED">거절</Select.Option>
-									<Select.Option value="EXPIRED">만료</Select.Option>
-									<Select.Option value="BLOCKED">차단</Select.Option>
-									<Select.Option value="PENDING">대기</Select.Option>
-									<Select.Option value="CONSUMED">사용됨</Select.Option>
+							<Form.Item name="status" label={t("common.statusText")}>
+								<Select allowClear placeholder={t("sys.page.authLog.all")}>
+									{["CREATED", "APPROVED", "DENIED", "EXPIRED", "BLOCKED", "PENDING", "CONSUMED"].map((status) => (
+										<Select.Option key={status} value={status}>{t(`sys.page.authLog.status.${status.toLowerCase()}`)}</Select.Option>
+									))}
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={6}>
-							<Form.Item name="country" label="국가">
-								<Input placeholder="국가 코드 (예: KR)" />
+							<Form.Item name="country" label={t("sys.page.authLog.country")}>
+								<Input placeholder={t("sys.page.authLog.countryPlaceholder")} />
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={6}>
-							<Form.Item name="request_ip" label="IP 주소">
-								<Input placeholder="IP 주소 검색" />
+							<Form.Item name="request_ip" label={t("sys.page.authLog.ipAddress")}>
+								<Input placeholder={t("sys.page.authLog.ipPlaceholder")} />
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={6}>
-							<Form.Item name="dateRange" label="기간">
+							<Form.Item name="dateRange" label={t("sys.page.authLog.period")}>
 								<RangePicker style={{ width: "100%" }} />
 							</Form.Item>
 						</Col>
 						<Col span={24}>
 							<Space>
-								<Button onClick={onReset}>초기화</Button>
+								<Button onClick={onReset}>{t("common.resetText")}</Button>
 								<Button type="primary" htmlType="submit">
-									검색
+									{t("common.searchText")}
 								</Button>
 							</Space>
 						</Col>
@@ -242,10 +240,10 @@ export default function AuthLogPage() {
 				</Form>
 			</Card>
 
-			<Card title="인증 로그">
+			<Card title={t("sys.menu.authLog")}>
 				{isError && (
 					<div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-red-700">
-						{(error as Error)?.message ?? "목록을 불러오는 중 오류가 발생했습니다."}
+						{(error as Error)?.message ?? t("sys.page.authLog.loadError")}
 					</div>
 				)}
 				<Table
@@ -255,7 +253,7 @@ export default function AuthLogPage() {
 					loading={isLoading}
 					columns={columns}
 					dataSource={list}
-					locale={{ emptyText: isLoading ? "로딩 중..." : "데이터가 없습니다." }}
+					locale={{ emptyText: isLoading ? t("common.loadingText") : t("common.noData") }}
 					pagination={{
 						current: pagination.current,
 						pageSize: pagination.pageSize,

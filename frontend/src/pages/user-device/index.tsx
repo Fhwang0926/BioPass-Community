@@ -14,10 +14,12 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import userDeviceService, { type User, type UserSearchParams } from "@/api/services/user-device";
 
 export default function UserDevicePage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [searchForm] = Form.useForm();
 	const [pagination, setPagination] = useState({
@@ -29,40 +31,40 @@ export default function UserDevicePage() {
 
 	const columns: ColumnsType<User> = [
 		{
-			title: "식별자",
+			title: t("sys.page.userDevice.identifier"),
 			key: "identifier",
 			width: 220,
 			render: (_, record) => (
 				<Space>
-					<Tag>{record.identifierType === 'email' ? '이메일' : '전화번호'}</Tag>
+					<Tag>{record.identifierType === 'email' ? t("sys.page.userDevice.email") : t("sys.page.userDevice.phone")}</Tag>
 					<span>{record.identifier ?? record.identifierValue ?? record.identifierHash ?? '-'}</span>
 				</Space>
 			),
 		},
 		{
-			title: "등록 디바이스 수",
+			title: t("sys.page.userDevice.registeredDeviceCount"),
 			dataIndex: "deviceCount",
 			width: 120,
-			render: (count) => <Tag color="blue">{count || 0}개</Tag>,
+			render: (count) => <Tag color="blue">{count || 0}{t("common.countUnit")}</Tag>,
 		},
 		{
-			title: "마지막 로그인",
+			title: t("sys.page.userDevice.lastLogin"),
 			dataIndex: "lastLoginAt",
 			width: 180,
 			render: (timestamp) => timestamp ? dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss") : "-",
 		},
 		{
-			title: "상태",
+			title: t("common.statusText"),
 			dataIndex: "status",
 			width: 100,
 			render: (status) => (
 				<Tag color={status === 'ACTIVE' ? 'success' : status === 'BLOCKED' ? 'error' : 'warning'}>
-					{status === 'ACTIVE' ? '정상' : status === 'BLOCKED' ? '제한' : '일시정지'}
+					{status === 'ACTIVE' ? t("sys.page.userDevice.normal") : status === 'BLOCKED' ? t("sys.page.userDevice.blocked") : t("sys.page.userDevice.suspended")}
 				</Tag>
 			),
 		},
 		{
-			title: "작업",
+			title: t("common.actionText"),
 			key: "operation",
 			width: 120,
 			render: (_, record) => (
@@ -70,7 +72,7 @@ export default function UserDevicePage() {
 					type="link"
 					onClick={() => navigate(record.id, { relative: 'path' })}
 				>
-					상세
+					{t("common.detail")}
 				</Button>
 			),
 		},
@@ -111,27 +113,27 @@ export default function UserDevicePage() {
 				<Form form={searchForm} onFinish={onSearch} layout="inline">
 					<Row gutter={[16, 16]} className="w-full">
 						<Col span={24} lg={8}>
-							<Form.Item name="status" label="상태">
-								<Select allowClear placeholder="전체">
-									<Select.Option value="ACTIVE">정상</Select.Option>
-									<Select.Option value="BLOCKED">제한</Select.Option>
-									<Select.Option value="SUSPENDED">일시정지</Select.Option>
+							<Form.Item name="status" label={t("common.statusText")}>
+								<Select allowClear placeholder={t("sys.page.userDevice.all")}>
+									<Select.Option value="ACTIVE">{t("sys.page.userDevice.normal")}</Select.Option>
+									<Select.Option value="BLOCKED">{t("sys.page.userDevice.blocked")}</Select.Option>
+									<Select.Option value="SUSPENDED">{t("sys.page.userDevice.suspended")}</Select.Option>
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={8}>
-							<Form.Item name="identifier_type" label="식별자 타입">
-								<Select allowClear placeholder="전체">
-									<Select.Option value="email">이메일</Select.Option>
-									<Select.Option value="phone">전화번호</Select.Option>
+							<Form.Item name="identifier_type" label={t("sys.page.userDevice.identifierType")}>
+								<Select allowClear placeholder={t("sys.page.userDevice.all")}>
+									<Select.Option value="email">{t("sys.page.userDevice.email")}</Select.Option>
+									<Select.Option value="phone">{t("sys.page.userDevice.phone")}</Select.Option>
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24}>
 							<Space>
-								<Button onClick={onReset}>초기화</Button>
+								<Button onClick={onReset}>{t("common.resetText")}</Button>
 								<Button type="primary" htmlType="submit">
-									검색
+									{t("common.searchText")}
 								</Button>
 							</Space>
 						</Col>
@@ -140,10 +142,10 @@ export default function UserDevicePage() {
 			</Card>
 
 			<Card
-				title="사용자 목록"
+				title={t("sys.page.userDevice.userList")}
 				extra={
 					<Button onClick={() => navigate("/user-management/devices")}>
-						디바이스 관리
+						{t("sys.page.userDevice.deviceManagement")}
 					</Button>
 				}
 			>

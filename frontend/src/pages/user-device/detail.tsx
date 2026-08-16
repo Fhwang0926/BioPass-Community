@@ -16,11 +16,13 @@ import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { toast } from "sonner";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import { Iconify } from "@/components/icon";
 import userDeviceService from "@/api/services/user-device";
 
 export default function UserDeviceDetailPage() {
+	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -40,11 +42,11 @@ export default function UserDeviceDetailPage() {
 		if (!id) return;
 		try {
 			await userDeviceService.logoutAllDevices(id);
-			toast.success("모든 디바이스가 로그아웃되었습니다.");
+			toast.success(t("sys.page.userDevice.logoutAllSuccess"));
 			refetch();
 			queryClient.invalidateQueries({ queryKey: ["user-device"] });
 		} catch (error) {
-			toast.error("로그아웃에 실패했습니다.");
+			toast.error(t("sys.page.userDevice.logoutError"));
 		}
 	};
 
@@ -52,13 +54,13 @@ export default function UserDeviceDetailPage() {
 		if (!id) return;
 		try {
 			await userDeviceService.blockUser(id, values.block_until);
-			toast.success("사용자가 차단되었습니다.");
+			toast.success(t("sys.page.userDevice.blockSuccess"));
 			setBlockModalVisible(false);
 			blockForm.resetFields();
 			refetch();
 			queryClient.invalidateQueries({ queryKey: ["user-device"] });
 		} catch (error) {
-			toast.error("차단에 실패했습니다.");
+			toast.error(t("sys.page.userDevice.blockError"));
 		}
 	};
 
@@ -66,16 +68,16 @@ export default function UserDeviceDetailPage() {
 		if (!id) return;
 		try {
 			await userDeviceService.unblockUser(id);
-			toast.success("차단이 해제되었습니다.");
+			toast.success(t("sys.page.userDevice.unblockSuccess"));
 			refetch();
 			queryClient.invalidateQueries({ queryKey: ["user-device"] });
 		} catch (error) {
-			toast.error("차단 해제에 실패했습니다.");
+			toast.error(t("sys.page.userDevice.unblockError"));
 		}
 	};
 
 	if (isLoading) {
-		return <div>로딩 중...</div>;
+		return <div>{t("common.loadingText")}</div>;
 	}
 
 	if (isError || !user) {
@@ -83,11 +85,11 @@ export default function UserDeviceDetailPage() {
 			<div className="flex flex-col items-center gap-4 py-8">
 				<p className="text-muted-foreground">
 					{isError && (error as any)?.response?.status === 404
-						? "해당 사용자를 찾을 수 없습니다."
-						: "사용자를 불러오지 못했습니다."}
+						? t("sys.page.userDevice.notFound")
+						: t("sys.page.userDevice.loadError")}
 				</p>
 				<Button type="primary" onClick={() => navigate("..")}>
-					목록으로
+					{t("sys.menu.application.detailPage.back_to_list")}
 				</Button>
 			</div>
 		);
@@ -95,7 +97,7 @@ export default function UserDeviceDetailPage() {
 
 	const deviceColumns: ColumnsType<any> = [
 		{
-			title: "플랫폼",
+			title: t("sys.page.userDevice.platform"),
 			dataIndex: "platform",
 			width: 100,
 			render: (platform) => (
@@ -105,33 +107,33 @@ export default function UserDeviceDetailPage() {
 			),
 		},
 		{
-			title: "디바이스 이름",
+			title: t("sys.page.userDevice.deviceName"),
 			dataIndex: "deviceName",
 			width: 200,
 		},
 		{
-			title: "마지막 활동",
+			title: t("sys.page.userDevice.lastActivity"),
 			dataIndex: "lastSeenAt",
 			width: 180,
 			render: (timestamp) => timestamp ? dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss") : "-",
 		},
 		{
-			title: "Trusted",
+			title: t("sys.page.userDevice.trusted"),
 			dataIndex: "isTrusted",
 			width: 100,
 			render: (isTrusted) => (
 				<Tag color={isTrusted ? "success" : "default"}>
-					{isTrusted ? "예" : "아니오"}
+					{isTrusted ? t("common.yes") : t("common.no")}
 				</Tag>
 			),
 		},
 		{
-			title: "상태",
+			title: t("common.statusText"),
 			dataIndex: "isRevoked",
 			width: 100,
 			render: (isRevoked) => (
 				<Tag color={isRevoked ? "error" : "success"}>
-					{isRevoked ? "해제됨" : "활성"}
+					{isRevoked ? t("sys.page.userDevice.revoked") : t("common.active")}
 				</Tag>
 			),
 		},
@@ -139,21 +141,21 @@ export default function UserDeviceDetailPage() {
 
 	const authHistoryColumns: ColumnsType<any> = [
 		{
-			title: "시간",
+			title: t("sys.page.authLog.time"),
 			dataIndex: "createdAt",
 			width: 180,
 			render: (timestamp) => dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss"),
 		},
 		{
-			title: "상태",
+			title: t("common.statusText"),
 			dataIndex: "status",
 			width: 100,
 			render: (status) => {
 				const statusMap: Record<string, { color: string; text: string }> = {
-					APPROVED: { color: "success", text: "승인" },
-					DENIED: { color: "error", text: "거절" },
-					EXPIRED: { color: "warning", text: "만료" },
-					BLOCKED: { color: "error", text: "차단" },
+					APPROVED: { color: "success", text: t("sys.page.authLog.status.approved") },
+					DENIED: { color: "error", text: t("sys.page.authLog.status.denied") },
+					EXPIRED: { color: "warning", text: t("sys.page.authLog.status.expired") },
+					BLOCKED: { color: "error", text: t("sys.page.authLog.status.blocked") },
 				};
 				const statusInfo = statusMap[status] || { color: "default", text: status };
 				return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
@@ -165,7 +167,7 @@ export default function UserDeviceDetailPage() {
 			width: 150,
 		},
 		{
-			title: "국가",
+			title: t("sys.page.authLog.country"),
 			dataIndex: "country",
 			width: 100,
 			render: (country) => country ? <Tag>{country}</Tag> : "-",
@@ -178,62 +180,62 @@ export default function UserDeviceDetailPage() {
 				<Space>
 					<Button onClick={() => navigate("..")}>
 						<Iconify icon="solar:arrow-left-bold" size={18} className="mr-2" />
-						목록으로
+						{t("sys.menu.application.detailPage.back_to_list")}
 					</Button>
 				</Space>
 			</Card>
 
 			{/* 사용자 정보 */}
 			<Card
-				title="사용자 정보"
+				title={t("sys.page.userDevice.userInfo")}
 				extra={
 					<Space>
 						{user.status === 'BLOCKED' ? (
 							<Button onClick={handleUnblock}>
-								차단 해제
+								{t("sys.page.userDevice.unblock")}
 							</Button>
 						) : (
 							<Button danger onClick={() => setBlockModalVisible(true)}>
-								인증 일시 차단
+								{t("sys.page.userDevice.blockTemporarily")}
 							</Button>
 						)}
 						<Popconfirm
-							title="모든 디바이스 로그아웃"
-							description="정말 모든 디바이스를 로그아웃하시겠습니까?"
+							title={t("sys.page.userDevice.logoutAll")}
+							description={t("sys.page.userDevice.logoutAllDesc")}
 							onConfirm={handleLogoutAll}
-							okText="예"
-							cancelText="아니오"
+							okText={t("common.yes")}
+							cancelText={t("common.no")}
 						>
 							<Button danger>
-								모든 디바이스 로그아웃
+								{t("sys.page.userDevice.logoutAll")}
 							</Button>
 						</Popconfirm>
 					</Space>
 				}
 			>
 				<Descriptions column={2} bordered>
-					<Descriptions.Item label="식별자 (이메일/연락처)">
+					<Descriptions.Item label={t("sys.page.userDevice.identifier")}>
 						{user.identifier ?? user.identifierValue ?? '-'}
 					</Descriptions.Item>
-					<Descriptions.Item label="식별자 타입">
-						<Tag>{user.identifierType === 'email' ? '이메일' : '전화번호'}</Tag>
+					<Descriptions.Item label={t("sys.page.userDevice.identifierType")}>
+						<Tag>{user.identifierType === 'email' ? t("sys.page.userDevice.email") : t("sys.page.userDevice.phone")}</Tag>
 					</Descriptions.Item>
-					<Descriptions.Item label="식별자 해시">
+					<Descriptions.Item label={t("sys.page.userDevice.identifierHash")}>
 						<code>{user.identifierHash}</code>
 					</Descriptions.Item>
-					<Descriptions.Item label="상태">
+					<Descriptions.Item label={t("common.statusText")}>
 						<Tag color={user.status === 'ACTIVE' ? 'success' : user.status === 'BLOCKED' ? 'error' : 'warning'}>
-							{user.status === 'ACTIVE' ? '정상' : user.status === 'BLOCKED' ? '제한' : '일시정지'}
+							{user.status === 'ACTIVE' ? t("sys.page.userDevice.normal") : user.status === 'BLOCKED' ? t("sys.page.userDevice.blocked") : t("sys.page.userDevice.suspended")}
 						</Tag>
 					</Descriptions.Item>
-					<Descriptions.Item label="마지막 로그인">
+					<Descriptions.Item label={t("sys.page.userDevice.lastLogin")}>
 						{user.lastLoginAt ? dayjs(user.lastLoginAt).format("YYYY-MM-DD HH:mm:ss") : "-"}
 					</Descriptions.Item>
 				</Descriptions>
 			</Card>
 
 			{/* 연결된 디바이스 */}
-			<Card title="연결된 디바이스">
+			<Card title={t("sys.page.userDevice.connectedDevices")}>
 				<Table
 					rowKey="id"
 					size="small"
@@ -244,7 +246,7 @@ export default function UserDeviceDetailPage() {
 			</Card>
 
 			{/* 인증 히스토리 */}
-			<Card title="인증 히스토리">
+			<Card title={t("sys.page.userDevice.authHistory")}>
 				<Table
 					rowKey="id"
 					size="small"
@@ -259,7 +261,7 @@ export default function UserDeviceDetailPage() {
 
 			{/* 차단 모달 */}
 			<Modal
-				title="인증 일시 차단"
+				title={t("sys.page.userDevice.blockTemporarily")}
 				open={blockModalVisible}
 				onOk={() => blockForm.submit()}
 				onCancel={() => {
@@ -274,8 +276,8 @@ export default function UserDeviceDetailPage() {
 				>
 					<Form.Item
 						name="block_until"
-						label="차단 해제 일시 (선택)"
-						tooltip="지정하지 않으면 수동으로 해제할 때까지 차단됩니다."
+						label={t("sys.page.userDevice.blockUntil")}
+						tooltip={t("sys.page.userDevice.blockUntilHint")}
 					>
 						<DatePicker
 							showTime

@@ -7,28 +7,29 @@ import Character6 from "@/assets/images/characters/character_6.png";
 import MotionContainer from "@/components/animate/motion-container";
 import { varBounce } from "@/components/animate/variants/bounce";
 import { themeVars } from "@/theme/theme.css";
+import { useTranslation } from "react-i18next";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
 export default function Page404() {
+	const { t } = useTranslation();
 	return (
 		<>
 			<Helmet>
-				<title> 404 Page Not Found!</title>
+				<title>{t("sys.error.404.title")}</title>
 			</Helmet>
 
 			<div className="m-auto max-w-[400px]">
 				<MotionContainer className="flex flex-col items-center justify-center px-2">
 					<m.div variants={varBounce().in}>
 						<Typography.Title level={3} className="text-center">
-							Sorry, Page Not Found!
+							{t("sys.error.404.title")}
 						</Typography.Title>
 					</m.div>
 
 					<m.div variants={varBounce().in}>
 						<Typography.Paragraph type="secondary" className="text-center">
-							Sorry, we couldn’t find the page you’re looking for. Perhaps you’ve mistyped the URL? Be sure to check
-							your spelling.
+							{t("sys.error.404.description")}
 						</Typography.Paragraph>
 					</m.div>
 
@@ -87,7 +88,7 @@ export default function Page404() {
 					</m.div>
 
 					<NavLink to={HOMEPAGE} className="rounded-md p-4 !text-text-primary !bg-primary">
-						Go to Home
+						{t("common.goHome")}
 					</NavLink>
 				</MotionContainer>
 			</div>

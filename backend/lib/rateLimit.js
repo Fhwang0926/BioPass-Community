@@ -46,6 +46,7 @@ export function rateLimitMiddleware (keyFn, options) {
   const limit = options.limit
   const windowMs = options.windowMs
   const message = options.message || 'Too many requests. Please try again later.'
+  const code = options.code || 'RATE_LIMITED'
 
   return async (ctx, next) => {
     const key = keyFn(ctx)
@@ -55,7 +56,7 @@ export function rateLimitMiddleware (keyFn, options) {
     if (!result.allowed) {
       ctx.set('Retry-After', String(result.retryAfterSec))
       ctx.status = 429
-      ctx.body = { result: false, message }
+      ctx.body = { result: false, message, code }
       return
     }
     return next()

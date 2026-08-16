@@ -187,7 +187,7 @@ export default function UserPage() {
 	setUserProps((prev) => ({
 		...prev,
 		show: true,
-		title: t('sys.menu.user.management.email_invite') || "이메일 초대",
+		title: t('sys.menu.user.management.email_invite'),
 		formValue: {
 			id: 0,
 				email: "",
@@ -429,9 +429,9 @@ function UserForm({
 			} else {
 				const result = await userService.inviteUser(payload);
 				if (result.invitation.email_sent) {
-					toast.success(t('sys.menu.user.management.invite_success') || "초대 메일을 발송했습니다.");
+					toast.success(t('sys.menu.user.management.invite_success'));
 				} else {
-					toast.warning(t('sys.menu.user.management.invite_mail_failed') || "계정은 생성됐지만 메일 발송은 실패했습니다. 관리자에게 비밀번호 재설정을 요청하세요.");
+					toast.warning(t('sys.menu.user.management.invite_mail_failed'));
 				}
 			}
 			queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -467,7 +467,7 @@ function UserForm({
 						label={t('sys.menu.user.management.email')}
 						name="email"
 							rules={[
-								{ required: true, message: t('sys.login.emaildPlaceholder') },
+								{ required: true, message: t('sys.login.emailPlaceholder') },
 								{ type: "email", message: t('sys.menu.user.management.email_invalid') }
 							]}
 						>

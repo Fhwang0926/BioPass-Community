@@ -13,14 +13,14 @@
   <strong>Self-hosted biometric MFA for your apps</strong><br/>
   Run the OAuth API and admin console on your own infrastructure.<br/>
   End users approve sign-ins with fingerprint or Face ID via
-  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">Bio Pass</a>.
+  <a href="https://apps.apple.com/br/app/bio-pass/id6760216314">Bio Pass</a>.
 </p>
 
 <p align="center">
   <a href="https://github.com/Fhwang0926/BioPass-Community/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Fhwang0926/BioPass-Community?label=release" /></a>
   <a href="https://github.com/Fhwang0926/BioPass-Community/pkgs/container/biopass-community"><img alt="GHCR" src="https://img.shields.io/badge/GHCR-biopass--community-2496ED?logo=docker&logoColor=white" /></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" /></a>
-  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
+  <a href="https://apps.apple.com/br/app/bio-pass/id6760216314"><img alt="App Store" src="https://img.shields.io/badge/App%20Store-Bio%20Pass-0a7cff?logo=apple&logoColor=white" /></a>
 </p>
 
 ## What this is
@@ -28,12 +28,12 @@
 | Piece | Role |
 |-------|------|
 | **This repository** | Self-hosted **server** — OAuth authorize/token, email OTP, admin UI, multi-app management |
-| **[Bio Pass](https://apps.apple.com/kr/app/bio-pass/id6760216314)** | Companion **mobile app** (App Store · iOS 15+) — approve/deny login requests with biometrics |
+| **[Bio Pass](https://apps.apple.com/br/app/bio-pass/id6760216314)** | Companion **mobile app** (App Store · iOS 15+) — approve/deny login requests with biometrics |
 
 Google Play is not published yet.
 
 <p align="center">
-  <a href="https://apps.apple.com/kr/app/bio-pass/id6760216314">
+  <a href="https://apps.apple.com/br/app/bio-pass/id6760216314">
     <img src="docs/assets/logo.png" width="72" alt="BioPass logo" />
   </a>
 </p>

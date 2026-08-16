@@ -257,7 +257,7 @@ export default function MailLogPage() {
 				</Form>
 			</Card>
 
-			<Card title={t('sys.menu.mail_log')}>
+			<Card title={t('sys.menu.log.mail')}>
 				<Table
 					rowKey="id"
 					size="small"

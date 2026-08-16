@@ -1,52 +1,57 @@
 import en_US from "antd/locale/en_US";
 import ko_KR from "antd/locale/ko_KR";
-import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
 import type { Locale as AntdLocal } from "antd/es/locale";
 import { LocalEnum } from "#/enum";
 
-type Locale = keyof typeof LocalEnum;
+import {
+	applyLocaleRuntime,
+	getLocaleMeta,
+	type AppLocale,
+	type LocaleMeta,
+} from "./locale-meta";
+
 type Language = {
-	locale: keyof typeof LocalEnum;
+	locale: AppLocale;
 	icon: string;
 	label: string;
 	antdLocal: AntdLocal;
+	meta: LocaleMeta;
 };
 
-export const LANGUAGE_MAP: Record<Locale, Language> = {
+export const LANGUAGE_MAP: Record<AppLocale, Language> = {
 	[LocalEnum.en_US]: {
 		locale: LocalEnum.en_US,
 		label: "English",
 		icon: "ic-locale_en_US",
 		antdLocal: en_US,
+		meta: getLocaleMeta(LocalEnum.en_US),
 	},
 	[LocalEnum.ko_KR]: {
 		locale: LocalEnum.ko_KR,
 		label: "한국어",
 		icon: "ic-locale_ko_KR",
 		antdLocal: ko_KR,
+		meta: getLocaleMeta(LocalEnum.ko_KR),
 	},
 };
 
 export default function useLocale() {
 	const { i18n } = useTranslation();
 
-	const locale = (i18n.resolvedLanguage || LocalEnum.en_US) as Locale;
+	const locale = (i18n.resolvedLanguage || LocalEnum.en_US) as AppLocale;
 	const language = LANGUAGE_MAP[locale] ?? LANGUAGE_MAP[LocalEnum.en_US];
 
-	/**
-	 * localstorage -> i18nextLng change
-	 */
-	const setLocale = (locale: Locale) => {
-		i18n.changeLanguage(locale);
-		document.documentElement.lang = locale;
-		dayjs.locale(locale);
+	const setLocale = (next: AppLocale) => {
+		void i18n.changeLanguage(next);
+		applyLocaleRuntime(next);
 	};
 
 	return {
 		locale,
 		language,
+		meta: language.meta,
 		setLocale,
 	};
 }

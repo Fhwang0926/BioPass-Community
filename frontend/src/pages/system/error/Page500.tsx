@@ -7,27 +7,29 @@ import Character8 from "@/assets/images/characters/character_8.png";
 import MotionContainer from "@/components/animate/motion-container";
 import { varBounce } from "@/components/animate/variants/bounce";
 import { themeVars } from "@/theme/theme.css";
+import { useTranslation } from "react-i18next";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
 export default function Page() {
+	const { t } = useTranslation();
 	return (
 		<>
 			<Helmet>
-				<title> 500 Internal Server Error!</title>
+				<title>{t("sys.error.500.title")}</title>
 			</Helmet>
 
 			<div className="m-auto max-w-[400px]">
 				<MotionContainer className="flex flex-col items-center justify-center px-2">
 					<m.div variants={varBounce().in}>
 						<Typography.Title level={3} className="text-center">
-							500 Internal Server Error
+							{t("sys.error.500.title")}
 						</Typography.Title>
 					</m.div>
 
 					<m.div variants={varBounce().in}>
 						<Typography.Paragraph type="secondary" className="text-center">
-							There was an error, please try again later.
+							{t("sys.error.500.description")}
 						</Typography.Paragraph>
 					</m.div>
 
@@ -142,7 +144,7 @@ export default function Page() {
 					</m.div>
 
 					<NavLink to={HOMEPAGE} className="rounded-md p-4 !text-text-primary !bg-primary">
-						Go to Home
+						{t("common.goHome")}
 					</NavLink>
 				</MotionContainer>
 			</div>

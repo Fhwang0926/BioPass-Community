@@ -6,16 +6,24 @@ import { getStringItem } from "@/utils/storage";
 
 import en_US from "./lang/en_US";
 import ko_KR from "./lang/ko_KR";
+import {
+	applyLocaleRuntime,
+	isAppLocale,
+	resolveLocaleFromNavigator,
+	type AppLocale,
+} from "./locale-meta";
 
 import { LocalEnum, StorageEnum } from "#/enum";
 
+const supportedLocales: AppLocale[] = [LocalEnum.en_US, LocalEnum.ko_KR];
 const storedLng = getStringItem(StorageEnum.I18N);
-const supportedLocales: LocalEnum[] = [LocalEnum.en_US, LocalEnum.ko_KR];
-const defaultLng = supportedLocales.includes(storedLng as LocalEnum)
-	? (storedLng as LocalEnum)
-	: LocalEnum.en_US;
 
-document.documentElement.lang = defaultLng;
+/** Prefer saved preference; otherwise honor browser language. */
+const defaultLng: AppLocale = isAppLocale(storedLng)
+	? storedLng
+	: resolveLocaleFromNavigator();
+
+applyLocaleRuntime(defaultLng);
 
 i18n
 	.use(LanguageDetector)
@@ -35,8 +43,13 @@ i18n
 		detection: {
 			order: ["localStorage", "navigator"],
 			caches: ["localStorage"],
+			lookupLocalStorage: StorageEnum.I18N,
 		},
 	});
+
+i18n.on("languageChanged", (lng) => {
+	if (isAppLocale(lng)) applyLocaleRuntime(lng);
+});
 
 export default i18n;
 export const { t } = i18n;

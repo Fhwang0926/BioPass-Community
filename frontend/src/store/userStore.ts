@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { UserInfo, UserToken } from "#/entity";
 import { StorageEnum } from "#/enum";
 import { hashClientPassword } from "@/utils/passwordHash";
+import { t } from "@/locales/i18n";
 
 type UserStore = {
 	userInfo: Partial<UserInfo>;
@@ -93,7 +94,7 @@ export const useSignIn = () => {
 			setUserInfo(user ?? {});
 			// 토큰을 넘겨서 즉시 시작 (getState 타이밍 이슈 방지)
 			idleService.start(accessToken);
-			toast.success("Sign in success!");
+			toast.success(t("sys.login.signInSuccess"));
 		} catch (err) {
 			toast.error((err as Error).message, {
 				position: "top-center",

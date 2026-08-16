@@ -2,6 +2,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button, Card, Col, Form, InputNumber, Row, Select, Switch } from "antd";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Iconify } from "@/components/icon";
 import policySecurityService from "@/api/services/policy-security";
@@ -23,17 +24,6 @@ const DEFAULT_VALUES: Partial<
 	PUSH_BOMB: { threshold: 10, windowSeconds: 60 },
 	MULTIPLE_REQUESTS: { threshold: 5, windowSeconds: 10 },
 };
-
-const COUNTRY_OPTIONS = [
-	{ label: "한국", value: "KR" },
-	{ label: "미국", value: "US" },
-	{ label: "일본", value: "JP" },
-	{ label: "중국", value: "CN" },
-	{ label: "영국", value: "GB" },
-	{ label: "독일", value: "DE" },
-	{ label: "프랑스", value: "FR" },
-	{ label: "캐나다", value: "CA" },
-];
 
 function parseCountries(value: unknown): string[] {
 	if (Array.isArray(value)) {
@@ -81,6 +71,7 @@ function PolicyItem({
 	onChange,
 	isSaving,
 }: PolicyItemProps) {
+	const { t } = useTranslation();
 	const [form] = Form.useForm<PolicyFormValues>();
 	// enabled 필드가 boolean이 아닌 경우를 대비해 명시적으로 변환
 	// Postgres may still serialize booleans as 0/1 depending on driver/path
@@ -209,12 +200,12 @@ function PolicyItem({
 												rules={[
 													{
 														required: true,
-														message: `${field.label}을 입력해 주세요.`,
+														message: t("sys.page.policySecurity.fieldRequired", { field: field.label }),
 													},
 													{
 														type: "number",
 														min: 1,
-														message: "1 이상의 숫자를 입력해 주세요.",
+														message: t("sys.page.policySecurity.minOne"),
 													},
 												]}
 												style={{ marginBottom: 0 }}
@@ -244,7 +235,7 @@ function PolicyItem({
 													fontWeight: 500,
 												}}
 											>
-												저장
+												{t("common.saveText")}
 											</Button>
 										</Form.Item>
 									</Col>
@@ -267,6 +258,7 @@ function CountryAllowlistItem({
 	onChange: (enabled: boolean, countries: string[]) => void;
 	isSaving: boolean;
 }) {
+	const { t } = useTranslation();
 	const [form] = Form.useForm<{ allowedCountries: string[] }>();
 	const rawEnabled = savedPolicy?.enabled;
 	const enabled = savedPolicy
@@ -307,10 +299,10 @@ function CountryAllowlistItem({
 						</div>
 						<div className="flex-1" style={{ minWidth: 0 }}>
 							<div className="font-semibold text-base mb-1" style={{ color: enabled ? "#262626" : "#8c8c8c" }}>
-								허용 국가 제한
+								{t("sys.page.policySecurity.countryAllowlist")}
 							</div>
 							<div className="text-sm" style={{ color: enabled ? "#595959" : "#bfbfbf", lineHeight: "1.5" }}>
-								선택한 국가에서만 인증 요청을 허용합니다. 비워두면 모든 국가를 허용합니다.
+								{t("sys.page.policySecurity.countryAllowlistDesc")}
 							</div>
 						</div>
 					</div>
@@ -321,7 +313,7 @@ function CountryAllowlistItem({
 							<Col xs={24} lg={16}>
 								<Form.Item
 									name="allowedCountries"
-									label={<span style={{ fontSize: "13px", color: enabled ? "#595959" : "#bfbfbf" }}>허용 국가</span>}
+									label={<span style={{ fontSize: "13px", color: enabled ? "#595959" : "#bfbfbf" }}>{t("sys.page.policySecurity.allowedCountries")}</span>}
 									style={{ marginBottom: 0 }}
 								>
 									<Select
@@ -329,8 +321,8 @@ function CountryAllowlistItem({
 										allowClear
 										disabled={!enabled}
 										size="large"
-										placeholder="국가를 선택하세요"
-										options={COUNTRY_OPTIONS}
+										placeholder={t("sys.page.policySecurity.selectCountries")}
+										options={["KR", "US", "JP", "CN", "GB", "DE", "FR", "CA"].map((code) => ({ label: t(`sys.page.policySecurity.countries.${code}`), value: code }))}
 									/>
 								</Form.Item>
 							</Col>
@@ -345,7 +337,7 @@ function CountryAllowlistItem({
 										block
 										style={{ height: "40px", fontWeight: 500 }}
 									>
-										저장
+										{t("common.saveText")}
 									</Button>
 								</Form.Item>
 							</Col>
@@ -358,6 +350,7 @@ function CountryAllowlistItem({
 }
 
 export default function PolicySecurityPage() {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [savingPolicyKey, setSavingPolicyKey] = useState<PolicyType | null>(
 		null,
@@ -372,33 +365,33 @@ export default function PolicySecurityPage() {
 	const policies: PolicyDefinition[] = [
 		{
 			key: "IP_MULTIPLE",
-			title: "동일 IP 다중 요청 차단",
-			description: "같은 IP에서 짧은 시간에 여러 요청이 오면 차단합니다.",
+			title: t("sys.page.policySecurity.ipMultiple"),
+			description: t("sys.page.policySecurity.ipMultipleDesc"),
 			fields: [
-				{ name: "threshold", label: "최대 요청 수", placeholder: "예: 5" },
-				{ name: "windowSeconds", label: "시간 창 (초)", placeholder: "예: 60" },
+				{ name: "threshold", label: t("sys.page.policySecurity.maxRequests"), placeholder: t("sys.page.policySecurity.example5") },
+				{ name: "windowSeconds", label: t("sys.page.policySecurity.timeWindow"), placeholder: t("sys.page.policySecurity.example60") },
 			],
 		},
 		{
 			key: "FAIL_LIMIT",
-			title: "승인 실패 횟수 제한",
-			description: "연속으로 실패한 횟수가 임계값을 넘으면 일시 차단합니다.",
+			title: t("sys.page.policySecurity.failLimit"),
+			description: t("sys.page.policySecurity.failLimitDesc"),
 			fields: [
-				{ name: "threshold", label: "최대 실패 횟수", placeholder: "예: 3" },
+				{ name: "threshold", label: t("sys.page.policySecurity.maxFailures"), placeholder: t("sys.page.policySecurity.example3") },
 				{
 					name: "windowSeconds",
-					label: "시간 창 (초)",
-					placeholder: "예: 300",
+					label: t("sys.page.policySecurity.timeWindow"),
+					placeholder: t("sys.page.policySecurity.example300"),
 				},
 			],
 		},
 		{
 			key: "PUSH_BOMB",
-			title: "푸시 폭탄 방지",
-			description: "짧은 시간에 많은 푸시 알림을 보내는 것을 방지합니다.",
+			title: t("sys.page.policySecurity.pushBomb"),
+			description: t("sys.page.policySecurity.pushBombDesc"),
 			fields: [
-				{ name: "threshold", label: "최대 푸시 수", placeholder: "예: 10" },
-				{ name: "windowSeconds", label: "시간 창 (초)", placeholder: "예: 60" },
+				{ name: "threshold", label: t("sys.page.policySecurity.maxPushes"), placeholder: t("sys.page.policySecurity.example10") },
+				{ name: "windowSeconds", label: t("sys.page.policySecurity.timeWindow"), placeholder: t("sys.page.policySecurity.example60") },
 			],
 		},
 	];
@@ -406,21 +399,21 @@ export default function PolicySecurityPage() {
 	const riskDetections: PolicyDefinition[] = [
 		{
 			key: "COUNTRY_CHANGE",
-			title: "국가 변경",
-			description: "이전과 다른 국가에서 접속 시 위험으로 감지합니다.",
+			title: t("sys.page.policySecurity.countryChange"),
+			description: t("sys.page.policySecurity.countryChangeDesc"),
 		},
 		{
 			key: "NEW_DEVICE",
-			title: "새 디바이스",
-			description: "등록되지 않은 새 디바이스에서 접속 시 위험으로 감지합니다.",
+			title: t("sys.page.policySecurity.newDevice"),
+			description: t("sys.page.policySecurity.newDeviceDesc"),
 		},
 		{
 			key: "MULTIPLE_REQUESTS",
-			title: "짧은 시간 다중 요청",
-			description: "짧은 시간에 여러 인증 요청이 오면 위험으로 감지합니다.",
+			title: t("sys.page.policySecurity.multipleRequests"),
+			description: t("sys.page.policySecurity.multipleRequestsDesc"),
 			fields: [
-				{ name: "threshold", label: "최대 요청 수", placeholder: "예: 5" },
-				{ name: "windowSeconds", label: "시간 창 (초)", placeholder: "예: 10" },
+				{ name: "threshold", label: t("sys.page.policySecurity.maxRequests"), placeholder: t("sys.page.policySecurity.example5") },
+				{ name: "windowSeconds", label: t("sys.page.policySecurity.timeWindow"), placeholder: t("sys.page.policySecurity.example10") },
 			],
 		},
 	];
@@ -430,7 +423,7 @@ export default function PolicySecurityPage() {
 		mutationFn: (params: SavePolicyParams) =>
 			policySecurityService.savePolicy(params),
 		onSuccess: (savedPolicy: any) => {
-			toast.success("정책이 업데이트되었습니다.");
+			toast.success(t("sys.page.policySecurity.updateSuccess"));
 			if (!savedPolicy || typeof savedPolicy !== "object") return;
 			// 저장된 정책을 캐시에 반영해 화면이 즉시 갱신 (refetch로 덮어쓰지 않음)
 			const keyOf = (p: any) =>
@@ -459,7 +452,7 @@ export default function PolicySecurityPage() {
 			queryClient.invalidateQueries({ queryKey: ["policy-security"] });
 		},
 		onError: () => {
-			toast.error("정책 업데이트에 실패했습니다.");
+			toast.error(t("sys.page.policySecurity.updateError"));
 		},
 		onSettled: () => {
 			setSavingPolicyKey(null);
@@ -514,7 +507,7 @@ export default function PolicySecurityPage() {
 							size={24}
 							style={{ color: "#1890ff" }}
 						/>
-						<span style={{ fontSize: "18px", fontWeight: 600 }}>기본 정책</span>
+						<span style={{ fontSize: "18px", fontWeight: 600 }}>{t("sys.page.policySecurity.basePolicies")}</span>
 					</div>
 				}
 				style={{
@@ -558,7 +551,7 @@ export default function PolicySecurityPage() {
 							size={24}
 							style={{ color: "#ff4d4f" }}
 						/>
-						<span style={{ fontSize: "18px", fontWeight: 600 }}>위험 감지</span>
+						<span style={{ fontSize: "18px", fontWeight: 600 }}>{t("sys.page.policySecurity.riskDetection")}</span>
 					</div>
 				}
 				style={{

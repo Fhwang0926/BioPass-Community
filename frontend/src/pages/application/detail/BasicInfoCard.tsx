@@ -27,6 +27,7 @@ import {
 	normalizeApplicationFields,
 } from "@/utils/bioPassApi";
 import { AuthCredentialsSection } from "./AuthCredentialsSection";
+import { useSampleLocale } from "@/pages/developer/components/useSampleLocale";
 
 interface BasicInfoCardProps {
 	form: FormInstance;
@@ -48,6 +49,7 @@ export function BasicInfoCard({
 	onRegenerateSecret,
 }: BasicInfoCardProps) {
 	const { t } = useTranslation();
+	const sampleLocale = useSampleLocale();
 	const ns = "sys.menu.application.detailPage";
 	const watchedCallbackUrl = Form.useWatch("callback_url", form);
 	const callbackExampleUrl = buildCallbackExampleUrl(watchedCallbackUrl ?? application.callbackUrl ?? (application as any).callback_url);
@@ -158,9 +160,9 @@ export function BasicInfoCard({
 											toast.error(t(`${ns}.test_url_fill_callback`));
 											return;
 										}
-										const email = prompt("로그인할 이메일 주소를 입력하세요", "");
+										const email = prompt(t("sys.menu.application.detailPage.test_email_prompt"), "");
 										if (!email?.trim()) {
-											toast.error("이메일 주소를 입력해주세요.");
+											toast.error(t("sys.menu.application.detailPage.test_email_required"));
 											return;
 										}
 										const url = buildAuthorizeUrl({
@@ -168,7 +170,7 @@ export function BasicInfoCard({
 											redirectUri,
 											scope: loginIdentifierToScope(loginIdentifier),
 											email: email.trim(),
-											lang: "ko",
+											lang: sampleLocale,
 										});
 										window.open(url, "_blank", "noopener,noreferrer");
 									}}

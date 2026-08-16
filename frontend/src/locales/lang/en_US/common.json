@@ -19,6 +19,27 @@
 		"light": "Light",
 		"dark": "Dark",
 		"open": "Open",
-		"or": "or"
+		"or": "or",
+
+		"statusText": "Status",
+		"actionText": "Actions",
+		"statusPlaceholder": "Select status",
+		"yes": "Yes",
+		"no": "No",
+		"active": "Active",
+		"inactive": "Inactive",
+		"detail": "Details",
+		"copy": "Copy",
+		"copied": "Copied",
+		"create": "Create",
+		"edit": "Edit",
+		"count": "{{count}}",
+		"countUnit": "",
+		"secondsUnit": "s",
+		"minutesUnit": "m",
+		"na": "N/A",
+		"noData": "No data",
+		"goHome": "Go to Home",
+		"total": "Total"
 	}
 }

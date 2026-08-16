@@ -1,5 +1,6 @@
 import { themeVars } from "@/theme/theme.css";
 import { removePx } from "@/utils/theme";
+import { t } from "@/locales/i18n";
 import type { ApexOptions } from "apexcharts";
 import { mergeDeepRight } from "ramda";
 
@@ -12,7 +13,7 @@ export default function useChart(options: ApexOptions) {
 
 	const LABEL_TOTAL = {
 		show: true,
-		label: "Total",
+		label: t("common.total"),
 		color: themeVars.colors.text.secondary,
 		fontSize: themeVars.typography.fontSize.sm,
 		lineHeight: themeVars.typography.lineHeight.tight,

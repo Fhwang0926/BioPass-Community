@@ -27,22 +27,38 @@ export const LOCALE_META: Record<AppLocale, LocaleMeta> = {
 
 const SUPPORTED: AppLocale[] = [LocalEnum.en_US, LocalEnum.ko_KR];
 
-export function isAppLocale(value: string | null | undefined): value is AppLocale {
-	return Boolean(value && SUPPORTED.includes(value as AppLocale));
+/** Normalize app, browser, and legacy locale spellings to an app locale. */
+export function normalizeLocale(language?: string | null): AppLocale | null {
+	if (!language) return null;
+	const normalized = language.trim().replace(/-/g, "_").toLowerCase();
+	for (const locale of SUPPORTED) {
+		if (normalized === locale.toLowerCase()) return locale;
+	}
+	if (normalized === "ko" || normalized.startsWith("ko_")) return LocalEnum.ko_KR;
+	if (normalized === "en" || normalized.startsWith("en_")) return LocalEnum.en_US;
+	return null;
 }
 
-/** Map browser language (e.g. ko, ko-KR, en-US) to an app locale. */
-export function resolveLocaleFromNavigator(navLang?: string): AppLocale {
-	const lang = (navLang || (typeof navigator !== "undefined" ? navigator.language : "") || "")
-		.toLowerCase()
-		.replace(/_/g, "-");
-	if (lang.startsWith("ko")) return LocalEnum.ko_KR;
-	if (lang.startsWith("en")) return LocalEnum.en_US;
+/** Follow the browser preference list instead of consulting only its first item. */
+export function resolveLocaleFromNavigator(languages?: readonly string[]): AppLocale {
+	const browserLanguages =
+		languages ??
+		(typeof navigator !== "undefined" && navigator.languages?.length
+			? navigator.languages
+			: typeof navigator !== "undefined" && navigator.language
+				? [navigator.language]
+				: []);
+
+	for (const language of browserLanguages) {
+		const locale = normalizeLocale(language);
+		if (locale) return locale;
+	}
 	return LocalEnum.en_US;
 }
 
 export function getLocaleMeta(locale: string | null | undefined): LocaleMeta {
-	if (isAppLocale(locale)) return LOCALE_META[locale];
+	const normalized = normalizeLocale(locale);
+	if (normalized) return LOCALE_META[normalized];
 	return LOCALE_META[LocalEnum.en_US];
 }
 

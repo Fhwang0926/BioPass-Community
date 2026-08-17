@@ -199,7 +199,9 @@ function LegalDocument({
 	const { t } = useTranslation();
 	return (
 		<div className="relative mx-auto max-w-3xl px-4 py-10">
-			<div className="absolute right-4 top-2"><LocalePicker /></div>
+			<div className="mb-6 flex justify-end">
+				<LocalePicker variant="labeled" />
+			</div>
 			<Title level={2}>{title}</Title>
 			<Paragraph type="secondary">{description}</Paragraph>
 			<Text type="secondary">{t("sys.legal.lastUpdated")}: {LAST_UPDATED}</Text>

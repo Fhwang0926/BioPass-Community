@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import Character5 from "@/assets/images/characters/character_5.png";
 import MotionContainer from "@/components/animate/motion-container";
 import { varBounce } from "@/components/animate/variants/bounce";
+import LocalePicker from "@/components/locale-picker";
 import { useRouter } from "@/router/hooks";
 
 import { themeVars } from "@/theme/theme.css";
@@ -22,10 +23,14 @@ export default function PageError({ error, resetErrorBoundary }: FallbackProps) 
 		replace(HOMEPAGE);
 	};
 	return (
-		<div>
+		<div className="relative">
 			<Helmet>
 				<title>{t("sys.error.generic.title")}</title>
 			</Helmet>
+
+			<div className="absolute right-6 top-6 z-10">
+				<LocalePicker variant="labeled" />
+			</div>
 
 			<div className="m-auto flex h-screen max-w-[400px] items-center justify-center">
 				<MotionContainer className="flex flex-col items-center justify-center px-2">

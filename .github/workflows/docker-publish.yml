@@ -1,6 +1,6 @@
 name: Docker image
 
-# Release images: only on semver tags (v*.*.*) → X.Y.Z / X.Y / latest
+# Release: semver tags (v*.*.*) → GHCR X.Y.Z / X.Y / latest + GitHub Release
 # Dev images: every push to `dev` → dev / dev.YYYYMMDD (UTC)
 # PR / other branches: build only (no push)
 
@@ -80,3 +80,37 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+
+  release:
+    name: GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Image refs
+        id: ver
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "minor=${version%.*}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/biopass-community" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            Docker image:
+
+            ```bash
+            docker pull ${{ steps.ver.outputs.image }}:${{ steps.ver.outputs.version }}
+            ```
+
+            GHCR tags: `${{ steps.ver.outputs.version }}`, `${{ steps.ver.outputs.minor }}`, `latest`.

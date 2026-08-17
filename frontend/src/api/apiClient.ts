@@ -7,6 +7,9 @@ import userService from "./services/auth";
 import { toast } from "sonner";
 import type { Result } from "#/api";
 
+/** `silent` suppresses the global error toast for probes the caller handles itself. */
+type RequestConfig = AxiosRequestConfig & { silent?: boolean };
+
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_APP_BASE_API ?? "/api",
     timeout: 10000,
@@ -124,7 +127,11 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        toast.error(errMsg, { position: "top-center" });
+        if (!(error.config as RequestConfig | undefined)?.silent) {
+            // Reuse the message as the toast id so concurrent failures collapse
+            // into one instead of stacking identical banners.
+            toast.error(errMsg, { position: "top-center", id: errMsg });
+        }
         throw error;
     },
 );
@@ -193,7 +200,7 @@ class APIClient {
     //     }
     // }
 
-    get<T = any>(config: AxiosRequestConfig): Promise<T> {
+    get<T = any>(config: RequestConfig): Promise<T> {
         return this.request({ ...config, method: "GET" });
     }
 
@@ -213,7 +220,7 @@ class APIClient {
         return this.request({ ...config, method: "DELETE" });
     }
 
-    request<T = any>(config: AxiosRequestConfig): Promise<T> {
+    request<T = any>(config: RequestConfig): Promise<T> {
         return new Promise((resolve, reject) => {
             // 개별 요청의 timeout 설정 (config에 timeout이 있으면 사용, 없으면 기본값 사용)
             const requestConfig = {

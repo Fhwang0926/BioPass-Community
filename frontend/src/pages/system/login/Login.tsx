@@ -1,10 +1,11 @@
-import { Layout } from "antd";
-import { Navigate } from "react-router";
-import { useEffect, useState } from "react";
+import { Alert, Button, Layout, Result, Spin } from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, Navigate, useNavigate } from "react-router";
 
+import authService from "@/api/services/auth";
 import Overlay from "@/assets/images/background/overlay.jpg";
 import LocalePicker from "@/components/locale-picker";
-import authService from "@/api/services/auth";
 import { getHomePageNavigatePath } from "@/router/utils";
 import { useUserToken } from "@/store/userStore";
 
@@ -15,27 +16,58 @@ import LoginForm from "./LoginForm";
 
 const { VITE_APP_TITLE } = import.meta.env;
 
-function Login() {
-	const token = useUserToken();
-	const [checkingSetup, setCheckingSetup] = useState(true);
-	const [needsSetup, setNeedsSetup] = useState(false);
+/** Outcome of the first-run setup probe; `unreachable` keeps the two apart. */
+type SetupState = "checking" | "required" | "done" | "unreachable";
+
+/** Leaves the notice on screen long enough to read before continuing to setup. */
+function SetupRedirect() {
+	const navigate = useNavigate();
 
 	useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			try {
-				const needs = await authService.getNeedsSetup();
-				if (!cancelled) setNeedsSetup(needs);
-			} catch {
-				if (!cancelled) setNeedsSetup(false);
-			} finally {
-				if (!cancelled) setCheckingSetup(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
+		const timer = window.setTimeout(() => navigate("/setup", { replace: true }), 2000);
+		return () => window.clearTimeout(timer);
+	}, [navigate]);
+
+	return null;
+}
+
+function Login() {
+	const { t } = useTranslation();
+	const token = useUserToken();
+	const [setupState, setSetupState] = useState<SetupState>("checking");
+
+	const checkSetup = useCallback(async (signal?: { cancelled: boolean }, options?: { keepUi?: boolean }) => {
+		// Background retries keep the current screen so it does not flicker.
+		if (!options?.keepUi) setSetupState("checking");
+		try {
+			const needs = await authService.getNeedsSetup();
+			if (!signal?.cancelled) setSetupState(needs ? "required" : "done");
+		} catch {
+			// A failed probe is not the same as "setup is complete": showing the
+			// sign-in form here would only fail again on submit.
+			if (!signal?.cancelled) setSetupState("unreachable");
+		}
 	}, []);
+
+	useEffect(() => {
+		const signal = { cancelled: false };
+		void checkSetup(signal);
+		return () => {
+			signal.cancelled = true;
+		};
+	}, [checkSetup]);
+
+	// The API often comes up after the console (dev restarts, container boots),
+	// so recover on its own instead of stranding the user on the error screen.
+	useEffect(() => {
+		if (setupState !== "unreachable") return;
+		const signal = { cancelled: false };
+		const timer = window.setInterval(() => void checkSetup(signal, { keepUi: true }), 5000);
+		return () => {
+			signal.cancelled = true;
+			window.clearInterval(timer);
+		};
+	}, [setupState, checkSetup]);
 
 	const gradientBg = rgbAlpha(themeVars.colors.background.defaultChannel, 0.9);
 	const bg = `linear-gradient(${gradientBg}, ${gradientBg}) center center / cover no-repeat,url(${Overlay})`;
@@ -44,12 +76,67 @@ function Login() {
 		return <Navigate to={getHomePageNavigatePath()} replace />;
 	}
 
-	if (checkingSetup) {
-		return null;
+	if (setupState === "checking") {
+		return (
+			<Layout className="relative min-h-screen items-center justify-center">
+				<div className="absolute right-6 top-6 z-10">
+					<LocalePicker variant="labeled" />
+				</div>
+				<Spin size="large" tip={t("sys.setup.checking")}>
+					<div className="h-16 w-48" />
+				</Spin>
+			</Layout>
+		);
 	}
 
-	if (needsSetup) {
-		return <Navigate to="/setup" replace />;
+	if (setupState === "required") {
+		return (
+			<Layout className="relative min-h-screen items-center justify-center px-4">
+				<div className="absolute right-6 top-6 z-10">
+					<LocalePicker variant="labeled" />
+				</div>
+				<Result
+					status="info"
+					title={t("sys.login.setupRequiredTitle")}
+					subTitle={t("sys.login.setupRequiredBody")}
+					extra={
+						<Link to="/setup" replace>
+							<Button type="primary" size="large">
+								{t("sys.login.setupRequiredCta")}
+							</Button>
+						</Link>
+					}
+				/>
+				<SetupRedirect />
+			</Layout>
+		);
+	}
+
+	if (setupState === "unreachable") {
+		return (
+			<Layout className="relative min-h-screen items-center justify-center px-4">
+				<div className="absolute right-6 top-6 z-10">
+					<LocalePicker variant="labeled" />
+				</div>
+				<Alert
+					type="error"
+					showIcon
+					className="max-w-xl"
+					message={t("sys.login.serverUnreachableTitle")}
+					description={
+						<>
+							<div>{t("sys.login.serverUnreachableBody")}</div>
+							<div className="mt-2 text-xs text-gray-500">{t("sys.login.retryingHint")}</div>
+						</>
+					}
+					action={
+						<Button size="small" onClick={() => void checkSetup()}>
+							{t("sys.login.retry")}
+						</Button>
+					}
+				/>
+			</Layout>
+		);
 	}
 
 	return (
@@ -59,12 +146,8 @@ function Login() {
 				style={{ background: bg }}
 			>
 				<div className="max-w-lg text-center">
-					<div className="mb-4 text-4xl font-bold text-gray-900 xl:text-5xl">
-						{VITE_APP_TITLE || "BioPass"}
-					</div>
-					<p className="text-base text-gray-600 xl:text-lg">
-						Self-hosted biometric MFA console. Sign in with your administrator account.
-					</p>
+					<div className="mb-4 text-4xl font-bold text-gray-900 xl:text-5xl">{VITE_APP_TITLE || "BioPass"}</div>
+					<p className="text-base text-gray-600 xl:text-lg">{t("sys.login.heroSubtitle")}</p>
 				</div>
 			</div>
 
@@ -72,8 +155,8 @@ function Login() {
 				<LoginForm />
 			</div>
 
-			<div className="absolute right-2 top-0 flex flex-row">
-				<LocalePicker />
+			<div className="absolute right-6 top-6 z-10 flex flex-row items-center gap-2">
+				<LocalePicker variant="labeled" />
 				<SettingButton />
 			</div>
 		</Layout>

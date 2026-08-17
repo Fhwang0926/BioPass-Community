@@ -43,8 +43,12 @@ const refresh = (timestamp: number, refreshToken?: string) =>
 		headers: refreshToken ? { Authorization: `Bearer ${refreshToken}` } : undefined,
 	});
 
+/**
+ * Silent on purpose: this runs as a routing probe on public pages, and every
+ * caller already falls back to the login screen when it fails.
+ */
 const getSetupStatus = () =>
-	apiClient.get<SetupStatus>({ url: UserApi.SetupStatus });
+	apiClient.get<SetupStatus>({ url: UserApi.SetupStatus, silent: true });
 
 /**
  * `logSuccess` wraps the handler payload again, so the unwrapped response is

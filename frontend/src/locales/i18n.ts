@@ -1,5 +1,4 @@
 import i18n from "i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 
 import { getStringItem } from "@/utils/storage";
@@ -8,7 +7,7 @@ import en_US from "./lang/en_US";
 import ko_KR from "./lang/ko_KR";
 import {
 	applyLocaleRuntime,
-	isAppLocale,
+	normalizeLocale,
 	resolveLocaleFromNavigator,
 	type AppLocale,
 } from "./locale-meta";
@@ -16,20 +15,17 @@ import {
 import { LocalEnum, StorageEnum } from "#/enum";
 
 const supportedLocales: AppLocale[] = [LocalEnum.en_US, LocalEnum.ko_KR];
-const storedLng = getStringItem(StorageEnum.I18N);
+const storedLng = normalizeLocale(getStringItem(StorageEnum.I18N));
 
 /** Prefer saved preference; otherwise honor browser language. */
-const defaultLng: AppLocale = isAppLocale(storedLng)
-	? storedLng
-	: resolveLocaleFromNavigator();
+const defaultLng: AppLocale = storedLng ?? resolveLocaleFromNavigator();
 
 applyLocaleRuntime(defaultLng);
 
 i18n
-	.use(LanguageDetector)
 	.use(initReactI18next)
 	.init({
-		debug: import.meta.env.DEV,
+		debug: import.meta.env.DEV && import.meta.env.VITE_I18N_DEBUG === "true",
 		lng: defaultLng,
 		fallbackLng: LocalEnum.en_US,
 		supportedLngs: supportedLocales,
@@ -40,15 +36,17 @@ i18n
 			en_US: { translation: en_US },
 			ko_KR: { translation: ko_KR },
 		},
-		detection: {
-			order: ["localStorage", "navigator"],
-			caches: ["localStorage"],
-			lookupLocalStorage: StorageEnum.I18N,
+		react: {
+			useSuspense: false,
 		},
 	});
 
 i18n.on("languageChanged", (lng) => {
-	if (isAppLocale(lng)) applyLocaleRuntime(lng);
+	const locale = normalizeLocale(lng);
+	if (locale) {
+		localStorage.setItem(StorageEnum.I18N, locale);
+		applyLocaleRuntime(locale);
+	}
 });
 
 export default i18n;

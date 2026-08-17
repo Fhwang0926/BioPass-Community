@@ -55,9 +55,9 @@ export default function SetupPage() {
 
 	if (checking) {
 		return (
-			<Layout className="min-h-screen items-center justify-center bg-neutral-50">
-				<div className="absolute right-2 top-0">
-					<LocalePicker />
+			<Layout className="relative min-h-screen items-center justify-center bg-gray-100">
+				<div className="absolute right-6 top-6 z-10">
+					<LocalePicker variant="labeled" />
 				</div>
 				<Text type="secondary">{t("sys.setup.checking")}</Text>
 			</Layout>
@@ -104,11 +104,11 @@ export default function SetupPage() {
 	};
 
 	return (
-		<Layout className="min-h-screen bg-neutral-50">
-			<div className="absolute right-2 top-0">
-				<LocalePicker />
-			</div>
-			<div className="mx-auto flex w-full max-w-lg flex-col justify-center px-4 py-16">
+		<Layout className="min-h-screen bg-gray-100">
+			<div className="mx-auto flex w-full max-w-lg flex-col justify-center px-4 pb-16 pt-6">
+				<div className="mb-8 flex justify-end">
+					<LocalePicker variant="labeled" />
+				</div>
 				<div className="mb-8 text-center">
 					<Title level={2} className="!mb-2">
 						{t("sys.setup.title")}

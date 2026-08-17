@@ -13,8 +13,7 @@ import SettingButton from "@/layouts/components/setting-button";
 import { themeVars } from "@/theme/theme.css";
 import { rgbAlpha } from "@/utils/theme";
 import LoginForm from "./LoginForm";
-
-const { VITE_APP_TITLE } = import.meta.env;
+import LoginHero from "./LoginHero";
 
 /** Outcome of the first-run setup probe; `unreachable` keeps the two apart. */
 type SetupState = "checking" | "required" | "done" | "unreachable";
@@ -142,13 +141,10 @@ function Login() {
 	return (
 		<Layout className="relative flex !min-h-screen !w-full !flex-row">
 			<div
-				className="hidden grow flex-col items-center justify-center bg-center bg-no-repeat px-8 md:flex"
+				className="hidden !h-screen grow flex-col items-center justify-center bg-center bg-no-repeat md:flex"
 				style={{ background: bg }}
 			>
-				<div className="max-w-lg text-center">
-					<div className="mb-4 text-4xl font-bold text-gray-900 xl:text-5xl">{VITE_APP_TITLE || "BioPass"}</div>
-					<p className="text-base text-gray-600 xl:text-lg">{t("sys.login.heroSubtitle")}</p>
-				</div>
+				<LoginHero />
 			</div>
 
 			<div className="m-auto flex !h-screen w-full max-w-[480px] flex-col justify-center px-[16px] lg:px-[64px]">

@@ -48,6 +48,7 @@
 			"backSignIn": "이전 로그인",
 			"backToHome": "메인 홈페이지",
 			"heroSubtitle": "셀프호스팅 생체 MFA 콘솔입니다. 관리자 계정으로 로그인하세요.",
+			"heroBannerAria": "BioPass 앱 로그인 과정",
 			"setupRequiredTitle": "초기 설정이 필요합니다",
 			"setupRequiredBody": "이 서버에는 아직 관리자 계정이 없습니다. 초기 설정 화면으로 이동합니다.",
 			"setupRequiredCta": "초기 설정으로 이동",

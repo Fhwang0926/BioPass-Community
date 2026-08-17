@@ -48,6 +48,7 @@
 			"backSignIn": "Back to sign in",
 			"backToHome": "Back to home",
 			"heroSubtitle": "Self-hosted biometric MFA console. Sign in with your administrator account.",
+			"heroBannerAria": "BioPass app sign-in flow",
 			"setupRequiredTitle": "First-run setup required",
 			"setupRequiredBody": "No administrator account exists on this server yet. Taking you to the setup screen.",
 			"setupRequiredCta": "Go to setup",

@@ -4,7 +4,7 @@ import { Button, Dropdown } from "antd";
 import type { AppLocale } from "@/locales/locale-meta";
 import useLocale, { LANGUAGE_MAP } from "@/locales/use-locale";
 
-import { IconButton, SvgIcon } from "../icon";
+import { SvgIcon } from "../icon";
 
 import type { MenuProps } from "antd";
 
@@ -49,9 +49,18 @@ export default function LocalePicker({ variant = "icon", className }: Props) {
 		onClick: ({ key }) => setLocale(key as AppLocale),
 	};
 
+	// Native <button>/antd Button so Dropdown can attach a ref (React 19
+	// removed findDOMNode). Portal to body to avoid overflow clipping.
+	const dropdownProps = {
+		placement: "bottomRight" as const,
+		trigger: ["click"] as ("click")[],
+		menu,
+		getPopupContainer: () => document.body,
+	};
+
 	if (variant === "labeled") {
 		return (
-			<Dropdown placement="bottomRight" trigger={["click"]} menu={menu}>
+			<Dropdown {...dropdownProps}>
 				<Button shape="round" icon={<GlobalOutlined />} className={className} aria-label="Change language">
 					{language.shortLabel}
 				</Button>
@@ -60,10 +69,17 @@ export default function LocalePicker({ variant = "icon", className }: Props) {
 	}
 
 	return (
-		<Dropdown placement="bottomRight" trigger={["click"]} menu={menu}>
-			<IconButton className={className ?? "h-10 w-10 hover:scale-105"} aria-label="Change language">
+		<Dropdown {...dropdownProps}>
+			<button
+				type="button"
+				className={
+					className ??
+					"flex h-10 w-10 cursor-pointer items-center justify-center rounded-full p-2 hover:bg-gray-500/10 hover:scale-105"
+				}
+				aria-label="Change language"
+			>
 				<SvgIcon icon={language.icon} size="24" className="rounded-md" />
-			</IconButton>
+			</button>
 		</Dropdown>
 	);
 }

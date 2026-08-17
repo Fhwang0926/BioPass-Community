@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * i18n guardrails for the admin frontend:
- * 1) en_US / ko_KR leaf-key parity
- * 2) static t("...") / t('...') keys exist in both catalogs
+ * 1) leaf-key parity across all supported locales (master: en_US)
+ * 2) static t("...") / t('...') keys exist in every catalog
  * 3) optional Hangul literal scan outside locales (warn-only for allowlisted paths)
  *
  * Usage: node scripts/check-i18n.mjs
@@ -16,6 +16,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const langRoot = path.join(root, "frontend/src/locales/lang");
 const srcRoot = path.join(root, "frontend/src");
+
+const LOCALES = ["en_US", "ko_KR", "ja_JP", "zh_CN", "es_ES", "fr_FR"];
+const MASTER = "en_US";
 
 function flatten(obj, prefix = "", out = {}) {
 	for (const [k, v] of Object.entries(obj || {})) {
@@ -48,20 +51,29 @@ function walk(dir, acc = []) {
 	return acc;
 }
 
-const en = loadLocale("en_US");
-const ko = loadLocale("ko_KR");
-const onlyEn = Object.keys(en).filter((k) => !(k in ko));
-const onlyKo = Object.keys(ko).filter((k) => !(k in en));
+const catalogs = Object.fromEntries(LOCALES.map((locale) => [locale, loadLocale(locale)]));
+const master = catalogs[MASTER];
+const masterKeys = Object.keys(master);
 
 let failed = false;
 
-console.log(`Locale leaf keys: en=${Object.keys(en).length} ko=${Object.keys(ko).length}`);
-if (onlyEn.length || onlyKo.length) {
-	failed = true;
-	if (onlyEn.length) console.error("Keys only in en_US:", onlyEn);
-	if (onlyKo.length) console.error("Keys only in ko_KR:", onlyKo);
-} else {
-	console.log("OK: en/ko key parity");
+console.log(
+	`Locale leaf keys: ${LOCALES.map((locale) => `${locale}=${Object.keys(catalogs[locale]).length}`).join(" ")}`,
+);
+
+for (const locale of LOCALES) {
+	if (locale === MASTER) continue;
+	const catalog = catalogs[locale];
+	const onlyMaster = masterKeys.filter((k) => !(k in catalog));
+	const onlyLocale = Object.keys(catalog).filter((k) => !(k in master));
+	if (onlyMaster.length || onlyLocale.length) {
+		failed = true;
+		if (onlyMaster.length) console.error(`Keys only in ${MASTER} (missing from ${locale}):`, onlyMaster);
+		if (onlyLocale.length) console.error(`Keys only in ${locale}:`, onlyLocale);
+	}
+}
+if (!failed) {
+	console.log(`OK: key parity vs ${MASTER} for ${LOCALES.filter((l) => l !== MASTER).join(", ")}`);
 }
 
 const keyRe = /\bt\(\s*['"`]([^'"`]+?)['"`]/g;
@@ -78,14 +90,14 @@ for (const file of walk(srcRoot)) {
 	}
 }
 
-const missing = [...used].filter((k) => !(k in en) || !(k in ko)).sort();
-// Allow status-code style lookups that are built dynamically via template in some places —
-// we only flag fully static keys.
+const missing = [...used]
+	.filter((k) => LOCALES.some((locale) => !(k in catalogs[locale])))
+	.sort();
 if (missing.length) {
 	failed = true;
 	console.error("Missing static t() keys:", missing);
 } else {
-	console.log(`OK: ${used.size} static t() keys present in both catalogs`);
+	console.log(`OK: ${used.size} static t() keys present in all ${LOCALES.length} catalogs`);
 }
 
 // Hangul outside locale catalogs (informational; legal bilingual content is allowlisted)

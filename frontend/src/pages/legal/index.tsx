@@ -1,13 +1,12 @@
-import { Button, Divider, Typography } from "antd";
-import { Link } from "react-router";
 import { Iconify } from "@/components/icon";
 import LocalePicker from "@/components/locale-picker";
+import { Button, Divider, Typography } from "antd";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 const { Paragraph, Text, Title } = Typography;
 
-const CONTACT_EMAIL =
-	import.meta.env.VITE_CONTACT_EMAIL || "admin@localhost";
+const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || "admin@localhost";
 const LAST_UPDATED = "2026-07-19";
 
 type LegalSection = {
@@ -137,7 +136,9 @@ const enPrivacySections: LegalSection[] = [
 	},
 	{
 		title: "5. Third-party processing",
-		items: ["Infrastructure providers selected by the operator, such as email, push notification, and database providers, may process limited personal information."],
+		items: [
+			"Infrastructure providers selected by the operator, such as email, push notification, and database providers, may process limited personal information.",
+		],
 	},
 	{
 		title: "6. Retention, security, and contact",
@@ -204,7 +205,9 @@ function LegalDocument({
 			</div>
 			<Title level={2}>{title}</Title>
 			<Paragraph type="secondary">{description}</Paragraph>
-			<Text type="secondary">{t("sys.legal.lastUpdated")}: {LAST_UPDATED}</Text>
+			<Text type="secondary">
+				{t("sys.legal.lastUpdated")}: {LAST_UPDATED}
+			</Text>
 			<Divider />
 			{sections.map((section) => (
 				<div key={section.title} className="mb-8">
@@ -222,9 +225,7 @@ function LegalDocument({
 				</div>
 			))}
 			<Link to="/welcome">
-				<Button icon={<Iconify icon="solar:arrow-left-linear" size={18} />}>
-					{t("common.back")}
-				</Button>
+				<Button icon={<Iconify icon="solar:arrow-left-linear" size={18} />}>{t("common.back")}</Button>
 			</Link>
 		</div>
 	);
@@ -232,24 +233,24 @@ function LegalDocument({
 
 export function PrivacyPolicyPage() {
 	const { t, i18n } = useTranslation();
-	const isKorean = i18n.resolvedLanguage === "ko_KR";
+	const useKoreanLegal = i18n.resolvedLanguage === "ko_KR";
 	return (
 		<LegalDocument
 			title={t("sys.legal.privacy.title")}
 			description={t("sys.legal.privacy.description")}
-			sections={isKorean ? koPrivacySections : enPrivacySections}
+			sections={useKoreanLegal ? koPrivacySections : enPrivacySections}
 		/>
 	);
 }
 
 export function TermsOfServicePage() {
 	const { t, i18n } = useTranslation();
-	const isKorean = i18n.resolvedLanguage === "ko_KR";
+	const useKoreanLegal = i18n.resolvedLanguage === "ko_KR";
 	return (
 		<LegalDocument
 			title={t("sys.legal.terms.title")}
 			description={t("sys.legal.terms.description")}
-			sections={isKorean ? koTermsSections : enTermsSections}
+			sections={useKoreanLegal ? koTermsSections : enTermsSections}
 		/>
 	);
 }

@@ -121,6 +121,23 @@ Your app  →  /api/web/authorize  →  Bio Pass (approve)  →  redirect_uri?co
 Stack: Node.js 22 · Koa · PostgreSQL · React (Vite) admin.  
 Roles: `ADMIN` / `USER` (console), `APP` (mobile). Single-organization self-host.
 
+## Admin UI languages
+
+The admin console is localized in six locales (picker in the header / public pages):
+
+| Locale | Language |
+|--------|----------|
+| `en_US` | English (fallback) |
+| `ko_KR` | Korean |
+| `ja_JP` | Japanese |
+| `zh_CN` | Simplified Chinese |
+| `es_ES` | Spanish |
+| `fr_FR` | French |
+
+Preference is stored in `localStorage` (`i18nextLng`). On first visit, the browser language is used when it matches a supported locale (e.g. `ja` → `ja_JP`, `zh` / `zh-TW` → `zh_CN`). Catalogs live under [`frontend/src/locales/lang/`](frontend/src/locales/lang/); keep key parity with `cd frontend && pnpm i18n:check`.
+
+Legal document **bodies** are Korean or English only (non-`ko_KR` → English). Developer code samples follow the same rule.
+
 ## Develop
 
 ```bash

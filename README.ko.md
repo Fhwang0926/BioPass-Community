@@ -121,6 +121,23 @@ git push origin v0.2.0
 스택: Node.js 22 · Koa · PostgreSQL · React(Vite) 관리 콘솔.  
 역할: `ADMIN` / `USER` (콘솔), `APP` (모바일). 단일 조직 셀프호스트.
 
+## 관리자 UI 언어
+
+관리자 콘솔은 6개 locale을 지원합니다 (헤더·공개 화면의 언어 전환기):
+
+| Locale | 언어 |
+|--------|------|
+| `en_US` | 영어 (기본 fallback) |
+| `ko_KR` | 한국어 |
+| `ja_JP` | 일본어 |
+| `zh_CN` | 중국어(간체) |
+| `es_ES` | 스페인어 |
+| `fr_FR` | 프랑스어 |
+
+선택은 `localStorage`(`i18nextLng`)에 저장됩니다. 최초 방문 시 브라우저 언어가 지원 locale과 맞으면 그에 맞춥니다 (`ja` → `ja_JP`, `zh` / `zh-TW` → `zh_CN` 등). 카탈로그는 [`frontend/src/locales/lang/`](frontend/src/locales/lang/)에 있으며, 키 동등성은 `cd frontend && pnpm i18n:check`로 검사합니다.
+
+법률 문서 **본문**은 한국어 또는 영어만 제공합니다 (`ko_KR`이 아니면 영어). 개발자 코드 샘플도 동일합니다.
+
 ## 개발
 
 ```bash

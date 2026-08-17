@@ -2,10 +2,10 @@ import type { IntegrationVars } from "./IntegrationContext";
 
 export type SampleLocale = "ko" | "en";
 
-/** i18n locale → BioPass auth lang (ko | en) — default aligns with app fallback en_US */
+/** i18n locale → BioPass auth lang (ko | en). Non-Korean locales use English samples. */
 export function resolveSampleLocale(i18nLanguage?: string): SampleLocale {
 	const lang = String(i18nLanguage || "en").toLowerCase();
-	if (lang.startsWith("ko")) return "ko";
+	if (lang === "ko_kr" || lang.startsWith("ko")) return "ko";
 	return "en";
 }
 

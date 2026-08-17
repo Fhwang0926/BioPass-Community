@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 import "dayjs/locale/en";
+import "dayjs/locale/es";
+import "dayjs/locale/fr";
+import "dayjs/locale/ja";
 import "dayjs/locale/ko";
+import "dayjs/locale/zh-cn";
 
 import { LocalEnum } from "#/enum";
 
@@ -8,8 +12,8 @@ export type AppLocale = keyof typeof LocalEnum;
 
 export type LocaleMeta = {
 	i18n: AppLocale;
-	dayjs: "en" | "ko";
-	bcp47: "en-US" | "ko-KR";
+	dayjs: "en" | "ko" | "ja" | "zh-cn" | "es" | "fr";
+	bcp47: "en-US" | "ko-KR" | "ja-JP" | "zh-CN" | "es-ES" | "fr-FR";
 };
 
 export const LOCALE_META: Record<AppLocale, LocaleMeta> = {
@@ -23,9 +27,36 @@ export const LOCALE_META: Record<AppLocale, LocaleMeta> = {
 		dayjs: "ko",
 		bcp47: "ko-KR",
 	},
+	[LocalEnum.ja_JP]: {
+		i18n: LocalEnum.ja_JP,
+		dayjs: "ja",
+		bcp47: "ja-JP",
+	},
+	[LocalEnum.zh_CN]: {
+		i18n: LocalEnum.zh_CN,
+		dayjs: "zh-cn",
+		bcp47: "zh-CN",
+	},
+	[LocalEnum.es_ES]: {
+		i18n: LocalEnum.es_ES,
+		dayjs: "es",
+		bcp47: "es-ES",
+	},
+	[LocalEnum.fr_FR]: {
+		i18n: LocalEnum.fr_FR,
+		dayjs: "fr",
+		bcp47: "fr-FR",
+	},
 };
 
-const SUPPORTED: AppLocale[] = [LocalEnum.en_US, LocalEnum.ko_KR];
+const SUPPORTED: AppLocale[] = [
+	LocalEnum.en_US,
+	LocalEnum.ko_KR,
+	LocalEnum.ja_JP,
+	LocalEnum.zh_CN,
+	LocalEnum.es_ES,
+	LocalEnum.fr_FR,
+];
 
 /** Normalize app, browser, and legacy locale spellings to an app locale. */
 export function normalizeLocale(language?: string | null): AppLocale | null {
@@ -35,6 +66,13 @@ export function normalizeLocale(language?: string | null): AppLocale | null {
 		if (normalized === locale.toLowerCase()) return locale;
 	}
 	if (normalized === "ko" || normalized.startsWith("ko_")) return LocalEnum.ko_KR;
+	if (normalized === "ja" || normalized.startsWith("ja_")) return LocalEnum.ja_JP;
+	if (normalized === "zh_tw" || normalized.startsWith("zh_hant") || normalized === "zh_hk") {
+		return LocalEnum.zh_CN;
+	}
+	if (normalized === "zh" || normalized.startsWith("zh_")) return LocalEnum.zh_CN;
+	if (normalized === "es" || normalized.startsWith("es_")) return LocalEnum.es_ES;
+	if (normalized === "fr" || normalized.startsWith("fr_")) return LocalEnum.fr_FR;
 	if (normalized === "en" || normalized.startsWith("en_")) return LocalEnum.en_US;
 	return null;
 }

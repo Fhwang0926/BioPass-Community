@@ -7,7 +7,7 @@ export interface SignInReq {
 	password: string;
 }
 
-export type SignInRes = UserToken & { data: { user: UserInfo, accessToken: string, refreshToken: string } };
+export type SignInRes = UserToken & { data: { user: UserInfo; accessToken: string; refreshToken: string } };
 export type RefreshRes = { result: boolean; data: { accessToken: string }; message?: string };
 
 export enum UserApi {
@@ -32,11 +32,9 @@ export interface SetupReq {
 	phone?: string;
 }
 
-const signin = (data: SignInReq) =>
-	apiClient.post<SignInRes>({ url: UserApi.SignIn, data });
+const signin = (data: SignInReq) => apiClient.post<SignInRes>({ url: UserApi.SignIn, data });
 const logout = () => apiClient.get({ url: UserApi.Logout });
-const findById = (id: string) =>
-	apiClient.get<UserInfo[]>({ url: `${UserApi.User}/${id}` });
+const findById = (id: string) => apiClient.get<UserInfo[]>({ url: `${UserApi.User}/${id}` });
 const refresh = (timestamp: number, refreshToken?: string) =>
 	apiClient.get<RefreshRes>({
 		url: `${UserApi.Refresh}/${timestamp}`,
@@ -47,8 +45,7 @@ const refresh = (timestamp: number, refreshToken?: string) =>
  * Silent on purpose: this runs as a routing probe on public pages, and every
  * caller already falls back to the login screen when it fails.
  */
-const getSetupStatus = () =>
-	apiClient.get<SetupStatus>({ url: UserApi.SetupStatus, silent: true });
+const getSetupStatus = () => apiClient.get<SetupStatus>({ url: UserApi.SetupStatus, silent: true });
 
 /**
  * `logSuccess` wraps the handler payload again, so the unwrapped response is
@@ -62,8 +59,7 @@ const getNeedsSetup = async (): Promise<boolean> => {
 	return Boolean(status?.needsSetup ?? status?.data?.needsSetup);
 };
 
-const completeSetup = (data: SetupReq) =>
-	apiClient.post<SignInRes>({ url: UserApi.Setup, data });
+const completeSetup = (data: SetupReq) => apiClient.post<SignInRes>({ url: UserApi.Setup, data });
 
 export interface DashboardData {
 	kpi: {
@@ -100,10 +96,10 @@ export interface DashboardData {
 		ABUSE: number;
 	};
 	weekSuccessCount: number;
+	firebaseConfigured?: boolean;
 }
 
-const getDashboard = () =>
-	apiClient.get<DashboardData>({ url: UserApi.Dashboard });
+const getDashboard = () => apiClient.get<DashboardData>({ url: UserApi.Dashboard });
 
 export default {
 	signin,

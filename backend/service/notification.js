@@ -10,12 +10,15 @@ import { sql } from '../lib/index.js'
  * 인증 요청 알림: request_id로 auth_request의 user_id를 조회한 뒤,
  * 해당 사용자의 등록 디바이스 FCM 토큰으로 푸시를 보냅니다.
  * @param {string} requestId - auth_requests.id (인증 요청 ID)
- * @returns {Promise<{ sent: boolean, allFailed: boolean, noTokens: boolean }>}
- *   sent: 전송 시도 여부, allFailed: 전체 실패 여부, noTokens: 유효 토큰 없음
+ * @returns {Promise<{ sent: boolean, allFailed: boolean, noTokens: boolean, firebaseDisabled?: boolean }>}
+ *   sent: 전송 시도 여부, allFailed: 전체 실패 여부, noTokens: 유효 토큰 없음,
+ *   firebaseDisabled: Firebase 서비스 계정 미설정/초기화 실패
  */
 export async function requestAuthNotification(requestId) {
   if (typeof requestId !== 'string' || !requestId.trim()) return { sent: false, allFailed: false, noTokens: true }
-  if (!isFirebaseInitialized()) return { sent: false, allFailed: false, noTokens: true }
+  if (!isFirebaseInitialized()) {
+    return { sent: false, allFailed: false, noTokens: false, firebaseDisabled: true }
+  }
 
   try {
     const [row] = await sql.db

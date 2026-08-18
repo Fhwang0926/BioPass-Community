@@ -55,6 +55,14 @@ export function register(route) {
     }
     try {
       const result = await requestAuthNotification(requestId)
+      if (result.firebaseDisabled) {
+        ctx.body = {
+          result: false,
+          firebase_disabled: true,
+          message: 'Firebase가 설정되지 않아 앱으로 알림을 보낼 수 없습니다. Bio Pass 앱에서 요청 현황을 새로고침하거나 이메일 인증을 이용해 주세요.'
+        }
+        return
+      }
       if (result.noTokens) {
         ctx.body = { result: false, no_devices: true, message: '유효한 푸시 토큰이 없습니다. 앱에서 다시 로그인해 주세요.' }
         return

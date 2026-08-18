@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import Router from 'koa-router'
 import _ from 'lodash'
 import moment from 'moment-timezone'
+import { isFirebaseInitialized } from '../../lib/firebase.js'
 import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
 import { getCompanyAuthAppIds, requireAdminCompanyScope } from '../../service/serviceScope.js'
@@ -348,7 +349,8 @@ route.get('/dashboard', async (ctx) => {
         COUNTRY_CHANGE: 0,
         ABUSE: 0
       },
-      weekSuccessCount: 0
+      weekSuccessCount: 0,
+      firebaseConfigured: isFirebaseInitialized()
     }
 
     if (scopedAppIds.length === 0) {
@@ -591,7 +593,8 @@ route.get('/dashboard', async (ctx) => {
         dailyTrend: dailyData,
         recentRequests: formattedRecentRequests,
         riskEvents: riskMap,
-        weekSuccessCount
+        weekSuccessCount,
+        firebaseConfigured: isFirebaseInitialized()
       }
     })
   } catch (e) {

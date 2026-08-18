@@ -1,30 +1,19 @@
-import {
-	Alert,
-	Button,
-	Card,
-	Col,
-	Empty,
-	Row,
-	Space,
-	Spin,
-	Tag,
-	Typography,
-} from "antd";
+import dayjs from "@/utils/dayjs";
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import dayjs from "@/utils/dayjs";
-import { useNavigate } from "react-router";
+import { Alert, Button, Card, Col, Empty, Row, Space, Spin, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import applicationService, { type Application, type ApplicationListResponse } from "@/api/services/application";
 import authService, { type DashboardData } from "@/api/services/auth";
 import Chart from "@/components/chart/chart";
 import useChart from "@/components/chart/useChart";
 import { Iconify } from "@/components/icon";
+import { formatNumber as formatLocaleNumber } from "@/locales/locale-meta";
+import useLocale from "@/locales/use-locale";
 import { useUserInfo } from "@/store/userStore";
 import { themeVars } from "@/theme/theme.css";
-import useLocale from "@/locales/use-locale";
-import { formatNumber as formatLocaleNumber } from "@/locales/locale-meta";
 
 const { Text, Title } = Typography;
 
@@ -52,6 +41,7 @@ const EMPTY_DASHBOARD: DashboardData = {
 		ABUSE: 0,
 	},
 	weekSuccessCount: 0,
+	firebaseConfigured: undefined,
 };
 
 const statusColors: Record<string, string> = {
@@ -98,6 +88,7 @@ function normalizeDashboardData(value: unknown): DashboardData {
 			...riskEvents,
 		},
 		weekSuccessCount: Number(data.weekSuccessCount || 0),
+		firebaseConfigured: typeof data.firebaseConfigured === "boolean" ? data.firebaseConfigured : undefined,
 	};
 }
 
@@ -163,8 +154,7 @@ function MetricCard({
 export default function AdminDashboard() {
 	const { t } = useTranslation();
 	const { meta } = useLocale();
-	const formatNumber = (value: number | null | undefined) =>
-		formatLocaleNumber(Number(value || 0), meta.bcp47);
+	const formatNumber = (value: number | null | undefined) => formatLocaleNumber(Number(value || 0), meta.bcp47);
 	const statusLabels: Record<string, string> = {
 		CREATED: t("sys.page.dashboard.status.created"),
 		PENDING: t("sys.page.dashboard.status.pending"),
@@ -215,7 +205,9 @@ export default function AdminDashboard() {
 
 	const dailyTrend = dashboardData.dailyTrend?.length ? dashboardData.dailyTrend : EMPTY_DASHBOARD.dailyTrend;
 	const dailyCategories = dailyTrend.map((item) => {
-		const baseDay = dayjs().startOf("day").subtract(6 - Number(item.day || 0), "days");
+		const baseDay = dayjs()
+			.startOf("day")
+			.subtract(6 - Number(item.day || 0), "days");
 		return baseDay.format("MM/DD");
 	});
 
@@ -242,14 +234,7 @@ export default function AdminDashboard() {
 		},
 	});
 
-	const statusItems = [
-		"CONSUMED",
-		"APPROVED",
-		"PENDING",
-		"DENIED",
-		"EXPIRED",
-		"BLOCKED",
-	].map((status) => ({
+	const statusItems = ["CONSUMED", "APPROVED", "PENDING", "DENIED", "EXPIRED", "BLOCKED"].map((status) => ({
 		status,
 		label: statusLabels[status],
 		value: Number((dashboardData.statusDistribution as any)?.[status] || 0),
@@ -372,6 +357,15 @@ export default function AdminDashboard() {
 				/>
 			)}
 
+			{dashboardData.firebaseConfigured === false && (
+				<Alert
+					showIcon
+					type="warning"
+					message={t("sys.page.dashboard.firebaseUnconfigured")}
+					description={t("sys.page.dashboard.firebaseUnconfiguredDesc")}
+				/>
+			)}
+
 			{totalApplications === 0 && (
 				<Card bordered style={{ borderRadius: 8 }}>
 					<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -383,9 +377,7 @@ export default function AdminDashboard() {
 								<Title level={4} className="!mb-1">
 									{t("sys.page.dashboard.connectFirstApp")}
 								</Title>
-								<Text type="secondary">
-									{t("sys.page.dashboard.connectFirstAppDesc")}
-								</Text>
+								<Text type="secondary">{t("sys.page.dashboard.connectFirstAppDesc")}</Text>
 							</div>
 						</Space>
 						<Button type="primary" onClick={() => navigate("/service/application/create")}>
@@ -466,7 +458,12 @@ export default function AdminDashboard() {
 				<Col xs={24} xl={12}>
 					<Card
 						title={t("sys.page.dashboard.riskEvents")}
-						extra={<Tag color={riskTotal > 0 ? "red" : "green"}>{formatNumber(riskTotal)}{t("common.countUnit")}</Tag>}
+						extra={
+							<Tag color={riskTotal > 0 ? "red" : "green"}>
+								{formatNumber(riskTotal)}
+								{t("common.countUnit")}
+							</Tag>
+						}
 						bordered
 						style={{ borderRadius: 8 }}
 					>
@@ -495,7 +492,10 @@ export default function AdminDashboard() {
 												<Text type="secondary" className="block text-xs">
 													{item.label}
 												</Text>
-												<Text strong>{formatNumber(item.value)}{t("common.countUnit")}</Text>
+												<Text strong>
+													{formatNumber(item.value)}
+													{t("common.countUnit")}
+												</Text>
 											</span>
 										</Space>
 									</div>
@@ -545,7 +545,9 @@ export default function AdminDashboard() {
 														</Tag>
 													</div>
 													<Text type="secondary" className="mt-2 block text-xs">
-														{t("sys.page.dashboard.lastAuth", { time: lastAuthAt ? dayjs(lastAuthAt).format("MM-DD HH:mm") : "-" })}
+														{t("sys.page.dashboard.lastAuth", {
+															time: lastAuthAt ? dayjs(lastAuthAt).format("MM-DD HH:mm") : "-",
+														})}
 													</Text>
 												</div>
 											);
@@ -562,7 +564,12 @@ export default function AdminDashboard() {
 
 			<Card
 				title={t("sys.page.dashboard.recentRequests")}
-				extra={<Tag color="blue">{formatNumber(recentRequestsPreview.length)}{t("common.countUnit")}</Tag>}
+				extra={
+					<Tag color="blue">
+						{formatNumber(recentRequestsPreview.length)}
+						{t("common.countUnit")}
+					</Tag>
+				}
 				bordered
 				style={{ borderRadius: 8 }}
 			>

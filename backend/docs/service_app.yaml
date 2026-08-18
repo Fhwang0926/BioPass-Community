@@ -35,6 +35,30 @@ paths:
       responses:
         "200": { description: access_token / refresh_token }
 
+  /api/app/check-site:
+    get:
+      tags: [Service (App)]
+      summary: Self-host console discovery (app server registration)
+      description: >
+        Unauthenticated probe used by Bio Pass when the user enters a console URL.
+        A valid url/origin always returns supported=true with console_url, app_name,
+        server_version, and auth_mode=self-host-console.
+      security: []
+      parameters:
+        - name: url
+          in: query
+          schema: { type: string }
+          description: Console URL to probe (url or origin required)
+        - name: origin
+          in: query
+          schema: { type: string }
+          description: Console origin to probe
+      responses:
+        "200":
+          description: supported, console_url, app_name, server_version, auth_mode
+        "400":
+          description: url or origin missing/invalid
+
   /api/app/signup/send-code:
     post:
       tags: [Service (App)]
@@ -85,12 +109,18 @@ paths:
       tags: [Service (App)]
       summary: Approve or reject an auth request
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [request_id, result, device_id, timestamp, nonce, signature]
               properties:
                 request_id: { type: string }
-                result: { type: string, enum: [approved, rejected] }
+                result: { type: string, enum: [approve, deny] }
+                device_id: { type: string }
+                timestamp: { type: integer, description: Unix ms; ±5 min skew }
+                nonce: { type: string }
+                signature: { type: string, description: HMAC-SHA256 hex of request_id:result:device_id:timestamp:nonce }
       responses:
         "200": { description: Result applied }

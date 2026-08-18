@@ -184,14 +184,29 @@ flowchart LR
 - **signup/verify** 성공 시 로그인과 동일하게 `access_token`, `refresh_token`을 함께 반환하므로, 앱은 이를 저장해 바로 인증 상태로 사용하면 됨. 별도 로그인 API 없음.
 - **기기 등록**: body에 `device`(platform, push_token 필수, device_name·biometric_capable 선택)를 넣으면 인증 성공 시 해당 기기를 등록하고, 응답에 `data.device`(id, device_secret, platform 등)를 그대로 반환. 등록된 기기는 관리 화면 **사용자 관리 > 디바이스** 메뉴에 표시됨.
 
-### 1-2. 사이트 연동 여부 확인 (웹에서 로그인 버튼 노출 전 등)
+### 1-2. 셀프호스트 콘솔 디스커버리 (앱 서버 등록)
+
+앱 첫 실행·설정에서 사용자가 입력한 콘솔 URL이 BioPass Community 서버인지 확인합니다. pairing/invite 없음.
 
 ```
-GET /api/app/check-site?url=https://example.com
+GET /api/app/check-site?url=https://biopass.example.com
   또는
-GET /api/app/check-site?origin=https://example.com
+GET /api/app/check-site?origin=https://biopass.example.com
 ```
-- 해당 URL/origin에 연동된 앱이 있으면 `supported`, `app_name`, `client_id` 등 반환. 앱 설치/연동 유도에 사용.
+
+- 인증 없음. `url` 또는 `origin` 중 하나 필수.
+- 유효한 URL이면 항상 `supported: true`. 응답 `data`:
+
+| 필드 | 의미 |
+|------|------|
+| `supported` | 이 호스트가 BioPass 콘솔임 (`true`) |
+| `url` | 요청 origin |
+| `console_url` | 앱이 저장할 베이스 URL (`FRONTEND_ORIGIN` → `PUBLIC_FRONTEND_ORIGIN` → `PUBLIC_BASE_URL` → request origin) |
+| `app_name` | 활성 회사명, 없으면 `BioPass` |
+| `server_version` | 서버 버전 |
+| `auth_mode` | 항상 `self-host-console` |
+
+앱은 `supported === true`일 때 `console_url`(없으면 입력 URL)을 `current_server_url`로 저장한 뒤, 같은 호스트의 `signup/send-code` · `signup/verify`로 로그인합니다.
 
 ### 1-3. OAuth 인증 (웹→앱 경로: 웹에서 “앱으로 로그인” 시)
 
@@ -203,8 +218,8 @@ GET /api/app/check-site?origin=https://example.com
      Header: `Authorization: Bearer <access_token>`  
      → JWT에서 사용자 식별. 대기 중인(PENDING) 인증 요청 목록에 해당 `request_id`가 포함되는지 확인 가능.
   3. 사용자가 승인/거절 시 **POST /api/app/submit-auth-result**  
-     body: `{ request_id: "...", result: "approve" | "deny" }`  
-     → 승인 시 웹은 이후 `POST /api/web/token`으로 code 교환 등 기존 OAuth 플로우 진행.
+     body: `{ request_id, result: "approve" | "deny", device_id, timestamp, nonce, signature }`  
+     → `signature`는 `device_secret`으로 `request_id:result:device_id:timestamp:nonce` HMAC-SHA256. 승인 시 웹은 이후 `POST /api/web/token`으로 code 교환 등 기존 OAuth 플로우 진행.
 
 (토큰 교환은 웹/클라이언트 사이트에서 `POST /api/web/token` 사용. 앱은 인증 요청 조회·결과 제출만 담당.)
 
@@ -226,7 +241,7 @@ body: { name?, client_id?, is_active?, page?, limit? }
 | 기능 | API | 비고 |
 |------|-----|------|
 | **대기 중인 인증 요청** | **GET /api/app/my-auth-requests** | Header: `Authorization: Bearer <access_token>`. JWT에서 사용자 식별. 해당 사용자의 **PENDING** 요청만 반환. 만료된 PENDING은 자동으로 EXPIRED 처리 후 제외됨. |
-| **승인/거절 제출** | **POST /api/app/submit-auth-result** | body: `{ request_id, result: "approve" \| "deny" }`. 권한 확인 시 `user_id` 선택. |
+| **승인/거절 제출** | **POST /api/app/submit-auth-result** | body: `{ request_id, result: "approve" \| "deny", device_id, timestamp, nonce, signature }`. JWT + 등록 기기 HMAC 필수. |
 | **완료/거절 내역** | (없음) | 서버 API는 **대기 중인 요청**만 제공. 완료·거절·만료된 “인증 내역”은 앱에서 **로컬 저장**하거나, 승인/거절 시점에 앱이 기록해 두는 방식을 권장. |
 
 - 앱 실행 시 또는 “인증 요청” 화면 진입 시 `my-auth-requests`를 호출해 목록을 갱신하면 됨.
@@ -258,7 +273,7 @@ body: { name?, client_id?, is_active?, page?, limit? }
 | POST | `/api/app/token` | Authorization code → access token (웹/클라이언트에서 사용) |
 | GET/POST | `/api/app/my-auth-requests` | 내 대기 중(PENDING) 인증 요청 목록 (JWT 필수) |
 | POST | `/api/app/submit-auth-result` | 인증 요청 승인/거절 |
-| GET | `/api/app/check-site` | url 또는 origin으로 사이트 연동 여부 확인 |
+| GET | `/api/app/check-site` | 셀프호스트 콘솔 디스커버리 (앱 서버 등록) |
 | POST | `/api/app/signup/send-code` | 회원가입 인증 코드 발송 |
 | POST | `/api/app/signup/verify` | 회원가입 인증 코드 검증 → user_id, access_token, refresh_token (즉시 로그인) |
 | POST | `/api/app/search` | 애플리케이션 목록 검색 (JWT 필요, 조회 전용) |

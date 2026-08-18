@@ -1,8 +1,37 @@
 'use strict'
 
-import { eq, and } from 'drizzle-orm'
+import { eq, asc, and } from 'drizzle-orm'
+import config from '../../../config.js'
 import { sql } from '../../../lib/index.js'
 import { logSuccess, logFailure } from '../../../service/audit.js'
+
+function trimTrailingSlash(value) {
+  return String(value || '').replace(/\/+$/, '')
+}
+
+function resolveRequestOrigin(ctx) {
+  return trimTrailingSlash(ctx.request.origin || `${ctx.request.protocol}://${ctx.request.host}`)
+}
+
+function normalizePublicBaseUrl() {
+  const raw = trimTrailingSlash(process.env.PUBLIC_BASE_URL || '')
+  if (!raw) return ''
+  try {
+    const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+    return trimTrailingSlash(url.origin)
+  } catch {
+    return ''
+  }
+}
+
+function resolveConsoleOrigin(ctx) {
+  return trimTrailingSlash(
+    process.env.FRONTEND_ORIGIN ||
+    process.env.PUBLIC_FRONTEND_ORIGIN ||
+    normalizePublicBaseUrl() ||
+    resolveRequestOrigin(ctx)
+  )
+}
 
 export function register(route) {
   route.get('/check-site', async (ctx) => {
@@ -22,42 +51,29 @@ export function register(route) {
         return
       }
 
-      const sysApp = await sql.db
+      const consoleOrigin = resolveConsoleOrigin(ctx)
+      const company = await sql.db
         .select({
-          id: sql.schema.sysApplication.id,
-          name: sql.schema.sysApplication.name,
-          clientId: sql.schema.sysApplication.clientId,
-          callbackUrl: sql.schema.sysApplication.callbackUrl
+          id: sql.schema.sysCompany.id,
+          name: sql.schema.sysCompany.name
         })
-        .from(sql.schema.sysApplication)
+        .from(sql.schema.sysCompany)
         .where(and(
-          eq(sql.schema.sysApplication.isDel, false),
-          eq(sql.schema.sysApplication.isActive, true)
+          eq(sql.schema.sysCompany.isDel, false),
+          eq(sql.schema.sysCompany.isActive, true)
         ))
-        .all()
-      const matchedSys = (sysApp || []).find(
-        app => app.callbackUrl && (app.callbackUrl === origin || app.callbackUrl.startsWith(origin + '/'))
-      )
+        .orderBy(asc(sql.schema.sysCompany.id))
+        .limit(1)
+        .get()
 
-      const legacyApps = await sql.db
-        .select({
-          id: sql.schema.apps.id,
-          name: sql.schema.apps.name,
-          clientId: sql.schema.apps.clientId,
-          redirectUri: sql.schema.apps.redirectUri
-        })
-        .from(sql.schema.apps)
-        .all()
-      const matchedLegacy = (legacyApps || []).find(
-        app => app.redirectUri && (app.redirectUri === origin || app.redirectUri.startsWith(origin + '/'))
-      )
-      const matched = matchedSys || matchedLegacy
-
-      // Only return a boolean — do not leak app_name / client_id to unauthenticated callers.
       ctx.body = await logSuccess(ctx, 'check_site', 'Site check completed', {
         result: true,
-        supported: Boolean(matched),
-        url: origin
+        supported: true,
+        url: origin,
+        console_url: consoleOrigin,
+        app_name: company?.name || 'BioPass',
+        server_version: config.version,
+        auth_mode: 'self-host-console'
       })
     } catch (e) {
       ctx.body = await logFailure(ctx, 'check_site', 'Check site failed', e)

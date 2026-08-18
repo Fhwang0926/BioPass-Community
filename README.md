@@ -6,7 +6,11 @@
 
 <p align="center">
   <a href="README.md">English</a> ·
-  <a href="README.ko.md">한국어</a>
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.zh.md">简体中文</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a>
 </p>
 
 <p align="center">
@@ -44,7 +48,7 @@ Google Play is not published yet.
   <img src="docs/assets/flow-done.png" width="170" alt="3. Login completes" />
 </p>
 
-1. Install Bio Pass and register against **your** server (`PUBLIC_BASE_URL`).
+1. Install Bio Pass and register against **your** server (`PUBLIC_BASE_URL`). The app probes `GET /api/app/check-site` on that origin, then signs up.
 2. Your app starts OAuth → push / deep link → approve with biometrics.
 3. Browser returns to your app with `redirect_uri?code=…`.
 

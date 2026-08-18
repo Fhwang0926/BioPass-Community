@@ -6,7 +6,11 @@
 
 <p align="center">
   <a href="README.md">English</a> ·
-  <a href="README.ko.md">한국어</a>
+  <a href="README.ko.md">한국어</a> ·
+  <a href="README.ja.md">日本語</a> ·
+  <a href="README.zh.md">简体中文</a> ·
+  <a href="README.es.md">Español</a> ·
+  <a href="README.fr.md">Français</a>
 </p>
 
 <p align="center">
@@ -44,7 +48,7 @@ Google Play는 아직 출시되지 않았습니다.
   <img src="docs/assets/flow-done.png" width="170" alt="3. 로그인 완료" />
 </p>
 
-1. Bio Pass를 설치하고 **여러분 서버**(`PUBLIC_BASE_URL`)에 등록합니다.
+1. Bio Pass를 설치하고 **여러분 서버**(`PUBLIC_BASE_URL`)에 등록합니다. 앱이 해당 origin의 `GET /api/app/check-site`로 서버를 확인한 뒤 가입합니다.
 2. 서비스가 OAuth를 시작하면 푸시/딥링크로 요청이 오고, 생체인증으로 승인합니다.
 3. 브라우저가 `redirect_uri?code=…` 로 돌아와 로그인이 완료됩니다.
 

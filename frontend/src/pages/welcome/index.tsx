@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router";
 import authService from "@/api/services/auth";
 import Overlay from "@/assets/images/background/overlay.jpg";
 import StepApprove from "@/assets/images/welcome/welcome-step-approve.jpg";
+import StepFaceId from "@/assets/images/welcome/welcome-step-faceid.jpg";
 import StepRequest from "@/assets/images/welcome/welcome-step-request.jpg";
 import StepSignedIn from "@/assets/images/welcome/welcome-step-signedin.jpg";
 import LocalePicker from "@/components/locale-picker";
@@ -43,22 +44,22 @@ export default function WelcomePage() {
 
 	const steps = [
 		{
-			image: StepRequest,
-			alt: t("sys.welcome.step1Alt"),
 			title: t("sys.welcome.step1Title"),
 			body: t("sys.welcome.step1Body"),
+			images: [{ src: StepRequest, alt: t("sys.welcome.step1Alt") }],
 		},
 		{
-			image: StepApprove,
-			alt: t("sys.welcome.step2Alt"),
 			title: t("sys.welcome.step2Title"),
 			body: t("sys.welcome.step2Body"),
+			images: [
+				{ src: StepApprove, alt: t("sys.welcome.step2Alt"), label: t("sys.welcome.step2FingerprintLabel") },
+				{ src: StepFaceId, alt: t("sys.welcome.step2FaceIdAlt"), label: t("sys.welcome.step2FaceIdLabel") },
+			],
 		},
 		{
-			image: StepSignedIn,
-			alt: t("sys.welcome.step3Alt"),
 			title: t("sys.welcome.step3Title"),
 			body: t("sys.welcome.step3Body"),
+			images: [{ src: StepSignedIn, alt: t("sys.welcome.step3Alt") }],
 		},
 	];
 
@@ -153,7 +154,27 @@ export default function WelcomePage() {
 					{steps.map((step, index) => (
 						<li key={step.title} className="flex flex-col">
 							<div className="overflow-hidden rounded-2xl border border-gray-300 bg-gray-100 shadow-sm">
-								<img src={step.image} alt={step.alt} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+								{step.images.length === 1 ? (
+									<img
+										src={step.images[0].src}
+										alt={step.images[0].alt}
+										loading="lazy"
+										className="aspect-[4/3] w-full object-cover"
+									/>
+								) : (
+									<div className="grid aspect-[4/3] grid-cols-2 divide-x divide-gray-300">
+										{step.images.map((image) => (
+											<figure key={image.alt} className="relative m-0 h-full overflow-hidden">
+												<img src={image.src} alt={image.alt} loading="lazy" className="h-full w-full object-cover" />
+												{"label" in image && image.label ? (
+													<figcaption className="absolute inset-x-2 bottom-2 rounded-full bg-common-white/90 px-2 py-1 text-center text-[11px] font-medium text-gray-700">
+														{image.label}
+													</figcaption>
+												) : null}
+											</figure>
+										))}
+									</div>
+								)}
 							</div>
 							<div className="mt-5">
 								<Text className="!text-xs !font-semibold uppercase !text-primary">

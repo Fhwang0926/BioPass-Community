@@ -347,6 +347,7 @@ export function register(route) {
           }
           let autoNotificationSent = false
           let autoNotificationFailed = false
+          let autoNotificationFirebaseDisabled = false
           if (emailUserHasDevice && authRequestStatus === AuthRequestStatus.CREATED) {
             const transitionResult = await transitionAuthRequest({
               authRequestId: requestId,
@@ -361,7 +362,11 @@ export function register(route) {
                   return { sent: false, allFailed: true, noTokens: false }
                 })
               autoNotificationSent = Boolean(notificationResult?.sent && !notificationResult?.allFailed)
-              autoNotificationFailed = Boolean(notificationResult?.allFailed || notificationResult?.noTokens)
+              autoNotificationFirebaseDisabled = Boolean(notificationResult?.firebaseDisabled)
+              autoNotificationFailed = Boolean(
+                !autoNotificationFirebaseDisabled &&
+                (notificationResult?.allFailed || notificationResult?.noTokens)
+              )
               if (autoNotificationSent) {
                 await recordAuthEvent({
                   authRequestId: requestId,
@@ -410,6 +415,7 @@ export function register(route) {
               has_push_device: true,
               notification_sent: autoNotificationSent,
               notification_failed: autoNotificationFailed,
+              notification_firebase_disabled: autoNotificationFirebaseDisabled,
               expires_at: expiresAt
             })
             return
@@ -423,6 +429,7 @@ export function register(route) {
             hasPushDevice: true,
             autoNotificationSent,
             autoNotificationFailed,
+            autoNotificationFirebaseDisabled,
             choiceEmail: normalizedEmail,
             emailAuthClientId: client_id,
             emailAuthRedirectUri: redirect_uri,

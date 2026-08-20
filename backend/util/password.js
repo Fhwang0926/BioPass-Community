@@ -117,16 +117,28 @@ export const MIN_PASSWORD_LENGTH = 12
  */
 export function assertPasswordPolicy (password) {
   if (!password || typeof password !== 'string') {
-    return { ok: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
+    return {
+      ok: false,
+      code: 'PASSWORD_TOO_SHORT',
+      message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`
+    }
   }
   if (isClientPasswordHash(password)) {
     return { ok: true }
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return { ok: false, message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` }
+    return {
+      ok: false,
+      code: 'PASSWORD_TOO_SHORT',
+      message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`
+    }
   }
   if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-    return { ok: false, message: 'Password must include letters and numbers' }
+    return {
+      ok: false,
+      code: 'PASSWORD_COMPLEXITY',
+      message: 'Password must include letters and numbers'
+    }
   }
   return { ok: true }
 }

@@ -27,6 +27,22 @@ Run the API separately (`backend/`, port **3030**), or use root Docker Compose w
 | `pnpm build` | `tsc` + production build → `dist/` |
 | `pnpm preview` | Preview production build |
 | `pnpm exec tsc --noEmit` | Typecheck only |
+| `pnpm i18n:check` | Locale key parity + static `t()` coverage (all 6 locales) |
+
+## Languages (i18n)
+
+Supported admin UI locales (see `src/locales/`):
+
+| Code | Language | Catalog |
+|------|----------|---------|
+| `en_US` | English (fallback) | `lang/en_US/` |
+| `ko_KR` | Korean | `lang/ko_KR/` |
+| `ja_JP` | Japanese | `lang/ja_JP/` |
+| `zh_CN` | Simplified Chinese | `lang/zh_CN/` |
+| `es_ES` | Spanish | `lang/es_ES/` |
+| `fr_FR` | French | `lang/fr_FR/` |
+
+Each locale merges `common.json` + `sys.json`. Wiring: `LocalEnum` → `locale-meta.ts` (Day.js / BCP-47 / browser aliases) → `i18n.ts` → `use-locale.ts` (Ant Design + LocalePicker). After editing strings, run `pnpm i18n:check`.
 
 ## Layout
 
@@ -39,7 +55,7 @@ frontend/
 │   ├── pages/          # Route screens
 │   ├── router/         # Hash router + modules
 │   ├── store/          # Zustand
-│   ├── locales/        # i18n
+│   ├── locales/        # i18n (en / ko / ja / zh / es / fr)
 │   └── theme/          # Theme tokens
 ├── public/
 └── dist/               # Build output

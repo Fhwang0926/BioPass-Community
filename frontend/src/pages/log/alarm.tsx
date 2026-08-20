@@ -322,7 +322,7 @@ export default function AlarmPage() {
 			</Card>
 
 			<Card
-				title={t('sys.menu.alarm')}
+				title={t('sys.menu.log.alarm')}
 			>
 				<Table
 					rowKey="id"

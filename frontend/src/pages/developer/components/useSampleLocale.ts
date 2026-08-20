@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { resolveSampleLocale, type SampleLocale } from "./integrationSamples";
+import { type SampleLocale, resolveSampleLocale } from "./integrationSamples";
 
-/** i18n 언어 설정 → Bio-Pass 샘플/API lang (ko | en) */
+/** i18n language → BioPass sample/API lang (ko | en). ja/zh/es/fr fall back to English. */
 export function useSampleLocale(): SampleLocale {
 	const { i18n } = useTranslation();
 	return resolveSampleLocale(i18n.resolvedLanguage || i18n.language);

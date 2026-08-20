@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import Router from 'koa-router'
 import _ from 'lodash'
 import moment from 'moment-timezone'
+import { isFirebaseInitialized } from '../../lib/firebase.js'
 import { sql } from '../../lib/index.js'
 import { logSuccess, logFailure } from '../../service/audit.js'
 import { getCompanyAuthAppIds, requireAdminCompanyScope } from '../../service/serviceScope.js'
@@ -161,17 +162,26 @@ route.post('/signin', async (ctx) => {
       .get()
 
     if (!rs) {
-      ctx.body = await logFailure(ctx, 'login', 'Login failed', 'invalid email or password')
+      ctx.body = await logFailure(ctx, 'login', 'Login failed', {
+        code: 'AUTH_INVALID_CREDENTIALS',
+        message: 'invalid email or password'
+      })
       return
     }
     if (rs.isDel || !rs.isActive) {
-      ctx.body = await logFailure(ctx, 'login', 'Login failed', 'account is inactive')
+      ctx.body = await logFailure(ctx, 'login', 'Login failed', {
+        code: 'AUTH_ACCOUNT_INACTIVE',
+        message: 'account is inactive'
+      })
       return
     }
 
     const isPasswordHashed = isClientPasswordHash(body.password)
     if (!verifyPassword(body.email, body.password, rs.password, isPasswordHashed)) {
-      ctx.body = await logFailure(ctx, 'login', 'Login failed', 'invalid email or password')
+      ctx.body = await logFailure(ctx, 'login', 'Login failed', {
+        code: 'AUTH_INVALID_CREDENTIALS',
+        message: 'invalid email or password'
+      })
       return
     }
 
@@ -232,14 +242,20 @@ route.post('/setup', async (ctx) => {
 
     if (!email || !name || !password) {
       ctx.status = 400
-      ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', 'name, email, and password are required')
+      ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', {
+        code: 'SETUP_REQUIRED_FIELDS',
+        message: 'name, email, and password are required'
+      })
       return
     }
 
     const passwordPolicy = assertPasswordPolicy(password)
     if (!passwordPolicy.ok) {
       ctx.status = 400
-      ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', passwordPolicy.message)
+      ctx.body = await logFailure(ctx, 'setup', 'Initial setup failed', {
+        code: passwordPolicy.code || 'PASSWORD_POLICY',
+        message: passwordPolicy.message
+      })
       return
     }
 
@@ -282,7 +298,10 @@ route.post('/setup', async (ctx) => {
         ctx,
         'setup',
         'Initial setup already completed',
-        'An administrator already exists. Use login instead.'
+        {
+          code: 'SETUP_ALREADY_COMPLETED',
+          message: 'An administrator already exists. Use login instead.'
+        }
       )
       return
     }
@@ -347,7 +366,8 @@ route.get('/dashboard', async (ctx) => {
         COUNTRY_CHANGE: 0,
         ABUSE: 0
       },
-      weekSuccessCount: 0
+      weekSuccessCount: 0,
+      firebaseConfigured: isFirebaseInitialized()
     }
 
     if (scopedAppIds.length === 0) {
@@ -591,7 +611,8 @@ route.get('/dashboard', async (ctx) => {
         dailyTrend: dailyData,
         recentRequests: formattedRecentRequests,
         riskEvents: riskMap,
-        weekSuccessCount
+        weekSuccessCount,
+        firebaseConfigured: isFirebaseInitialized()
       }
     })
   } catch (e) {

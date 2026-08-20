@@ -15,7 +15,7 @@ function App() {
 		<ThemeProvider adapters={[AntdAdapter]}>
 			<MotionLazy>
 				<Helmet>
-					<title>{VITE_APP_TITLE ? `Welcome, ${VITE_APP_TITLE}` : 'Welcome'}</title>
+					<title>{VITE_APP_TITLE || "BioPass"}</title>
 					<link rel="icon" href={Logo} />
 					<link rel="apple-touch-icon" href={Logo} />
 					<meta property="og:image" content={Logo} />

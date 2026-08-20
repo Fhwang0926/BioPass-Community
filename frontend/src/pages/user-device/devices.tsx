@@ -15,10 +15,12 @@ import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { toast } from "sonner";
 import dayjs from "@/utils/dayjs";
+import { useTranslation } from "react-i18next";
 
 import userDeviceService, { type Device, type DeviceSearchParams } from "@/api/services/user-device";
 
 export default function DeviceManagementPage() {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [searchForm] = Form.useForm();
 	const [pagination, setPagination] = useState({
@@ -31,16 +33,16 @@ export default function DeviceManagementPage() {
 	const handleRevoke = async (deviceId: string) => {
 		try {
 			await userDeviceService.revokeDevice(deviceId);
-			toast.success("디바이스가 해제되었습니다.");
+			toast.success(t("sys.page.userDevice.revokeSuccess"));
 			queryClient.invalidateQueries({ queryKey: ["user-device"] });
 		} catch (error) {
-			toast.error("디바이스 해제에 실패했습니다.");
+			toast.error(t("sys.page.userDevice.revokeError"));
 		}
 	};
 
 	const columns: ColumnsType<Device> = [
 		{
-			title: "플랫폼",
+			title: t("sys.page.userDevice.platform"),
 			dataIndex: "platform",
 			width: 100,
 			render: (platform) => (
@@ -50,62 +52,62 @@ export default function DeviceManagementPage() {
 			),
 		},
 		{
-			title: "디바이스 이름",
+			title: t("sys.page.userDevice.deviceName"),
 			dataIndex: "deviceName",
 			width: 200,
 		},
 		{
-			title: "사용자",
+			title: t("sys.page.userDevice.user"),
 			dataIndex: "user",
 			width: 220,
 			render: (user) => user ? (
 				<Space>
-					<Tag>{user.identifierType === 'email' ? '이메일' : '전화번호'}</Tag>
+					<Tag>{user.identifierType === 'email' ? t("sys.page.userDevice.email") : t("sys.page.userDevice.phone")}</Tag>
 					<span>{user.identifierValue ?? user.identifierHash ?? '-'}</span>
 				</Space>
 			) : "-",
 		},
 		{
-			title: "마지막 활동 시간",
+			title: t("sys.page.userDevice.lastActivity"),
 			dataIndex: "lastSeenAt",
 			width: 180,
 			render: (timestamp) => timestamp ? dayjs(timestamp).format("YYYY-MM-DD HH:mm:ss") : "-",
 		},
 		{
-			title: "Trusted",
+			title: t("sys.page.userDevice.trusted"),
 			dataIndex: "isTrusted",
 			width: 100,
 			render: (isTrusted) => (
 				<Tag color={isTrusted ? "success" : "default"}>
-					{isTrusted ? "예" : "아니오"}
+					{isTrusted ? t("common.yes") : t("common.no")}
 				</Tag>
 			),
 		},
 		{
-			title: "상태",
+			title: t("common.statusText"),
 			dataIndex: "isRevoked",
 			width: 100,
 			render: (isRevoked) => (
 				<Tag color={isRevoked ? "error" : "success"}>
-					{isRevoked ? "해제됨" : "활성"}
+					{isRevoked ? t("sys.page.userDevice.revoked") : t("common.active")}
 				</Tag>
 			),
 		},
 		{
-			title: "작업",
+			title: t("common.actionText"),
 			key: "operation",
 			width: 120,
 			render: (_, record) => (
 				!record.isRevoked && (
 					<Popconfirm
-						title="디바이스 강제 해제"
-						description="정말 이 디바이스를 해제하시겠습니까? (기기 분실 대응)"
+						title={t("sys.page.userDevice.forceRevoke")}
+						description={t("sys.page.userDevice.forceRevokeDesc")}
 						onConfirm={() => handleRevoke(record.id)}
-						okText="예"
-						cancelText="아니오"
+						okText={t("common.yes")}
+						cancelText={t("common.no")}
 					>
 						<Button danger size="small">
-							강제 해제
+							{t("sys.page.userDevice.forceRevoke")}
 						</Button>
 					</Popconfirm>
 				)
@@ -148,26 +150,26 @@ export default function DeviceManagementPage() {
 				<Form form={searchForm} onFinish={onSearch} layout="inline">
 					<Row gutter={[16, 16]} className="w-full">
 						<Col span={24} lg={8}>
-							<Form.Item name="platform" label="플랫폼">
-								<Select allowClear placeholder="전체">
+							<Form.Item name="platform" label={t("sys.page.userDevice.platform")}>
+								<Select allowClear placeholder={t("sys.page.userDevice.all")}>
 									<Select.Option value="ios">iOS</Select.Option>
 									<Select.Option value="android">Android</Select.Option>
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24} lg={8}>
-							<Form.Item name="revoked" label="상태">
-								<Select allowClear placeholder="전체">
-									<Select.Option value={false}>활성</Select.Option>
-									<Select.Option value={true}>해제됨</Select.Option>
+							<Form.Item name="revoked" label={t("common.statusText")}>
+								<Select allowClear placeholder={t("sys.page.userDevice.all")}>
+									<Select.Option value={false}>{t("common.active")}</Select.Option>
+									<Select.Option value={true}>{t("sys.page.userDevice.revoked")}</Select.Option>
 								</Select>
 							</Form.Item>
 						</Col>
 						<Col span={24}>
 							<Space>
-								<Button onClick={onReset}>초기화</Button>
+								<Button onClick={onReset}>{t("common.resetText")}</Button>
 								<Button type="primary" htmlType="submit">
-									검색
+									{t("common.searchText")}
 								</Button>
 							</Space>
 						</Col>
@@ -175,7 +177,7 @@ export default function DeviceManagementPage() {
 				</Form>
 			</Card>
 
-			<Card title="디바이스 관리">
+			<Card title={t("sys.page.userDevice.deviceManagement")}>
 				<Table
 					rowKey="id"
 					size="small"

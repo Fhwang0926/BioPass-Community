@@ -17,11 +17,16 @@ export default defineConfig(({ mode }) => {
 		VITE_APP_TITLE: fileEnv.VITE_APP_TITLE || "BioPass",
 		VITE_APP_BASE_PATH: fileEnv.VITE_APP_BASE_PATH || "/",
 		VITE_APP_STORE_URL:
-			fileEnv.VITE_APP_STORE_URL || "https://apps.apple.com/kr/app/bio-pass/id6760216314",
-		VITE_PLAY_STORE_URL: fileEnv.VITE_PLAY_STORE_URL || "",
+			fileEnv.VITE_APP_STORE_URL || "https://apps.apple.com/br/app/bio-pass/id6760216314",
+		VITE_PLAY_STORE_URL:
+			fileEnv.VITE_PLAY_STORE_URL ||
+			"https://play.google.com/store/apps/details?id=kr.go.minwon.m&hl=ko",
 	};
 	const base = env.VITE_APP_BASE_PATH;
 	const isProduction = mode === "production";
+	// Dev-only knob: point the proxy at a remote API (e.g. a deployed server) by
+	// setting DEV_API_PROXY in frontend/.env.local, which is gitignored.
+	const devApiProxy = fileEnv.DEV_API_PROXY || "http://localhost:3030";
 
 	return {
 		base,
@@ -66,19 +71,19 @@ export default defineConfig(({ mode }) => {
 			host: true,
 			port: 3031,
 			proxy: {
-				// frontend localhost:3031 → /api 요청을 백엔드 localhost:3030으로 전달 (경로 유지: 백엔드가 /api prefix 사용)
+				// frontend localhost:3031 → /api 요청을 백엔드로 전달 (경로 유지: 백엔드가 /api prefix 사용)
 				"/api": {
-					target: "http://localhost:3030",
+					target: devApiProxy,
 					changeOrigin: true,
 					secure: false,
 				},
 				"/api-docs": {
-					target: "http://localhost:3030",
+					target: devApiProxy,
 					changeOrigin: true,
 					secure: false,
 				},
 				"/swagger.json": {
-					target: "http://localhost:3030",
+					target: devApiProxy,
 					changeOrigin: true,
 					secure: false,
 				},

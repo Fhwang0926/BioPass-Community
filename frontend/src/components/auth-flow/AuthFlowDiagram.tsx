@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ReactFlow, type Node, type Edge, Handle, Position, useNodesState, useEdgesState } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Table } from "antd";
@@ -47,9 +48,9 @@ interface AuthFlowDiagramProps {
 }
 
 const PATH_TYPE_LABEL: Record<AuthFlowPathType, string> = {
-	mobile: "모바일 연동",
-	email: "이메일 연동",
-	common: "공통",
+	mobile: "sys.page.authFlow.pathType.mobile",
+	email: "sys.page.authFlow.pathType.email",
+	common: "sys.page.authFlow.pathType.common",
 };
 
 function FlowNode({
@@ -59,6 +60,7 @@ function FlowNode({
 	data: { label: string; stepId: string; pathType?: AuthFlowPathType };
 	selected?: boolean;
 }) {
+	const { t } = useTranslation();
 	const colors = STEP_COLORS[data.stepId] ?? STEP_COLORS.default;
 	const stepNum =
 		data.stepId === "step1"
@@ -75,7 +77,7 @@ function FlowNode({
 								? "E"
 								: data.stepId.replace("step", "");
 	const pathType = data.pathType ?? "common";
-	const pathLabel = PATH_TYPE_LABEL[pathType];
+	const pathLabel = t(PATH_TYPE_LABEL[pathType]);
 	return (
 		<>
 			<Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
@@ -166,6 +168,7 @@ function FlowNode({
 }
 
 export function AuthFlowDiagram({ steps, columns }: AuthFlowDiagramProps) {
+	const { t } = useTranslation();
 	const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
 
 	const nodeTypes = useMemo(
@@ -201,24 +204,28 @@ export function AuthFlowDiagram({ steps, columns }: AuthFlowDiagramProps) {
 	// 분기: 모바일 step1 → step1mobile → step4 (알림 재전송은 대기 중 step1mobile에서 호출 가능)
 	const initialEdges = useMemo(
 		() => [
-			{ id: "e1-1m", source: "step1", target: "step1mobile", label: "email + push 기기 있음", animated: true, style: { stroke: "#1890ff", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#e6f7ff" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
+			{ id: "e1-1m", source: "step1", target: "step1mobile", label: t("sys.page.authFlow.edges.pushDeviceAvailable"), animated: true, style: { stroke: "#1890ff", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#e6f7ff" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
 			{ id: "e1m-status", source: "step1mobile", target: "stepAuthStatus", style: { stroke: "#1890ff", strokeWidth: 2 } },
-			{ id: "e-status-4", source: "stepAuthStatus", target: "step4", label: "승인 완료", style: { stroke: "#1890ff", strokeWidth: 2 }, labelStyle: { fontSize: 10 }, labelBgStyle: { fill: "#fff" }, labelBgPadding: [2, 2], labelBgBorderRadius: 2 },
-			{ id: "e1m-notify", source: "step1mobile", target: "stepNotifyResend", label: "알림 재전송", style: { stroke: "#91d5ff", strokeWidth: 1.5 }, labelStyle: { fontSize: 10 } },
-			{ id: "e1-2", source: "step1", target: "step2", label: "email + push 기기 없음", animated: true, style: { stroke: "#52c41a", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#f6ffed" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
-			{ id: "e1a-2", source: "step1alt", target: "step2", label: "이메일 폼 진입", animated: true, style: { stroke: "#52c41a", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#f6ffed" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
-			{ id: "e2-resend", source: "step2", target: "stepResendEmail", label: "코드 재발송", style: { stroke: "#b7eb8f", strokeWidth: 1.5 }, labelStyle: { fontSize: 10 } },
+			{ id: "e-status-4", source: "stepAuthStatus", target: "step4", label: t("sys.page.authFlow.edges.approved"), style: { stroke: "#1890ff", strokeWidth: 2 }, labelStyle: { fontSize: 10 }, labelBgStyle: { fill: "#fff" }, labelBgPadding: [2, 2], labelBgBorderRadius: 2 },
+			{ id: "e1m-notify", source: "step1mobile", target: "stepNotifyResend", label: t("sys.page.authFlow.edges.resendNotification"), style: { stroke: "#91d5ff", strokeWidth: 1.5 }, labelStyle: { fontSize: 10 } },
+			{ id: "e1-2", source: "step1", target: "step2", label: t("sys.page.authFlow.edges.pushDeviceUnavailable"), animated: true, style: { stroke: "#52c41a", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#f6ffed" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
+			{ id: "e1a-2", source: "step1alt", target: "step2", label: t("sys.page.authFlow.edges.enterEmailForm"), animated: true, style: { stroke: "#52c41a", strokeWidth: 2 }, labelStyle: { fontSize: 11 }, labelBgStyle: { fill: "#f6ffed" }, labelBgPadding: [4, 2], labelBgBorderRadius: 4 },
+			{ id: "e2-resend", source: "step2", target: "stepResendEmail", label: t("sys.page.authFlow.edges.resendCode"), style: { stroke: "#b7eb8f", strokeWidth: 1.5 }, labelStyle: { fontSize: 10 } },
 			{ id: "e2-3", source: "step2", target: "step3", style: { stroke: "#8c8c8c", strokeWidth: 2 } },
 			{ id: "e3-4", source: "step3", target: "step4", style: { stroke: "#8c8c8c", strokeWidth: 2 } },
 			{ id: "e4-5", source: "step4", target: "step5", style: { stroke: "#8c8c8c", strokeWidth: 2 } },
 			{ id: "e5-6", source: "step5", target: "step6", style: { stroke: "#8c8c8c", strokeWidth: 2 } },
 			{ id: "e6-7", source: "step6", target: "step7", style: { stroke: "#8c8c8c", strokeWidth: 2 } },
 		],
-		[]
+		[t]
 	) as Edge[];
 
 	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-	const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+	useEffect(() => {
+		setEdges(initialEdges);
+	}, [initialEdges, setEdges]);
 
 	const onNodeClick = useCallback((_e: React.MouseEvent, node: Node) => {
 		setSelectedStepId(node.id);
@@ -323,7 +330,7 @@ export function AuthFlowDiagram({ steps, columns }: AuthFlowDiagramProps) {
 						textAlign: "center",
 					}}
 				>
-					단계를 클릭하면 해당 단계의 파라미터가 표시됩니다.
+					{t("sys.page.authFlow.selectStepTip")}
 				</p>
 			)}
 		</div>

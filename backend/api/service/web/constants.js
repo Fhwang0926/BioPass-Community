@@ -13,7 +13,7 @@ const APP_DOWNLOAD_URL_ANDROID = (process.env.APP_DOWNLOAD_URL_ANDROID || proces
 const APP_DOWNLOAD_URL_IOS = (
   process.env.APP_DOWNLOAD_URL_IOS ||
   process.env.APP_DOWNLOAD_URL ||
-  'https://apps.apple.com/kr/app/bio-pass/id6760216314'
+  'https://apps.apple.com/br/app/bio-pass/id6760216314'
 ).trim()
 
 /** 앱 딥링크: 로그인 승인 화면으로 이동 (scheme + path, 예: biopass://auth) */

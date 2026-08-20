@@ -12,13 +12,14 @@ import { IconButton, Iconify, SvgIcon } from "@/components/icon";
 import { themeVars } from "@/theme/theme.css";
 import logService from "@/api/services/log";
 import type { LogAlarm } from "@/types/entity";
+import { formatDateTime } from "@/locales/locale-meta";
 
 const { VITE_APP_TITLE } = import.meta.env;
 dayjs.extend(relativeTime);
 
 export default function NoticeButton() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
@@ -111,10 +112,10 @@ export default function NoticeButton() {
 		backgroundSize: "50, 50%",
 	};
 
-	const viewAllLabel = t("sys.menu.notice.view_all", { defaultValue: "View All" });
-	const emptyDescription = t("sys.menu.notice.no_notifications", { defaultValue: "새 알림이 없습니다" });
-	const markReadLabel = t("sys.menu.notice.mark_as_read", { defaultValue: "읽음 처리" });
-	const openLabel = t("common.open", { defaultValue: "열기" });
+	const viewAllLabel = t("sys.menu.notice.view_all");
+	const emptyDescription = t("sys.menu.notice.no_notifications");
+	const markReadLabel = t("sys.menu.notice.mark_as_read");
+	const openLabel = t("common.open");
 
 	return (
 		<div>
@@ -133,10 +134,10 @@ export default function NoticeButton() {
 				placement="right"
 				title={
 					<div className="flex flex-col">
-						<span>Notifications</span>
+						<span>{t("sys.menu.account.notifications.title")}</span>
 						{dataUpdatedAt && (
 							<span className="text-xs text-gray-500 font-normal mt-1">
-								{t("sys.menu.notice.last_refresh", { defaultValue: "마지막 새로고침" })}: {new Date(dataUpdatedAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true })}
+								{t("sys.menu.notice.last_refresh")}: {formatDateTime(dataUpdatedAt, i18n.resolvedLanguage, { hour: "numeric", minute: "2-digit", second: "2-digit" })}
 							</span>
 						)}
 					</div>
@@ -210,10 +211,10 @@ interface NoticeTabProps {
 }
 
 // 알림 내용에서 링크를 감지하고 클릭 가능하게 만드는 함수
-function renderContentWithLinks(content: string, t?: (key: string, options?: { defaultValue?: string }) => string) {
+function renderContentWithLinks(content: string, t: (key: string) => string) {
 	if (!content) return content;
 	
-	const linkHint = t?.("sys.menu.notice.link_click_to_open", { defaultValue: "클릭하여 새 창에서 열기" }) || "클릭하여 새 창에서 열기";
+	const linkHint = t("sys.menu.notice.link_click_to_open");
 	
 	// http:// 또는 https://로 시작하는 링크를 찾는 정규식 (http와 https 모두 매칭)
 	const urlRegex = /(https?:\/\/[^\s<>"']+)/g;

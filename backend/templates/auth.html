@@ -1225,7 +1225,9 @@
           })
             .then(function(r) { return r.json().catch(function() { return {}; }); })
             .then(function(data) {
-              if (data.no_devices) {
+              if (data.firebase_disabled) {
+                showBioToast(tr('bioFirebaseDisabled'), true);
+              } else if (data.no_devices) {
                 showBioToast(tr('bioNoDevices'), true);
               } else if (data.result || data.sent) {
                 showBioToast(tr('bioSent'), false);

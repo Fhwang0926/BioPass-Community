@@ -6,33 +6,39 @@ import userService from "./services/auth";
 
 import { toast } from "sonner";
 import type { Result } from "#/api";
-// import { ResultEnum } from "#/enum";
 
-// Create axios instance (baseURL 미설정 시 프록시 /api 사용 → Vite proxy가 백엔드로 전달)
+/** `silent` suppresses the global error toast for probes the caller handles itself. */
+type RequestConfig = AxiosRequestConfig & { silent?: boolean };
+
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_APP_BASE_API ?? "/api",
-    timeout: 10000, // 기본 타임아웃 10초
+    timeout: 10000,
     headers: { "Content-Type": "application/json;charset=utf-8" },
 });
 
-// Request Interceptor
+/** Translate stable API error codes; fall back to English message. */
+function resolveApiErrorMessage(payload?: Partial<Result> | null, fallback?: string): string {
+    const code = payload?.code;
+    if (code) {
+        const key = `sys.api.errors.${code}`;
+        const translated = t(key);
+        if (translated && translated !== key) return translated;
+    }
+    return payload?.message || fallback || t("sys.api.errorMessage");
+}
+
 axiosInstance.interceptors.request.use(
     (config) => {
-        // Get the current state from userStore
         const userToken = userStore.getState().userToken;
         config.headers = config.headers ?? {};
-        if(userToken?.accessToken && !(config.headers as any).Authorization) {
+        if (userToken?.accessToken && !(config.headers as any).Authorization) {
             config.headers.Authorization = `Bearer ${userToken.accessToken}`;
         }
         return config;
     },
-    (error) => {
-        // Do something with request error
-        return Promise.reject(error);
-    },
+    (error) => Promise.reject(error),
 );
 
-// 동시 401 발생 시 refresh 중복 호출 방지
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
 
@@ -41,30 +47,49 @@ const processQueue = (error: unknown, token: string | null = null) => {
     failedQueue = [];
 };
 
-// Response Interceptor: 성공 시 res.data를 한 단계만 풀어서 반환 (result/data 규격 통일)
 axiosInstance.interceptors.response.use(
     (res: AxiosResponse<Result>) => {
         if (!res.data) throw new Error(t("sys.api.apiRequestFailed"));
 
-        const { result, data, message } = res.data;
+        const { result, data, message, code } = res.data as Result;
         if (result === true) {
-            // 항상 data 필드 한 단계만 언래핑 (단일 리소스 → entity, 목록 → { data, pagination })
             return { ...res, data } as AxiosResponse<Result>;
         }
 
-        throw new Error(message || t("sys.api.apiRequestFailed"));
+        throw new Error(resolveApiErrorMessage({ message, code }, t("sys.api.apiRequestFailed")));
     },
     async (error: AxiosError<Result>) => {
         const { response, message } = error || {};
         const isNetworkError = !response && (message === "Network Error" || (error as any)?.code === "ERR_NETWORK");
+        const status = response?.status;
+        const statusKey =
+            status === 401
+                ? "sys.api.errMsg401"
+                : status === 403
+                    ? "sys.api.errMsg403"
+                    : status === 404
+                        ? "sys.api.errMsg404"
+                        : status === 408
+                            ? "sys.api.errMsg408"
+                            : status === 500
+                                ? "sys.api.errMsg500"
+                                : status === 502
+                                    ? "sys.api.errMsg502"
+                                    : status === 503
+                                        ? "sys.api.errMsg503"
+                                        : status === 504
+                                            ? "sys.api.errMsg504"
+                                            : null;
         const errMsg = isNetworkError
             ? t("sys.api.networkExceptionMsg")
-            : (response?.data?.message || message || t("sys.api.errorMessage"));
+            : resolveApiErrorMessage(
+                response?.data,
+                (statusKey ? t(statusKey) : undefined) || message || t("sys.api.errorMessage"),
+            );
 
         if (response?.status === 401 && error.config) {
             const originalRequest = error.config;
 
-            // 이미 refresh 중이면 큐에 쌓아두고 대기
             if (isRefreshing) {
                 return new Promise<string>((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -102,7 +127,11 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        toast.error(errMsg, { position: "top-center" });
+        if (!(error.config as RequestConfig | undefined)?.silent) {
+            // Reuse the message as the toast id so concurrent failures collapse
+            // into one instead of stacking identical banners.
+            toast.error(errMsg, { position: "top-center", id: errMsg });
+        }
         throw error;
     },
 );
@@ -171,7 +200,7 @@ class APIClient {
     //     }
     // }
 
-    get<T = any>(config: AxiosRequestConfig): Promise<T> {
+    get<T = any>(config: RequestConfig): Promise<T> {
         return this.request({ ...config, method: "GET" });
     }
 
@@ -191,7 +220,7 @@ class APIClient {
         return this.request({ ...config, method: "DELETE" });
     }
 
-    request<T = any>(config: AxiosRequestConfig): Promise<T> {
+    request<T = any>(config: RequestConfig): Promise<T> {
         return new Promise((resolve, reject) => {
             // 개별 요청의 timeout 설정 (config에 timeout이 있으면 사용, 없으면 기본값 사용)
             const requestConfig = {

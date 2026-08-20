@@ -6,7 +6,8 @@ import Card from "@/components/card";
 import userStore, { useUserInfo } from "@/store/userStore";
 import { toast } from "sonner";
 import userService from "@/api/services/user";
-import { t } from "@/locales/i18n";
+import i18n, { t } from "@/locales/i18n";
+import { formatDateTime } from "@/locales/locale-meta";
 
 type FieldType = {
 	name?: string;
@@ -117,7 +118,7 @@ export default function GeneralTab() {
 					<Typography.Text strong>{t('sys.menu.account.general.recent_login')}</Typography.Text>
 					<div className="mt-1 text-gray-500">
 						{profileData?.last_visited_at
-							? new Date(profileData.last_visited_at).toLocaleString('ko-KR', {
+							? formatDateTime(profileData.last_visited_at, i18n.resolvedLanguage, {
 								year: 'numeric',
 								month: 'long',
 								day: 'numeric',

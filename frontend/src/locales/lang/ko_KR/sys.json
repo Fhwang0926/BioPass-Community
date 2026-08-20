@@ -24,11 +24,38 @@
 			"errMsg504": "네트워크 타임아웃!",
 			"errMsg505": "해당 HTTP 버전은 요청을 지원하지 않습니다!",
 			"sessionExpiring": "세션이 곧 만료됩니다. 로그인 상태를 유지하시겠습니까?",
-			"stayLoggedIn": "로그인 유지"
+			"stayLoggedIn": "로그인 유지",
+			"sessionExtended": "세션이 연장되었습니다",
+			"errors": {
+				"AUTH_INVALID_CREDENTIALS": "이메일 또는 비밀번호가 올바르지 않습니다.",
+				"AUTH_ACCOUNT_INACTIVE": "비활성화된 계정입니다.",
+				"AUTH_UNAUTHORIZED": "권한이 없습니다. 다시 로그인해 주세요.",
+				"SETUP_REQUIRED_FIELDS": "이름, 이메일, 비밀번호는 필수입니다.",
+				"SETUP_ALREADY_COMPLETED": "초기 설정이 이미 완료되었습니다. 로그인해 주세요.",
+				"PASSWORD_TOO_SHORT": "비밀번호는 12자 이상이어야 합니다.",
+				"PASSWORD_COMPLEXITY": "비밀번호는 영문과 숫자를 포함해야 합니다.",
+				"PASSWORD_POLICY": "비밀번호가 보안 정책을 충족하지 않습니다.",
+				"RATE_LIMITED": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+				"RATE_LIMIT_LOGIN": "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+				"RATE_LIMIT_SETUP": "설정 시도가 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+				"EMAIL_ALREADY_EXISTS": "이미 등록된 이메일입니다.",
+				"USER_NOT_FOUND": "사용자를 찾을 수 없습니다.",
+				"COMPANY_NOT_FOUND": "조직을 찾을 수 없습니다.",
+				"APPLICATION_NOT_FOUND": "애플리케이션을 찾을 수 없습니다."
+			}
 		},
 		"login": {
 			"backSignIn": "이전 로그인",
 			"backToHome": "메인 홈페이지",
+			"heroSubtitle": "셀프호스팅 생체 MFA 콘솔입니다. 관리자 계정으로 로그인하세요.",
+			"heroBannerAria": "BioPass 앱 로그인 과정",
+			"setupRequiredTitle": "초기 설정이 필요합니다",
+			"setupRequiredBody": "이 서버에는 아직 관리자 계정이 없습니다. 초기 설정 화면으로 이동합니다.",
+			"setupRequiredCta": "초기 설정으로 이동",
+			"serverUnreachableTitle": "서버에 연결할 수 없습니다",
+			"serverUnreachableBody": "관리자 콘솔이 BioPass API에 연결하지 못해 초기 설정 완료 여부를 확인할 수 없습니다. API가 실행 중인지 확인한 뒤 다시 시도해 주세요.",
+			"retry": "다시 시도",
+			"retryingHint": "자동으로 다시 확인하고 있습니다…",
 			"signInFormTitle": "로그인",
 			"signInPrimaryTitle": "안녕하세요, 다시 오신 것을 환영합니다",
 			"signInSecondTitle": "관리 시스템",
@@ -39,6 +66,7 @@
 			"rememberMe": "로그인 상태 유지",
 			"sendSmsText": "{{second}}초 후 재요청",
 			"accountPlaceholder": "사용자 이름을 입력해주세요",
+			"emailPlaceholder": "이메일을 입력해주세요",
 			"passwordPlaceholder": "비밀번호를 입력해주세요",
 			"confirmPasswordPlaceholder": "비밀번호 확인을 입력해주세요",
 			"policyPlaceholder": "체크 후 가입",
@@ -48,7 +76,110 @@
 			"mobile": "휴대폰",
 			"termsOfService": " 이용 약관 ",
 			"privacyPolicy": " 개인정보 보호정책 ",
-			"logout": "로그아웃"
+			"logout": "로그아웃",
+			"signInSuccess": "로그인했습니다"
+		},
+		"setup": {
+			"title": "BioPass 초기 설정",
+			"checking": "설치 상태를 확인하는 중…",
+			"subtitle": "첫 설치입니다. 최고 관리자(조직 관리자) 계정을 만든 뒤 콘솔을 이용할 수 있습니다.",
+			"onceAlert": "이 단계는 사용자 계정이 없을 때만 한 번 실행됩니다.",
+			"name": "이름",
+			"namePlaceholder": "관리자",
+			"email": "이메일",
+			"emailPlaceholder": "admin@example.com",
+			"companyOptional": "조직 이름 (선택)",
+			"companyPlaceholder": "내 조직",
+			"password": "비밀번호",
+			"confirmPassword": "비밀번호 확인",
+			"passwordPlaceholder": "••••••••",
+			"submit": "최고 관리자 생성 후 시작",
+			"success": "관리자 계정이 생성되었습니다. 환영합니다!",
+			"failed": "초기 설정에 실패했습니다",
+			"responseInvalid": "초기 설정 응답에 액세스 토큰이 없습니다",
+			"validation": {
+				"nameRequired": "이름을 입력하세요",
+				"emailRequired": "이메일을 입력하세요",
+				"emailInvalid": "올바른 이메일을 입력하세요",
+				"passwordRequired": "비밀번호를 입력하세요",
+				"passwordMin": "비밀번호는 12자 이상이어야 합니다",
+				"passwordPattern": "비밀번호는 영문과 숫자를 포함해야 합니다",
+				"confirmRequired": "비밀번호를 다시 입력하세요",
+				"passwordMismatch": "비밀번호가 일치하지 않습니다"
+			}
+		},
+		"welcome": {
+			"description": "앱을 위한 셀프호스팅 생체 MFA 및 OAuth입니다. 자체 인프라에서 API와 관리자 콘솔을 운영하고 BioPass 모바일 앱의 지문 또는 Face ID로 로그인을 승인하세요.",
+			"audience": "운영자는 초기 설정을 완료하고 OAuth 애플리케이션을 등록한 뒤 클라이언트를 이 서버에 연결할 수 있습니다. 사용자는 BioPass를 설치하고 이메일로 로그인하여 인증 요청을 승인합니다.",
+			"tagline": "내 서버에서 운영하는 비밀번호 없는 로그인",
+			"getStarted": "시작하기",
+			"signIn": "로그인",
+			"howItWorksTitle": "로그인은 이렇게 진행됩니다",
+			"howItWorksSubtitle": "세 단계, 몇 초면 끝납니다. 비밀번호도, 입력할 일회용 코드도 없습니다.",
+			"stepLabel": "{{step}}단계",
+			"step1Title": "로그인 요청 도착",
+			"step1Body": "사용자가 이메일로 앱에 로그인하면 BioPass가 등록된 휴대폰으로 푸시 알림을 보냅니다.",
+			"step1Alt": "BioPass 로그인 요청 알림을 받은 휴대폰 잠금 화면",
+			"step2Title": "생체 인증으로 승인",
+			"step2Body": "요청을 열고 지문 또는 Face ID로 확인합니다. 생체 정보는 기기를 벗어나지 않습니다.",
+			"step2Alt": "지문 인증 화면을 손끝으로 확인하는 휴대폰",
+			"step2FingerprintTitle": "지문으로 승인",
+			"step2FaceIdTitle": "Face ID로 승인",
+			"step2FingerprintLabel": "지문",
+			"step2FaceIdLabel": "Face ID",
+			"step2FaceIdAlt": "Face ID 화면을 바라보며 확인하는 휴대폰",
+			"step3Title": "즉시 로그인 완료",
+			"step3Body": "휴대폰에서 승인하는 즉시 브라우저 세션이 열립니다. 거부되거나 만료된 요청은 감사 로그에 기록됩니다.",
+			"step3Alt": "휴대폰 승인으로 로그인이 완료된 노트북 브라우저 화면",
+			"featuresTitle": "BioPass를 선택하는 이유",
+			"feature1Title": "셀프호스팅",
+			"feature1Body": "API와 데이터베이스, 관리자 콘솔을 모두 자체 인프라에서 운영합니다. 외부 인증 사업자가 필요하지 않습니다.",
+			"feature2Title": "표준 OAuth 2.0",
+			"feature2Body": "애플리케이션을 등록하고 익숙한 인가 코드 흐름으로 기존 클라이언트를 연결할 수 있습니다.",
+			"feature3Title": "기본으로 감사 가능",
+			"feature3Body": "모든 로그인과 승인, 거부 내역을 기기 및 시각 정보와 함께 기록해 나중에 확인할 수 있습니다.",
+			"getApp": "BioPass 앱 받기",
+			"appDescription": "푸시 로그인 요청을 받고 생체 인증으로 승인하거나 거부하세요. 현재 App Store에서 이용할 수 있습니다.",
+			"appStore": "App Store에서 다운로드",
+			"googlePlay": "Google Play에서 받기",
+			"googlePlaySoon": "Google Play (출시 예정)",
+			"platformIos": "iOS",
+			"platformAndroid": "Android",
+			"scanHint": "휴대폰 카메라로 QR 코드를 비추거나, 스토어 링크를 바로 열어 주세요.",
+			"qrIosAlt": "BioPass App Store 페이지로 연결되는 QR 코드",
+			"qrAndroidAlt": "BioPass Google Play 페이지로 연결되는 QR 코드",
+			"privacy": "개인정보 처리방침",
+			"terms": "이용약관",
+			"appStoreLink": "App Store"
+		},
+		"legal": {
+			"lastUpdated": "최종 업데이트",
+			"privacy": {
+				"title": "개인정보 처리방침",
+				"description": "셀프호스팅 BioPass Community에서 처리하는 개인정보와 보호 원칙을 안내합니다."
+			},
+			"terms": {
+				"title": "서비스 이용약관",
+				"description": "BioPass Community 셀프호스팅 배포의 이용 조건, 계정 책임, 허용되는 사용을 안내합니다."
+			}
+		},
+		"error": {
+			"403": {
+				"title": "접근 권한이 없습니다",
+				"description": "이 페이지에 대한 접근이 제한되어 있습니다. 시스템 관리자에게 문의하세요."
+			},
+			"404": {
+				"title": "페이지를 찾을 수 없습니다",
+				"description": "요청한 페이지를 찾을 수 없습니다. URL을 확인한 후 다시 시도하세요."
+			},
+			"500": {
+				"title": "서버 내부 오류",
+				"description": "오류가 발생했습니다. 잠시 후 다시 시도하세요."
+			},
+			"generic": {
+				"title": "페이지 오류가 발생했습니다",
+				"description": "페이지를 표시하는 중 오류가 발생했습니다. 홈으로 돌아간 후 다시 시도하세요."
+			}
 		},
 		"tab": {
 			"fullscreen": "전체 화면",
@@ -60,6 +191,12 @@
 			"closeRight": "오른쪽 탭 닫기"
 		},
 		"menu": {
+			"search": {
+				"placeholder": "검색...",
+				"navigateHint": "이동",
+				"selectHint": "선택",
+				"closeHint": "닫기"
+			},
 			"dashboard": "대시보드",
 			"management": "관리",
 			"company": "기업",
@@ -112,6 +249,7 @@
 					"change_error": "비밀번호 변경에 실패했습니다. 기존 비밀번호를 확인해주세요"
 				},
 				"notifications": {
+					"title": "알림",
 					"timeline_title": "알림 타임라인",
 					"total": "총",
 					"displayed": "표시",
@@ -123,7 +261,13 @@
 					"read": "읽음",
 					"unread": "안읽음",
 					"load_more": "더 보기",
-					"no_data": "데이터가 없습니다. 날짜를 바꿔서 조회해보세요"
+					"no_data": "데이터가 없습니다. 날짜를 바꿔서 조회해보세요",
+					"mark_as_read": "읽음 처리",
+					"mark_all_read": "전체 읽음 처리",
+					"mark_read_success": "읽음 처리했습니다.",
+					"mark_read_error": "읽음 처리에 실패했습니다.",
+					"mark_all_success": "전체 읽음 처리했습니다.",
+					"mark_all_error": "전체 읽음 처리에 실패했습니다."
 				},
 				"company": {
 					"title": "회사 정보",
@@ -136,7 +280,13 @@
 					"created_at": "생성일",
 					"last_updated": "최종 수정일",
 					"company_name_required": "회사명을 입력해주세요",
-					"loading": "로딩 중..."
+					"loading": "로딩 중...",
+					"not_found": "회사 정보를 찾을 수 없습니다.",
+					"company_name": "회사명",
+					"company_code": "회사 코드",
+					"business_number": "사업자 등록번호",
+					"business_number_max": "사업자 등록번호는 30자를 초과할 수 없습니다",
+					"email": "이메일"
 				}
 			},
 			"user": {
@@ -322,6 +472,17 @@
 			"application": {
 				"title": "애플리케이션",
 				"create": "애플리케이션 생성",
+				"list": "애플리케이션 목록",
+				"new": "새 애플리케이션",
+				"app_name": "App 이름",
+				"app_name_placeholder": "App 이름 검색",
+				"client_id_placeholder": "Client ID 검색",
+				"last_auth_request": "최근 인증 요청 시간",
+				"create_success": "애플리케이션이 성공적으로 생성되었습니다.",
+				"create_error": "애플리케이션 생성에 실패했습니다.",
+				"validation_error": "입력값을 확인해 주세요.",
+				"secret_once": "중요: 이 Secret은 이번에만 표시됩니다.",
+				"go_detail": "상세 페이지로 이동",
 				"detail": "애플리케이션 상세",
 				"delete_confirm_title": "애플리케이션 삭제",
 				"delete_confirm_desc": "정말 삭제하시겠습니까?",
@@ -346,10 +507,12 @@
 					"test_url_authorize_tooltip": "현재 설정된 Callback URL로 인증 페이지를 새 탭에서 엽니다.",
 					"test_url_callback_tooltip": "등록된 Callback URL을 새 탭에서 엽니다.",
 					"test_url_fill_callback": "Callback URL을 먼저 입력해 주세요.",
+					"test_email_prompt": "로그인할 이메일 주소를 입력하세요",
+					"test_email_required": "이메일 주소를 입력해주세요.",
 					"callback_url_required": "Callback URL을 입력하세요.",
 					"callback_url_invalid": "올바른 URL 형식을 입력하세요. (예: https://example.com/callback)",
 					"callback_url_guide": "Callback URL 안내",
-					"callback_url_description": "인증 성공 시 Bio-Pass가 이 URL(백엔드 콜백 엔드포인트)로 authorization code를 전달합니다. 프론트엔드가 아닌 서버 URL을 등록하세요. code는 서버에서 POST /api/web/token으로 교환합니다.",
+					"callback_url_description": "인증 성공 시 BioPass가 이 URL(백엔드 콜백 엔드포인트)로 authorization code를 전달합니다. 프론트엔드가 아닌 서버 URL을 등록하세요. code는 서버에서 POST /api/web/token으로 교환합니다.",
 					"callback_parameters": "Callback 파라미터 (성공 시):",
 					"callback_param_state": "state: 인증 요청 시 클라이언트가 전달한 state 값이 그대로 전달됩니다. (CSRF·상태 검증용)",
 					"callback_param_code": "code: 인증 성공 시에만 전달되는 일회용 인증 코드입니다. 클라이언트는 이 code를 POST /api/web/token에 보내 액세스 토큰으로 교환합니다.",
@@ -364,7 +527,7 @@
 					"callback_failure_note": "인증 실패 또는 오류 시에는 이 URL로 리다이렉트되지 않으며, 서버에서 오류 페이지가 표시됩니다.",
 					"auth_flow_params_title": "인증 플로우 전체 파라미터",
 					"auth_flow_params_intro": "아래는 인증이 진행되는 순서대로 정리한 API와 파라미터입니다.",
-					"auth_flow_branch_intro": "GET /authorize?email=... 진입 시: (1) redirect_uri가 Callback URL과 일치해야 하며, (2) 해당 이메일에 push가 등록된 Bio-Pass 앱 기기가 있으면 모바일 알림 확인 HTML → 앱 승인 → callback, (3) 기기가 없으면 이메일 코드 발송 후 verify-email 페이지로 바로 이동합니다. email/phone 없이 진입하면 가이드 페이지(이메일 입력)가 표시됩니다.",
+					"auth_flow_branch_intro": "GET /authorize?email=... 진입 시: (1) redirect_uri가 Callback URL과 일치해야 하며, (2) 해당 이메일에 push가 등록된 BioPass 앱 기기가 있으면 모바일 알림 확인 HTML → 앱 승인 → callback, (3) 기기가 없으면 이메일 코드 발송 후 verify-email 페이지로 바로 이동합니다. email/phone 없이 진입하면 가이드 페이지(이메일 입력)가 표시됩니다.",
 					"auth_flow_step_1": "1단계 — 진입: GET /api/web/authorize",
 					"auth_flow_step_1_desc": "email·phone 쿼리 유무와 등록 기기에 따라 모바일·이메일·가이드 화면으로 분기",
 					"auth_flow_step_1_alt": "1단계(대안) — 이메일 진입: POST /api/web/request-email-code",
@@ -482,7 +645,7 @@
 			"developer.quickStart": "빠른 시작",
 			"developer.docs": "문서",
 			"developer.quickStartTitle": "Quick Start",
-			"developer.quickStartIntro": "3단계로 Bio-Pass OAuth 로그인을 웹사이트에 연동하세요. REST API를 직접 호출합니다 (별도 SDK 불필요).",
+			"developer.quickStartIntro": "3단계로 BioPass OAuth 로그인을 웹사이트에 연동하세요. REST API를 직접 호출합니다 (별도 SDK 불필요).",
 			"developer.docsTitle": "연동 문서",
 			"developer.docsIntro": "웹사이트 로그인 연동을 위한 API 가이드입니다.",
 			"developer.fullDocsLink": "전체 문서 보기",
@@ -492,7 +655,7 @@
 			"developer.step2Title": "2. 앱 선택 및 자격 증명 확인",
 			"developer.step2Copy": "복사",
 			"developer.step3Title": "3. 코드 연동",
-			"developer.noSdkNeeded": "Bio-Pass는 REST API를 제공합니다. npm SDK 설치 없이 아래 예제 코드로 바로 연동할 수 있습니다.",
+			"developer.noSdkNeeded": "BioPass는 REST API를 제공합니다. npm SDK 설치 없이 아래 예제 코드로 바로 연동할 수 있습니다.",
 			"developer.selectApp": "연동할 애플리케이션",
 			"developer.selectAppPlaceholder": "애플리케이션을 선택하세요",
 			"developer.selectAppFirst": "먼저 애플리케이션을 선택하세요.",
@@ -511,14 +674,14 @@
 			"developer.sampleBackend": "백엔드 (로그인 시작 + 토큰 교환)",
 			"developer.sampleCurl": "cURL",
 			"developer.tabFlow": "연동 플로우",
-			"developer.tabFlowDesc": "브라우저는 자체 백엔드 /api/auth/login 으로 이동하고, 백엔드가 Bio-Pass authorize를 호출합니다. 인증 완료 후 Bio-Pass는 백엔드 Callback URL로 code를 전달하며, 백엔드에서 POST /api/web/token으로 토큰을 교환합니다.",
-			"developer.backendFirstFlowNote": "권장 연동: 프론트 → 자체 백엔드(/api/auth/login) → Bio-Pass. client_id·client_secret은 서버 환경변수에만 두고, Callback URL은 백엔드 엔드포인트(예: /api/auth/callback)로 등록하세요.",
+			"developer.tabFlowDesc": "브라우저는 자체 백엔드 /api/auth/login 으로 이동하고, 백엔드가 BioPass authorize를 호출합니다. 인증 완료 후 BioPass는 백엔드 Callback URL로 code를 전달하며, 백엔드에서 POST /api/web/token으로 토큰을 교환합니다.",
+			"developer.backendFirstFlowNote": "권장 연동: 프론트 → 자체 백엔드(/api/auth/login) → BioPass. client_id·client_secret은 서버 환경변수에만 두고, Callback URL은 백엔드 엔드포인트(예: /api/auth/callback)로 등록하세요.",
 			"developer.redirectFlowNote": "redirect_uri는 애플리케이션 Callback URL(백엔드 콜백)과 문자 그대로 일치해야 합니다. 프론트엔드 페이지 URL을 등록하면 code가 브라우저에 노출될 수 있습니다.",
 			"developer.callbackUrlNote": "authorize URL의 redirect_uri와 앱 설정의 Callback URL이 다르면 인증 플로우가 시작되지 않습니다. 테스트 시 등록된 Callback URL을 그대로 사용하세요.",
 			"developer.tabFrontend": "프론트엔드",
-			"developer.tabFrontendDesc": "로그인 버튼은 Bio-Pass가 아닌 자체 백엔드 /api/auth/login 으로 리다이렉트합니다. code·client_secret은 브라우저에 노출하지 않습니다.",
+			"developer.tabFrontendDesc": "로그인 버튼은 BioPass가 아닌 자체 백엔드 /api/auth/login 으로 리다이렉트합니다. code·client_secret은 브라우저에 노출하지 않습니다.",
 			"developer.tabBackend": "백엔드",
-			"developer.tabBackendDesc": "백엔드에서 Bio-Pass authorize로 리다이렉트하고, 콜백에서 authorization code를 access_token으로 교환한 뒤 세션을 생성합니다.",
+			"developer.tabBackendDesc": "백엔드에서 BioPass authorize로 리다이렉트하고, 콜백에서 authorization code를 access_token으로 교환한 뒤 세션을 생성합니다.",
 			"developer.verifyTokenDesc": "토큰 교환 후 사용자 정보 확인 (선택):",
 			"developer.tabReference": "API 레퍼런스",
 			"developer.tabReferenceDesc": "주요 Web API 엔드포인트입니다. 상세 스펙은 Swagger UI를 참고하세요.",
@@ -535,6 +698,42 @@
 				"mark_as_read": "읽음 처리",
 				"last_refresh": "마지막 새로고침",
 				"link_click_to_open": "클릭하여 새 창에서 열기"
+			}
+		},
+		"page": {
+			"authFlow": {
+				"pathType": {
+					"mobile": "모바일 연동",
+					"email": "이메일 연동",
+					"common": "공통"
+				},
+				"edges": {
+					"pushDeviceAvailable": "email + push 기기 있음",
+					"approved": "승인 완료",
+					"resendNotification": "알림 재전송",
+					"pushDeviceUnavailable": "email + push 기기 없음",
+					"enterEmailForm": "이메일 폼 진입",
+					"resendCode": "코드 재발송"
+				},
+				"selectStepTip": "단계를 클릭하면 해당 단계의 파라미터가 표시됩니다."
+			},
+			"dashboard": {
+				"title": "관리자 대시보드", "lastUpdated": "마지막 갱신: {{time}}", "loadError": "인증 지표를 불러오지 못했습니다.", "loadErrorDesc": "잠시 후 다시 새로고침하거나 인증 로그 화면에서 상세 상태를 확인하세요.", "firebaseUnconfigured": "앱 푸시 알림을 보낼 수 없습니다", "firebaseUnconfiguredDesc": "Firebase가 설정되지 않아 Bio Pass 앱으로 푸시 알림을 보낼 수 없습니다. backend/json/firebase-service-account.json 에 서비스 계정 키를 넣고 API를 재시작하세요. 그전까지는 앱에서 요청 현황을 새로고침하거나 이메일 보안 코드로 로그인할 수 있습니다.", "connectFirstApp": "첫 애플리케이션을 연결하세요", "connectFirstAppDesc": "앱을 만들면 인증 요청 추이, 성공률, 위험 이벤트가 이 대시보드에 자동으로 쌓입니다.", "createFirstApp": "첫 애플리케이션 생성", "weekRequests": "최근 7일 인증 요청", "weekRequestsDesc": "최근 7일간 생성된 전체 인증 요청", "successRate": "인증 성공률", "successRateDesc": "승인·완료 / 승인·완료·거절·만료 기준", "avgAuthTime": "평균 인증 시간", "avgAuthTimeDesc": "승인까지 걸린 평균 시간", "pendingAndRisk": "대기 요청 / 위험 이벤트", "pendingAndRiskDesc": "현재 대기 중 요청과 최근 7일 위험 이벤트", "authRequests": "인증 요청", "weekStatus": "최근 7일 인증 상태", "noWeekData": "최근 7일 인증 데이터 없음", "riskEvents": "위험 이벤트", "noRiskEvents": "최근 7일 위험 이벤트 없음", "applicationStatus": "애플리케이션 상태", "recentApps": "최근 앱", "recentCount": "최근 {{count}}개", "noApps": "등록된 앱 없음", "unnamed": "이름 없음", "lastAuth": "최근 인증: {{time}}", "appStatusHint": "앱을 만들면 최근 앱 상태가 표시됩니다.", "recentRequests": "최근 인증 요청", "noRecentRequests": "최근 인증 요청 없음", "total": "전체",
+				"status": { "created": "생성", "pending": "대기", "approved": "승인", "consumed": "완료", "denied": "거절", "expired": "만료", "blocked": "차단" },
+				"risk": { "newDevice": "새 기기", "countryChange": "국가 변경", "abuse": "남용 의심" }
+			},
+			"authLog": {
+				"time": "시간", "user": "사용자", "countryIp": "국가 / IP", "device": "디바이스", "mobile": "모바일", "app": "앱", "email": "이메일", "all": "전체", "country": "국가", "countryPlaceholder": "국가 코드 (예: KR)", "ipAddress": "IP 주소", "ipPlaceholder": "IP 주소 검색", "period": "기간", "loadError": "목록을 불러오는 중 오류가 발생했습니다.", "notFound": "인증 로그를 찾을 수 없습니다.", "authEnvironment": "인증 환경", "basicInfo": "기본 정보", "requestId": "요청 ID", "deviceAuthMethod": "디바이스 / 인증 수단", "emailAuth": "이메일 인증", "requestTime": "요청 시간", "expiryTime": "만료 시간", "policyBlocked": "정책에 의해 차단됨", "policyBlockedDesc": "이 인증 요청은 보안 정책에 의해 자동으로 차단되었습니다.", "riskDetection": "위험 감지", "score": "점수: {{score}}", "approvedDevice": "승인 디바이스", "biometricCapable": "생체 인증 지원", "timeline": "요청 → 승인까지 타임라인", "totalDuration": "총 소요 시간", "currentStep": "현재 단계", "elapsed": "+{{duration}} 경과", "deliveryInfo": "발송 정보", "verificationCode": "인증코드", "authCompleted": "인증 완료", "authInProgress": "인증 진행중", "authDenied": "인증 거부", "noEvents": "이벤트가 없습니다.",
+				"status": { "created": "생성", "approved": "승인", "denied": "거절", "expired": "만료", "blocked": "차단", "pending": "대기", "consumed": "사용됨" },
+				"events": { "created": "인증 요청 생성", "pending": "대기 중", "emailCodeSent": "이메일 인증 코드 발송", "approvedByDevice": "디바이스(바이오) 승인", "approvedByEmail": "이메일 인증 완료", "expiredBySystem": "시간 만료", "expiredByResend": "재전송으로 만료", "codeConsumed": "코드 사용됨" }
+			},
+			"userDevice": {
+				"trusted": "신뢰",
+				"identifier": "식별자", "email": "이메일", "phone": "전화번호", "registeredDeviceCount": "등록 디바이스 수", "lastLogin": "마지막 로그인", "normal": "정상", "blocked": "제한", "suspended": "일시정지", "all": "전체", "identifierType": "식별자 타입", "userList": "사용자 목록", "deviceManagement": "디바이스 관리", "platform": "플랫폼", "deviceName": "디바이스 이름", "user": "사용자", "lastActivity": "마지막 활동", "revoked": "해제됨", "revokeSuccess": "디바이스가 해제되었습니다.", "revokeError": "디바이스 해제에 실패했습니다.", "forceRevoke": "강제 해제", "forceRevokeDesc": "정말 이 디바이스를 해제하시겠습니까? (기기 분실 대응)", "logoutAllSuccess": "모든 디바이스가 로그아웃되었습니다.", "logoutError": "로그아웃에 실패했습니다.", "blockSuccess": "사용자가 차단되었습니다.", "blockError": "차단에 실패했습니다.", "unblockSuccess": "차단이 해제되었습니다.", "unblockError": "차단 해제에 실패했습니다.", "notFound": "해당 사용자를 찾을 수 없습니다.", "loadError": "사용자를 불러오지 못했습니다.", "userInfo": "사용자 정보", "unblock": "차단 해제", "blockTemporarily": "인증 일시 차단", "logoutAll": "모든 디바이스 로그아웃", "logoutAllDesc": "정말 모든 디바이스를 로그아웃하시겠습니까?", "identifierHash": "식별자 해시", "connectedDevices": "연결된 디바이스", "authHistory": "인증 히스토리", "blockUntil": "차단 해제 일시 (선택)", "blockUntilHint": "지정하지 않으면 수동으로 해제할 때까지 차단됩니다."
+			},
+			"policySecurity": {
+				"fieldRequired": "{{field}}을 입력해 주세요.", "minOne": "1 이상의 숫자를 입력해 주세요.", "countryAllowlist": "허용 국가 제한", "countryAllowlistDesc": "선택한 국가에서만 인증 요청을 허용합니다. 비워두면 모든 국가를 허용합니다.", "allowedCountries": "허용 국가", "selectCountries": "국가를 선택하세요", "ipMultiple": "동일 IP 다중 요청 차단", "ipMultipleDesc": "같은 IP에서 짧은 시간에 여러 요청이 오면 차단합니다.", "maxRequests": "최대 요청 수", "timeWindow": "시간 창 (초)", "failLimit": "승인 실패 횟수 제한", "failLimitDesc": "연속으로 실패한 횟수가 임계값을 넘으면 일시 차단합니다.", "maxFailures": "최대 실패 횟수", "pushBomb": "푸시 폭탄 방지", "pushBombDesc": "짧은 시간에 많은 푸시 알림을 보내는 것을 방지합니다.", "maxPushes": "최대 푸시 수", "countryChange": "국가 변경", "countryChangeDesc": "이전과 다른 국가에서 접속 시 위험으로 감지합니다.", "newDevice": "새 디바이스", "newDeviceDesc": "등록되지 않은 새 디바이스에서 접속 시 위험으로 감지합니다.", "multipleRequests": "짧은 시간 다중 요청", "multipleRequestsDesc": "짧은 시간에 여러 인증 요청이 오면 위험으로 감지합니다.", "updateSuccess": "정책이 업데이트되었습니다.", "updateError": "정책 업데이트에 실패했습니다.", "basePolicies": "기본 정책", "riskDetection": "위험 감지", "example3": "예: 3", "example5": "예: 5", "example10": "예: 10", "example60": "예: 60", "example300": "예: 300",
+				"countries": { "KR": "한국", "US": "미국", "JP": "일본", "CN": "중국", "GB": "영국", "DE": "독일", "FR": "프랑스", "CA": "캐나다" }
 			}
 		},
 		"docs": "문서",

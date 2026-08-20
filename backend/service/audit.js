@@ -223,20 +223,40 @@ export const logSuccess = async (ctx, action, description = null, responseBody =
  * 실패 응답을 감사 로그로 기록
  * @param {Object} ctx - Koa context
  * @param {string} action - 액션 이름
- * @param {string} description - 설명
- * @param {Object} Error - 에러
- * @returns {Promise<void>}
+ * @param {string} description - 설명 (감사 로그 / 폴백 메시지)
+ * @param {string|Error|{message?: string, code?: string}|null} errorOrDetail - 상세 사유 또는 코드
+ * @param {boolean} logging - 감사 로그 기록 여부
+ * @returns {Promise<{result: false, message: string, code?: string, data: string}>}
  */
-export const logFailure = async (ctx, action, description = null, Error = null, logging = true) => {
-  if (logging) {
-    await logApiResponse(ctx, action, 'failed', description, (typeof Error === typeof '' ? { message: Error } : Error.message))
+export const logFailure = async (ctx, action, description = null, errorOrDetail = null, logging = true) => {
+  let detailMessage = ''
+  let code
+
+  if (typeof errorOrDetail === 'string') {
+    detailMessage = errorOrDetail
+  } else if (errorOrDetail && typeof errorOrDetail === 'object') {
+    detailMessage = errorOrDetail.message || String(errorOrDetail)
+    code = errorOrDetail.code
   }
-  console.error(Error)
-  return {
+
+  if (logging) {
+    await logApiResponse(
+      ctx,
+      action,
+      'failed',
+      description,
+      detailMessage || (typeof errorOrDetail === 'string' ? errorOrDetail : errorOrDetail?.message)
+    )
+  }
+  console.error(errorOrDetail)
+  const body = {
     result: false,
-    message: description,
+    // Prefer concrete detail for clients; fall back to audit description
+    message: detailMessage || description || '',
     data: '' // 보안 이슈
   }
+  if (code) body.code = code
+  return body
 }
 
 /**

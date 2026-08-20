@@ -10,6 +10,7 @@
 		"dev:prod": "vite --mode production",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
+		"i18n:check": "node ../scripts/check-i18n.mjs",
 		"prepare": "node ../scripts/install-git-hooks.js"
 	},
 	"dependencies": {
@@ -35,7 +36,6 @@
 		"dayjs": "^1.11.21",
 		"framer-motion": "^12.43.0",
 		"i18next": "^23.16.5",
-		"i18next-browser-languagedetector": "^7.2.1",
 		"node-forge": "^1.4.0",
 		"nprogress": "^0.2.0",
 		"ramda": "^0.29.1",
@@ -103,6 +103,8 @@
 		}
 	},
 	"commitlint": {
-		"extends": ["@commitlint/config-conventional"]
+		"extends": [
+			"@commitlint/config-conventional"
+		]
 	}
 }

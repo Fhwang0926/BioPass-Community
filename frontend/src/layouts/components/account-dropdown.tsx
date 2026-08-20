@@ -4,7 +4,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
 
-import { IconButton } from "@/components/icon";
 import { useRouter } from "@/router/hooks";
 import { useUserActions, useUserInfo } from "@/store/userStore";
 import { useTheme } from "@/theme/hooks";
@@ -77,15 +76,24 @@ export default function AccountDropdown() {
 	];
 
 	return (
-		<Dropdown menu={{ items }} trigger={["click"]} dropdownRender={dropdownRender}>
-			<IconButton className="h-10 w-10 transform-none px-0 hover:scale-105">
-				<img 
-					style={{ color: 'white' }}
+		<Dropdown
+			menu={{ items }}
+			trigger={["click"]}
+			dropdownRender={dropdownRender}
+			getPopupContainer={() => document.body}
+		>
+			<button
+				type="button"
+				className="flex h-10 w-10 transform-none cursor-pointer items-center justify-center rounded-full p-2 px-0 hover:bg-gray-500/10 hover:scale-105"
+				aria-label="Account menu"
+			>
+				<img
+					style={{ color: "white" }}
 					className="h-8 w-8 rounded-full object-cover border border-gray-100"
 					src={logo}
-					alt="" 
+					alt=""
 				/>
-			</IconButton>
+			</button>
 		</Dropdown>
 	);
 }

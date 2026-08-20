@@ -158,11 +158,11 @@ const run = () => {
   const clientKey = (ctx) => `${ctx.request.from_ip || ctx.ip || 'unknown'}`
   app.use(rateLimitMiddleware(
     (ctx) => (ctx.path === '/api/auth/signin' ? `signin:${clientKey(ctx)}` : ''),
-    { limit: 20, windowMs: 15 * 60 * 1000, message: 'Too many login attempts. Try again later.' }
+    { limit: 20, windowMs: 15 * 60 * 1000, message: 'Too many login attempts. Try again later.', code: 'RATE_LIMIT_LOGIN' }
   ))
   app.use(rateLimitMiddleware(
     (ctx) => (ctx.path === '/api/auth/setup' ? `setup:${clientKey(ctx)}` : ''),
-    { limit: 5, windowMs: 60 * 60 * 1000, message: 'Too many setup attempts. Try again later.' }
+    { limit: 5, windowMs: 60 * 60 * 1000, message: 'Too many setup attempts. Try again later.', code: 'RATE_LIMIT_SETUP' }
   ))
   app.use(rateLimitMiddleware(
     (ctx) => (ctx.path === '/api/web/notify-auth-request' ? `notify:${clientKey(ctx)}` : ''),

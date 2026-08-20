@@ -19,6 +19,27 @@
 		"light": "라이트",
 		"dark": "다크",
 		"open": "열기",
-		"or": "또는"
+		"or": "또는",
+
+		"statusText": "상태",
+		"actionText": "작업",
+		"statusPlaceholder": "상태 선택",
+		"yes": "예",
+		"no": "아니오",
+		"active": "활성",
+		"inactive": "비활성",
+		"detail": "상세",
+		"copy": "복사",
+		"copied": "복사되었습니다.",
+		"create": "생성",
+		"edit": "수정",
+		"count": "{{count}}",
+		"countUnit": "개",
+		"secondsUnit": "초",
+		"minutesUnit": "분",
+		"na": "N/A",
+		"noData": "데이터가 없습니다.",
+		"goHome": "홈으로",
+		"total": "전체"
 	}
 }

@@ -39,6 +39,10 @@ export enum ThemeColorPresets {
 export enum LocalEnum {
 	en_US = "en_US",
 	ko_KR = "ko_KR",
+	ja_JP = "ja_JP",
+	zh_CN = "zh_CN",
+	es_ES = "es_ES",
+	fr_FR = "fr_FR",
 }
 
 export enum MultiTabOperation {
@@ -61,7 +65,6 @@ export enum HtmlDataAttribute {
 	ColorPalette = "data-color-palette",
 	ThemeMode = "data-theme-mode",
 }
-
 
 // custom
 

@@ -1,18 +1,8 @@
-import {
-	Alert,
-	Button,
-	Card,
-	Col,
-	Empty,
-	Row,
-	Space,
-	Spin,
-	Tag,
-	Typography,
-} from "antd";
+import dayjs from "@/utils/dayjs";
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import dayjs from "@/utils/dayjs";
+import { Alert, Button, Card, Col, Empty, Row, Space, Spin, Tag, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import applicationService, { type Application, type ApplicationListResponse } from "@/api/services/application";
@@ -20,11 +10,12 @@ import authService, { type DashboardData } from "@/api/services/auth";
 import Chart from "@/components/chart/chart";
 import useChart from "@/components/chart/useChart";
 import { Iconify } from "@/components/icon";
+import { formatNumber as formatLocaleNumber } from "@/locales/locale-meta";
+import useLocale from "@/locales/use-locale";
 import { useUserInfo } from "@/store/userStore";
 import { themeVars } from "@/theme/theme.css";
 
 const { Text, Title } = Typography;
-const numberFormatter = new Intl.NumberFormat("ko-KR");
 
 const EMPTY_DASHBOARD: DashboardData = {
 	kpi: {
@@ -50,16 +41,7 @@ const EMPTY_DASHBOARD: DashboardData = {
 		ABUSE: 0,
 	},
 	weekSuccessCount: 0,
-};
-
-const statusLabels: Record<string, string> = {
-	CREATED: "생성",
-	PENDING: "대기",
-	APPROVED: "승인",
-	CONSUMED: "완료",
-	DENIED: "거절",
-	EXPIRED: "만료",
-	BLOCKED: "차단",
+	firebaseConfigured: undefined,
 };
 
 const statusColors: Record<string, string> = {
@@ -71,16 +53,6 @@ const statusColors: Record<string, string> = {
 	EXPIRED: "default",
 	BLOCKED: "volcano",
 };
-
-const riskLabels: Record<keyof DashboardData["riskEvents"], string> = {
-	NEW_DEVICE: "새 기기",
-	COUNTRY_CHANGE: "국가 변경",
-	ABUSE: "남용 의심",
-};
-
-function formatNumber(value: number | null | undefined) {
-	return numberFormatter.format(Number(value || 0));
-}
 
 function formatPercent(value: number | null | undefined) {
 	return `${Number(value || 0).toFixed(2)}%`;
@@ -116,6 +88,7 @@ function normalizeDashboardData(value: unknown): DashboardData {
 			...riskEvents,
 		},
 		weekSuccessCount: Number(data.weekSuccessCount || 0),
+		firebaseConfigured: typeof data.firebaseConfigured === "boolean" ? data.firebaseConfigured : undefined,
 	};
 }
 
@@ -123,8 +96,8 @@ function isAppActive(app: Application) {
 	return Boolean((app as any).isActive ?? (app as any).is_active);
 }
 
-function appName(app: Application) {
-	return String((app as any).name || "이름 없음");
+function appName(app: Application, fallback: string) {
+	return String((app as any).name || fallback);
 }
 
 function appClientId(app: Application) {
@@ -179,6 +152,23 @@ function MetricCard({
 }
 
 export default function AdminDashboard() {
+	const { t } = useTranslation();
+	const { meta } = useLocale();
+	const formatNumber = (value: number | null | undefined) => formatLocaleNumber(Number(value || 0), meta.bcp47);
+	const statusLabels: Record<string, string> = {
+		CREATED: t("sys.page.dashboard.status.created"),
+		PENDING: t("sys.page.dashboard.status.pending"),
+		APPROVED: t("sys.page.dashboard.status.approved"),
+		CONSUMED: t("sys.page.dashboard.status.consumed"),
+		DENIED: t("sys.page.dashboard.status.denied"),
+		EXPIRED: t("sys.page.dashboard.status.expired"),
+		BLOCKED: t("sys.page.dashboard.status.blocked"),
+	};
+	const riskLabels: Record<keyof DashboardData["riskEvents"], string> = {
+		NEW_DEVICE: t("sys.page.dashboard.risk.newDevice"),
+		COUNTRY_CHANGE: t("sys.page.dashboard.risk.countryChange"),
+		ABUSE: t("sys.page.dashboard.risk.abuse"),
+	};
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const userInfo = useUserInfo();
@@ -215,7 +205,9 @@ export default function AdminDashboard() {
 
 	const dailyTrend = dashboardData.dailyTrend?.length ? dashboardData.dailyTrend : EMPTY_DASHBOARD.dailyTrend;
 	const dailyCategories = dailyTrend.map((item) => {
-		const baseDay = dayjs().startOf("day").subtract(6 - Number(item.day || 0), "days");
+		const baseDay = dayjs()
+			.startOf("day")
+			.subtract(6 - Number(item.day || 0), "days");
 		return baseDay.format("MM/DD");
 	});
 
@@ -237,19 +229,12 @@ export default function AdminDashboard() {
 		},
 		tooltip: {
 			y: {
-				formatter: (value: number) => `${formatNumber(value)}건`,
+				formatter: (value: number) => `${formatNumber(value)}${t("common.countUnit")}`,
 			},
 		},
 	});
 
-	const statusItems = [
-		"CONSUMED",
-		"APPROVED",
-		"PENDING",
-		"DENIED",
-		"EXPIRED",
-		"BLOCKED",
-	].map((status) => ({
+	const statusItems = ["CONSUMED", "APPROVED", "PENDING", "DENIED", "EXPIRED", "BLOCKED"].map((status) => ({
 		status,
 		label: statusLabels[status],
 		value: Number((dashboardData.statusDistribution as any)?.[status] || 0),
@@ -268,7 +253,7 @@ export default function AdminDashboard() {
 						show: true,
 						total: {
 							show: true,
-							label: "Total",
+							label: t("sys.page.dashboard.total"),
 							formatter: () => formatNumber(statusTotal),
 						},
 					},
@@ -301,13 +286,13 @@ export default function AdminDashboard() {
 		},
 		tooltip: {
 			y: {
-				formatter: (value: number) => `${formatNumber(value)}건`,
+				formatter: (value: number) => `${formatNumber(value)}${t("common.countUnit")}`,
 			},
 		},
 	});
 
 	const appStatusChartOptions = useChart({
-		labels: ["활성", "비활성"],
+		labels: [t("common.active"), t("common.inactive")],
 		legend: { position: "bottom", horizontalAlign: "center" },
 		colors: ["#16a34a", "#ef4444"],
 		dataLabels: { enabled: false },
@@ -319,7 +304,7 @@ export default function AdminDashboard() {
 						show: true,
 						total: {
 							show: true,
-							label: "최근 앱",
+							label: t("sys.page.dashboard.recentApps"),
 							formatter: () => formatNumber(applications.length),
 						},
 					},
@@ -350,15 +335,15 @@ export default function AdminDashboard() {
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 				<div>
 					<Title level={2} className="!mb-0">
-						관리자 대시보드
+						{t("sys.page.dashboard.title")}
 					</Title>
 					<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-						<span>마지막 갱신: {lastUpdated}</span>
+						<span>{t("sys.page.dashboard.lastUpdated", { time: lastUpdated })}</span>
 					</div>
 				</div>
 				<Space wrap>
 					<Button icon={<ReloadOutlined />} loading={anyFetching} onClick={refreshAll}>
-						새로고침
+						{t("common.redo")}
 					</Button>
 				</Space>
 			</div>
@@ -367,8 +352,17 @@ export default function AdminDashboard() {
 				<Alert
 					showIcon
 					type="warning"
-					message="인증 지표를 불러오지 못했습니다."
-					description="잠시 후 다시 새로고침하거나 인증 로그 화면에서 상세 상태를 확인하세요."
+					message={t("sys.page.dashboard.loadError")}
+					description={t("sys.page.dashboard.loadErrorDesc")}
+				/>
+			)}
+
+			{dashboardData.firebaseConfigured === false && (
+				<Alert
+					showIcon
+					type="warning"
+					message={t("sys.page.dashboard.firebaseUnconfigured")}
+					description={t("sys.page.dashboard.firebaseUnconfiguredDesc")}
 				/>
 			)}
 
@@ -381,15 +375,13 @@ export default function AdminDashboard() {
 							</div>
 							<div>
 								<Title level={4} className="!mb-1">
-									첫 애플리케이션을 연결하세요
+									{t("sys.page.dashboard.connectFirstApp")}
 								</Title>
-								<Text type="secondary">
-									앱을 만들면 인증 요청 추이, 성공률, 위험 이벤트가 이 대시보드에 자동으로 쌓입니다.
-								</Text>
+								<Text type="secondary">{t("sys.page.dashboard.connectFirstAppDesc")}</Text>
 							</div>
 						</Space>
 						<Button type="primary" onClick={() => navigate("/service/application/create")}>
-							첫 애플리케이션 생성
+							{t("sys.page.dashboard.createFirstApp")}
 						</Button>
 					</div>
 				</Card>
@@ -398,56 +390,56 @@ export default function AdminDashboard() {
 			<Row gutter={[16, 16]}>
 				<Col xs={24} sm={12} xl={6}>
 					<MetricCard
-						title="최근 7일 인증 요청"
+						title={t("sys.page.dashboard.weekRequests")}
 						value={formatNumber(dashboardData.kpi.weekRequestsCount)}
 						icon="solar:login-3-bold-duotone"
 						color="#2563eb"
-						subtitle="최근 7일간 생성된 전체 인증 요청"
+						subtitle={t("sys.page.dashboard.weekRequestsDesc")}
 					/>
 				</Col>
 				<Col xs={24} sm={12} xl={6}>
 					<MetricCard
-						title="인증 성공률"
+						title={t("sys.page.dashboard.successRate")}
 						value={formatPercent(dashboardData.kpi.successRate)}
 						icon="solar:check-circle-bold-duotone"
 						color="#16a34a"
-						subtitle="승인·완료 / 승인·완료·거절·만료 기준"
+						subtitle={t("sys.page.dashboard.successRateDesc")}
 					/>
 				</Col>
 				<Col xs={24} sm={12} xl={6}>
 					<MetricCard
-						title="평균 인증 시간"
+						title={t("sys.page.dashboard.avgAuthTime")}
 						value={Number(dashboardData.kpi.avgTimeSeconds || 0).toFixed(2)}
-						unit="초"
+						unit={t("common.secondsUnit")}
 						icon="solar:clock-circle-bold-duotone"
 						color="#f59e0b"
-						subtitle="승인까지 걸린 평균 시간"
+						subtitle={t("sys.page.dashboard.avgAuthTimeDesc")}
 					/>
 				</Col>
 				<Col xs={24} sm={12} xl={6}>
 					<MetricCard
-						title="대기 요청 / 위험 이벤트"
+						title={t("sys.page.dashboard.pendingAndRisk")}
 						value={`${formatNumber(dashboardData.kpi.pendingCount)} / ${formatNumber(riskTotal)}`}
 						icon="solar:shield-warning-bold-duotone"
 						color="#ef4444"
-						subtitle="현재 대기 중 요청과 최근 7일 위험 이벤트"
+						subtitle={t("sys.page.dashboard.pendingAndRiskDesc")}
 					/>
 				</Col>
 			</Row>
 
 			<Row gutter={[16, 16]}>
 				<Col xs={24} xl={16}>
-					<Card title="최근 7일 인증 요청" bordered style={{ borderRadius: 8 }}>
+					<Card title={t("sys.page.dashboard.weekRequests")} bordered style={{ borderRadius: 8 }}>
 						<Chart
 							type="area"
 							height={280}
 							options={dailyChartOptions}
-							series={[{ name: "인증 요청", data: dailyTrend.map((item) => item.count || 0) }]}
+							series={[{ name: t("sys.page.dashboard.authRequests"), data: dailyTrend.map((item) => item.count || 0) }]}
 						/>
 					</Card>
 				</Col>
 				<Col xs={24} xl={8}>
-					<Card title="최근 7일 인증 상태" bordered style={{ borderRadius: 8, height: "100%" }}>
+					<Card title={t("sys.page.dashboard.weekStatus")} bordered style={{ borderRadius: 8, height: "100%" }}>
 						{statusTotal > 0 ? (
 							<Chart
 								type="donut"
@@ -456,7 +448,7 @@ export default function AdminDashboard() {
 								series={statusItems.map((item) => item.value)}
 							/>
 						) : (
-							<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="최근 7일 인증 데이터 없음" />
+							<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("sys.page.dashboard.noWeekData")} />
 						)}
 					</Card>
 				</Col>
@@ -465,8 +457,13 @@ export default function AdminDashboard() {
 			<Row gutter={[16, 16]}>
 				<Col xs={24} xl={12}>
 					<Card
-						title="위험 이벤트"
-						extra={<Tag color={riskTotal > 0 ? "red" : "green"}>{formatNumber(riskTotal)}건</Tag>}
+						title={t("sys.page.dashboard.riskEvents")}
+						extra={
+							<Tag color={riskTotal > 0 ? "red" : "green"}>
+								{formatNumber(riskTotal)}
+								{t("common.countUnit")}
+							</Tag>
+						}
 						bordered
 						style={{ borderRadius: 8 }}
 					>
@@ -475,10 +472,10 @@ export default function AdminDashboard() {
 								type="bar"
 								height={220}
 								options={riskChartOptions}
-								series={[{ name: "위험 이벤트", data: riskItems.map((item) => item.value) }]}
+								series={[{ name: t("sys.page.dashboard.riskEvents"), data: riskItems.map((item) => item.value) }]}
 							/>
 						) : (
-							<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="최근 7일 위험 이벤트 없음" />
+							<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("sys.page.dashboard.noRiskEvents")} />
 						)}
 						<Row gutter={[12, 12]} className="mt-3">
 							{riskItems.map((item) => (
@@ -495,7 +492,10 @@ export default function AdminDashboard() {
 												<Text type="secondary" className="block text-xs">
 													{item.label}
 												</Text>
-												<Text strong>{formatNumber(item.value)}건</Text>
+												<Text strong>
+													{formatNumber(item.value)}
+													{t("common.countUnit")}
+												</Text>
 											</span>
 										</Space>
 									</div>
@@ -506,8 +506,8 @@ export default function AdminDashboard() {
 				</Col>
 				<Col xs={24} xl={12}>
 					<Card
-						title="애플리케이션 상태"
-						extra={<Tag color="blue">최근 {formatNumber(applications.length)}개</Tag>}
+						title={t("sys.page.dashboard.applicationStatus")}
+						extra={<Tag color="blue">{t("sys.page.dashboard.recentCount", { count: applications.length })}</Tag>}
 						bordered
 						style={{ borderRadius: 8, height: "100%" }}
 					>
@@ -521,7 +521,7 @@ export default function AdminDashboard() {
 										series={[activeRecentApplications, inactiveRecentApplications]}
 									/>
 								) : (
-									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="등록된 앱 없음" />
+									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("sys.page.dashboard.noApps")} />
 								)}
 							</Col>
 							<Col xs={24} md={14}>
@@ -534,24 +534,26 @@ export default function AdminDashboard() {
 													<div className="flex items-start justify-between gap-3">
 														<div className="min-w-0">
 															<Text strong className="block truncate">
-																{appName(app)}
+																{appName(app, t("sys.page.dashboard.unnamed"))}
 															</Text>
 															<Text type="secondary" className="block truncate text-xs">
 																{appClientId(app)}
 															</Text>
 														</div>
 														<Tag color={isAppActive(app) ? "success" : "error"} style={{ marginInlineEnd: 0 }}>
-															{isAppActive(app) ? "활성" : "비활성"}
+															{isAppActive(app) ? t("common.active") : t("common.inactive")}
 														</Tag>
 													</div>
 													<Text type="secondary" className="mt-2 block text-xs">
-														최근 인증: {lastAuthAt ? dayjs(lastAuthAt).format("MM-DD HH:mm") : "-"}
+														{t("sys.page.dashboard.lastAuth", {
+															time: lastAuthAt ? dayjs(lastAuthAt).format("MM-DD HH:mm") : "-",
+														})}
 													</Text>
 												</div>
 											);
 										})
 									) : (
-										<Text type="secondary">앱을 만들면 최근 앱 상태가 표시됩니다.</Text>
+										<Text type="secondary">{t("sys.page.dashboard.appStatusHint")}</Text>
 									)}
 								</Space>
 							</Col>
@@ -561,8 +563,13 @@ export default function AdminDashboard() {
 			</Row>
 
 			<Card
-				title="최근 인증 요청"
-				extra={<Tag color="blue">{formatNumber(recentRequestsPreview.length)}건</Tag>}
+				title={t("sys.page.dashboard.recentRequests")}
+				extra={
+					<Tag color="blue">
+						{formatNumber(recentRequestsPreview.length)}
+						{t("common.countUnit")}
+					</Tag>
+				}
 				bordered
 				style={{ borderRadius: 8 }}
 			>
@@ -596,7 +603,7 @@ export default function AdminDashboard() {
 						))}
 					</Row>
 				) : (
-					<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="최근 인증 요청 없음" />
+					<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("sys.page.dashboard.noRecentRequests")} />
 				)}
 			</Card>
 		</Space>

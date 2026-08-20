@@ -3,10 +3,15 @@
 #   cp .env.example .env   # set AUTH_SECRET and POSTGRES_PASSWORD
 #   docker compose up --build -d
 #
+# Project name is `biopass-community` (network: biopass-community_internal) so it
+# does not collide with an older stack that used project name `biopass`.
+# If you still see label errors for biopass_default:
+#   docker network rm biopass_default
+#
 # API is bound to 127.0.0.1 by default. For a public VPS put a reverse proxy
 # in front, or set API_HOST_BIND=0.0.0.0 (not recommended without TLS).
 
-name: biopass
+name: biopass-community
 
 x-api-environment: &api-environment
   NODE_ENV: production
@@ -36,7 +41,7 @@ x-api-environment: &api-environment
   INIT_ADMIN_PASSWORD: ${INIT_ADMIN_PASSWORD:-}
   INIT_ADMIN_NAME: ${INIT_ADMIN_NAME:-Admin}
   INIT_ADMIN_PHONE: ${INIT_ADMIN_PHONE:-}
-  APP_DOWNLOAD_URL_IOS: ${APP_DOWNLOAD_URL_IOS:-https://apps.apple.com/kr/app/bio-pass/id6760216314}
+  APP_DOWNLOAD_URL_IOS: ${APP_DOWNLOAD_URL_IOS:-https://apps.apple.com/br/app/bio-pass/id6760216314}
   APP_DOWNLOAD_URL_ANDROID: ${APP_DOWNLOAD_URL_ANDROID:-}
   APP_DEEP_LINK_SCHEME: ${APP_DEEP_LINK_SCHEME:-biopass}
   APP_PACKAGE_ANDROID: ${APP_PACKAGE_ANDROID:-com.mfa.biopass}
@@ -45,6 +50,7 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    networks: [internal]
     environment:
       POSTGRES_USER: biopass
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
@@ -66,6 +72,7 @@ services:
       dockerfile: Dockerfile
     image: ${BIOPASS_IMAGE:-ghcr.io/fhwang0926/biopass-community}:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    networks: [internal]
     ports:
       - "${API_HOST_BIND:-127.0.0.1}:${API_PORT:-3030}:3030"
     environment:
@@ -89,6 +96,10 @@ services:
       timeout: 5s
       retries: 8
       start_period: 45s
+
+networks:
+  internal:
+    driver: bridge
 
 volumes:
   biopass_pg:

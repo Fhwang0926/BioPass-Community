@@ -153,12 +153,13 @@ export function renderGuidePage(ctx, serverInfo = null, options = {}) {
     : ''
   const authChoiceInitialToast = (() => {
     if (authMode !== 'choice' || !hasPushDevice) return ''
+    if (options.autoNotificationFirebaseDisabled) return text.authChoicePushFirebaseDisabled
     if (options.autoNotificationFailed) return text.authChoicePushFailed
     if (options.autoNotificationSent) return text.authChoicePushSent
     return text.authChoicePushWaiting
   })()
   const authChoiceInitialToastClass = authChoiceInitialToast
-    ? `bio-auth-toast visible ${options.autoNotificationFailed ? 'no-devices' : 'success'}`
+    ? `bio-auth-toast visible ${(options.autoNotificationFailed || options.autoNotificationFirebaseDisabled) ? 'no-devices' : 'success'}`
     : 'bio-auth-toast'
   const authChoiceDividerDisplay = bioAuthSectionDisplay === 'block' && emailAuthSectionDisplay === 'block' ? 'block' : 'none'
   const bioAuthSectionHtml = bioAuthSectionDisplay === 'block'

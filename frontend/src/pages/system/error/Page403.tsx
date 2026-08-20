@@ -7,27 +7,29 @@ import Character4 from "@/assets/images/characters/character_4.png";
 import MotionContainer from "@/components/animate/motion-container";
 import { varBounce } from "@/components/animate/variants/bounce";
 import { themeVars } from "@/theme/theme.css";
+import { useTranslation } from "react-i18next";
 
 const { VITE_APP_HOMEPAGE: HOMEPAGE } = import.meta.env;
 
 export default function Page403() {
+	const { t } = useTranslation();
 	return (
 		<>
 			<Helmet>
-				<title> 403 No Permission!</title>
+				<title>{t("sys.error.403.title")}</title>
 			</Helmet>
 
 			<div className="m-auto max-w-[400px]">
 				<MotionContainer className="flex flex-col items-center justify-center px-2">
 					<m.div variants={varBounce().in}>
 						<Typography.Title level={3} className="text-center">
-							No permission
+							{t("sys.error.403.title")}
 						</Typography.Title>
 					</m.div>
 
 					<m.div variants={varBounce().in}>
 						<Typography.Paragraph type="secondary" className="text-center">
-							The page you are trying access has restricted access. Please refer to your system administrator
+							{t("sys.error.403.description")}
 						</Typography.Paragraph>
 					</m.div>
 
@@ -95,7 +97,7 @@ export default function Page403() {
 					</m.div>
 
 					<NavLink to={HOMEPAGE} className="rounded-md p-4 !text-text-primary !bg-primary">
-						Go to Home
+						{t("common.goHome")}
 					</NavLink>
 				</MotionContainer>
 			</div>

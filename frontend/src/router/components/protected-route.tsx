@@ -14,11 +14,7 @@ type Props = {
 
 async function resolveAuthRedirectPath(): Promise<"/setup" | "/login"> {
 	try {
-		const status = await authService.getSetupStatus();
-		const needs =
-			Boolean((status as { needsSetup?: boolean })?.needsSetup) ||
-			Boolean((status as { data?: { needsSetup?: boolean } })?.data?.needsSetup);
-		if (needs) return "/setup";
+		if (await authService.getNeedsSetup()) return "/setup";
 	} catch {
 		// fall through to login
 	}

@@ -9,6 +9,8 @@ import { Iconify } from "@/components/icon";
 import companyService from "@/api/services/company";
 import type { UpdateCompanyParams } from "@/api/services/company";
 import { useUserInfo } from "@/store/userStore";
+import { useTranslation } from "react-i18next";
+import { formatDateTime } from "@/locales/locale-meta";
 const normalizeCompany = (company: any) => {
 	if (!company) return null;
 
@@ -22,6 +24,7 @@ const normalizeCompany = (company: any) => {
 };
 
 export default function TeamsTab() {
+	const { t, i18n } = useTranslation();
 	const [form] = Form.useForm();
 	const queryClient = useQueryClient();
 	const userInfo = useUserInfo();
@@ -40,7 +43,7 @@ export default function TeamsTab() {
 	const handleSubmit = async (values: UpdateCompanyParams) => {
 		try {
 			if (!company?.id) {
-				toast.error("Company information was not found");
+				toast.error(t("sys.menu.account.company.not_found"));
 				return;
 			}
 
@@ -51,11 +54,11 @@ export default function TeamsTab() {
 				business_no: values.business_no,
 				email: values.email,
 			});
-			toast.success("Company information updated successfully");
+			toast.success(t("sys.menu.account.company.update_success"));
 			queryClient.invalidateQueries({ queryKey: ["company", company.id] });
 			setIsEditing(false);
 		} catch (error) {
-			toast.error("Failed to update company information");
+			toast.error(t("sys.menu.account.company.update_error"));
 		}
 	};
 
@@ -83,11 +86,11 @@ export default function TeamsTab() {
 	};
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <div>{t("sys.menu.account.company.loading")}</div>;
 	}
 
 	if (!companyId) {
-		return <div>Company information was not found.</div>;
+		return <div>{t("sys.menu.account.company.not_found")}</div>;
 	}
 
 	return (
@@ -96,13 +99,13 @@ export default function TeamsTab() {
 				<Card className="flex-col">
 					<div className="flex w-full flex-col">
 						<div className="flex items-center justify-between mb-4">
-							<Typography.Title level={5}>Company Information</Typography.Title>
+							<Typography.Title level={5}>{t("sys.menu.account.company.title")}</Typography.Title>
 							{isCompanyAdmin && (
 								<Button 
 									type={isEditing ? "default" : "primary"}
 									onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
 								>
-									{isEditing ? "Cancel" : "Edit Company"}
+									{isEditing ? t("sys.menu.account.company.cancel") : t("sys.menu.account.company.edit_company")}
 								</Button>
 							)}
 						</div>
@@ -116,16 +119,16 @@ export default function TeamsTab() {
 							<Row gutter={16}>
 								<Col span={12}>
 									<Form.Item
-										label="Company Name"
+										label={t("sys.menu.account.company.company_name")}
 										name="name"
-										rules={[{ required: true, message: "Please input company name!" }]}
+										rules={[{ required: true, message: t("sys.menu.account.company.company_name_required") }]}
 									>
 										<Input prefix={<Iconify icon="mdi:office-building" />} />
 									</Form.Item>
 								</Col>
 								<Col span={12}>
 									<Form.Item
-										label="Company Code"
+										label={t("sys.menu.account.company.company_code")}
 										name="code"
 									>
 										<Input prefix={<Iconify icon="mdi:identifier" />} />
@@ -136,12 +139,12 @@ export default function TeamsTab() {
 							<Row gutter={16}>
 								<Col span={12}>
 									<Form.Item
-										label="Business Number"
+										label={t("sys.menu.account.company.business_number")}
 										name="business_no"
 										rules={[
 											{
 												max: 30,
-												message: 'Business registration number cannot exceed 30 characters'
+												message: t("sys.menu.account.company.business_number_max")
 											}
 										]}
 									>
@@ -150,7 +153,7 @@ export default function TeamsTab() {
 								</Col>
 								<Col span={12}>
 									<Form.Item
-										label="Email"
+										label={t("sys.menu.account.company.email")}
 										name="email"
 									>
 										<Input prefix={<Iconify icon="mdi:email" />} />
@@ -162,10 +165,10 @@ export default function TeamsTab() {
 								<Form.Item>
 									<Space>
 										<Button type="primary" htmlType="submit">
-											Save Changes
+											{t("sys.menu.account.company.save_changes")}
 										</Button>
 										<Button onClick={handleCancel}>
-											Cancel
+											{t("sys.menu.account.company.cancel")}
 										</Button>
 									</Space>
 								</Form.Item>
@@ -177,30 +180,30 @@ export default function TeamsTab() {
 
 			<Col span={24}> */}
 				<Card className="flex-col !items-start mt-2">
-					<Typography.Title level={5}>Company Status</Typography.Title>
+					<Typography.Title level={5}>{t("sys.menu.account.company.company_status")}</Typography.Title>
 					<div className="mt-4 w-full">
 						<Space direction="vertical" size="large" className="w-full">
 							<div className="flex items-center justify-between">
 								<div>
-									<Typography.Text strong>Company Status</Typography.Text>
+									<Typography.Text strong>{t("sys.menu.account.company.company_status")}</Typography.Text>
 									<div className="text-gray-500">
-										{company?.is_active ? "Active" : "Inactive"}
+										{company?.is_active ? t("common.active") : t("common.inactive")}
 									</div>
 								</div>
 							</div>
 							<div className="flex items-center justify-between">
 								<div>
-									<Typography.Text strong>Created At</Typography.Text>
+									<Typography.Text strong>{t("sys.menu.account.company.created_at")}</Typography.Text>
 									<div className="text-gray-500">
-										{company?.created_at ? new Date(company.created_at).toLocaleString() : "N/A"}
+										{company?.created_at ? formatDateTime(company.created_at, i18n.resolvedLanguage) : t("common.na")}
 									</div>
 								</div>
 							</div>
 							<div className="flex items-center justify-between">
 								<div>
-									<Typography.Text strong>Last Updated</Typography.Text>
+									<Typography.Text strong>{t("sys.menu.account.company.last_updated")}</Typography.Text>
 									<div className="text-gray-500">
-										{company?.updated_at ? new Date(company.updated_at).toLocaleString() : "N/A"}
+										{company?.updated_at ? formatDateTime(company.updated_at, i18n.resolvedLanguage) : t("common.na")}
 									</div>
 								</div>
 							</div>

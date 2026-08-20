@@ -1,11 +1,15 @@
 name: Docker image
 
+# Release: semver tags (v*.*.*) → GHCR X.Y.Z / X.Y / latest + GitHub Release
+# Dev images: every push to `dev` → dev / dev.YYYYMMDD (UTC)
+# PR / other branches: build only (no push)
+
 on:
   push:
-    branches: [main, master]
+    branches: [dev]
     tags: ["v*.*.*"]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
   workflow_dispatch:
 
 env:
@@ -44,17 +48,23 @@ jobs:
         id: meta_name
         run: echo "image=${REGISTRY}/$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
+      - name: Dev date tag (UTC)
+        id: date
+        if: github.ref == 'refs/heads/dev'
+        run: echo "day=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.meta_name.outputs.image }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=sha-,format=short
-            type=ref,event=branch
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            type=raw,value=dev.${{ steps.date.outputs.day }},enable=${{ github.ref == 'refs/heads/dev' }}
+            type=sha,prefix=sha-,format=short,enable=${{ github.event_name == 'pull_request' }}
 
       - name: Build and push
         id: build
@@ -63,10 +73,44 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
           sbom: true
+
+  release:
+    name: GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Image refs
+        id: ver
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "minor=${version%.*}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')/biopass-community" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            Docker image:
+
+            ```bash
+            docker pull ${{ steps.ver.outputs.image }}:${{ steps.ver.outputs.version }}
+            ```
+
+            GHCR tags: `${{ steps.ver.outputs.version }}`, `${{ steps.ver.outputs.minor }}`, `latest`.

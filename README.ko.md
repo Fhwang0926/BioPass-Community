@@ -43,14 +43,14 @@ Google Play는 아직 출시되지 않았습니다.
 </p>
 
 <p align="center">
-  <img src="docs/assets/flow-download.png" width="170" alt="1. Bio Pass 설치" />
-  <img src="docs/assets/flow-approve.png" width="170" alt="2. 생체인증 승인" />
-  <img src="docs/assets/flow-done.png" width="170" alt="3. 로그인 완료" />
+  <img src="docs/assets/flow-download.png" width="170" alt="1. 서버 연결" />
+  <img src="docs/assets/flow-approve.png" width="170" alt="2. 이메일 인증" />
+  <img src="docs/assets/flow-done.png" width="170" alt="3. 대시보드 확인" />
 </p>
 
-1. Bio Pass를 설치하고 **여러분 서버**(`PUBLIC_BASE_URL`)에 등록합니다. 앱이 해당 origin의 `GET /api/app/check-site`로 서버를 확인한 뒤 가입합니다.
-2. 서비스가 OAuth를 시작하면 푸시/딥링크로 요청이 오고, 생체인증으로 승인합니다.
-3. 브라우저가 `redirect_uri?code=…` 로 돌아와 로그인이 완료됩니다.
+1. Bio Pass를 **여러분 서버**(`PUBLIC_BASE_URL`)에 연결합니다. 앱이 해당 origin의 `GET /api/app/check-site`로 서버를 확인한 뒤 선택한 환경에 등록합니다.
+2. 이메일 인증으로 계정을 빠르게 등록해, 푸시 승인 전에도 안전한 MFA 프로필을 시작할 수 있습니다.
+3. 모바일 대시보드에서 인증 활동, 승인 상태, 등록 페이지 현황을 한눈에 확인합니다.
 
 SMTP를 설정하면 앱 없이도 이메일 OTP로 로그인할 수 있습니다.
 

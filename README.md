@@ -43,14 +43,14 @@ Google Play is not published yet.
 </p>
 
 <p align="center">
-  <img src="docs/assets/flow-download.png" width="170" alt="1. Install Bio Pass" />
-  <img src="docs/assets/flow-approve.png" width="170" alt="2. Approve with biometrics" />
-  <img src="docs/assets/flow-done.png" width="170" alt="3. Login completes" />
+  <img src="docs/assets/flow-download.png" width="170" alt="1. Connect your server" />
+  <img src="docs/assets/flow-approve.png" width="170" alt="2. Verify by email" />
+  <img src="docs/assets/flow-done.png" width="170" alt="3. Review the dashboard" />
 </p>
 
-1. Install Bio Pass and register against **your** server (`PUBLIC_BASE_URL`). The app probes `GET /api/app/check-site` on that origin, then signs up.
-2. Your app starts OAuth → push / deep link → approve with biometrics.
-3. Browser returns to your app with `redirect_uri?code=…`.
+1. Connect Bio Pass to **your** server (`PUBLIC_BASE_URL`). The app probes `GET /api/app/check-site` on that origin, then registers against the selected environment.
+2. Verify the account by email to bootstrap a secure MFA profile, even before push approval is configured.
+3. Review auth activity, approval status, and registered pages from the mobile dashboard.
 
 Email OTP works without the mobile app if SMTP is configured.
 

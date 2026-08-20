@@ -90,9 +90,22 @@ route.get('/refresh/:ts', async (ctx) => {
       return
     }
 
-    // Verify the refresh token
+    let decoded
+    try {
+      decoded = jwt.verify(refreshToken, global.config.auth.secret)
+    } catch (verifyError) {
+      if (verifyError?.name === 'TokenExpiredError') {
+        ctx.status = 401
+        ctx.body = await logFailure(ctx, 'token_refresh', 'Token refresh failed', {
+          result: false,
+          message: 'Refresh token expired',
+          expired_at: verifyError.expiredAt instanceof Date ? verifyError.expiredAt.toISOString() : null
+        })
+        return
+      }
+      throw verifyError
+    }
 
-    const decoded = await jwt.verify(refreshToken, global.config.auth.secret)
     if (decoded.type !== 'refresh') {
       ctx.body = await logFailure(ctx, 'token_refresh', 'Token refresh failed', {
         result: false,
@@ -130,7 +143,11 @@ route.get('/refresh/:ts', async (ctx) => {
     })
   } catch (e) {
     await logFailure(ctx, 'token_refresh', 'Token refresh failed', e)
-    ctx.throw(403, e.message)
+    ctx.status = e?.name === 'TokenExpiredError' ? 401 : 403
+    ctx.body = {
+      result: false,
+      message: e?.message || 'Token refresh failed'
+    }
   }
 })
 
@@ -531,7 +548,7 @@ route.get('/dashboard', async (ctx) => {
       }
     }))
 
-    // 8. 위험 이벤트 요약 (최근 7일)
+    // 8. 위험 이벤트 요약 (최근 7일 요청 현황과 동일한 집계 대상 기준)
     const riskEvents = await sql.db
       .select({
         riskType: sql.schema.riskEvents.riskType,
@@ -540,8 +557,9 @@ route.get('/dashboard', async (ctx) => {
       .from(sql.schema.riskEvents)
       .innerJoin(sql.schema.authRequests, eq(sql.schema.riskEvents.authRequestId, sql.schema.authRequests.id))
       .where(and(
-        gte(sql.schema.riskEvents.createdAt, weekStart),
-        inArray(sql.schema.authRequests.appId, scopedAppIds)
+        gte(sql.schema.authRequests.createdAt, weekStart),
+        inArray(sql.schema.authRequests.appId, scopedAppIds),
+        inArray(sql.schema.authRequests.status, COUNTABLE_STATUSES)
       ))
       .groupBy(sql.schema.riskEvents.riskType)
       .all()

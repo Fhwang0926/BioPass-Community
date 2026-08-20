@@ -1,8 +1,23 @@
 'use strict'
 
-import { eq, and, isNull, ne } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { sql } from '../../../lib/index.js'
 import { logSuccess, logFailure } from '../../../service/audit.js'
+
+const makeRetiredToken = (deviceRow, now) => `retired_${deviceRow.id}_${now}`
+
+const pickBestRow = (rows) => {
+  if (!rows.length) return null
+  return [...rows].sort((a, b) => {
+    const aActive = a.revokedAt == null ? 1 : 0
+    const bActive = b.revokedAt == null ? 1 : 0
+    if (aActive !== bActive) return bActive - aActive
+
+    const aSeen = a.lastSeenAt ?? a.createdAt ?? 0
+    const bSeen = b.lastSeenAt ?? b.createdAt ?? 0
+    return bSeen - aSeen
+  })[0]
+}
 
 /**
  * FCM 푸시 토큰 갱신 엔드포인트.
@@ -30,43 +45,60 @@ export function register(route) {
       const userId = profile.id
       const now = Date.now()
       const cleanToken = push_token.trim()
+      const normalizedDeviceId = typeof device_id === 'string' && device_id.trim() ? device_id.trim() : null
+      const pendingToken = `pending_${userId}`
 
-      // placeholder 토큰(pending_userId)을 가진 디바이스는 revoke하지 않고 실제 토큰으로 직접 교체
-      // revoked_at 조건 없이 업데이트 (이전에 잘못 revoke된 경우도 복구)
-      await sql.db
-        .update(sql.schema.devices)
-        .set({ pushToken: cleanToken, lastSeenAt: now, revokedAt: null })
-        .where(
-          and(
-            eq(sql.schema.devices.userId, userId),
-            eq(sql.schema.devices.pushToken, `pending_${userId}`)
-          )
-        )
+      await sql.db.transaction(async (tx) => {
+        const userDevices = await tx
+          .select()
+          .from(sql.schema.devices)
+          .where(eq(sql.schema.devices.userId, userId))
 
-      // device_id가 주어지면 해당 디바이스만, 아니면 사용자의 활성 디바이스 모두 업데이트
-      if (device_id && typeof device_id === 'string' && device_id.trim()) {
-        await sql.db
-          .update(sql.schema.devices)
-          .set({ pushToken: cleanToken, lastSeenAt: now })
-          .where(
-            and(
-              eq(sql.schema.devices.userId, userId),
-              eq(sql.schema.devices.deviceId, device_id.trim()),
-              isNull(sql.schema.devices.revokedAt)
-            )
-          )
-      } else {
-        await sql.db
-          .update(sql.schema.devices)
-          .set({ pushToken: cleanToken, lastSeenAt: now })
-          .where(
-            and(
-              eq(sql.schema.devices.userId, userId),
-              isNull(sql.schema.devices.revokedAt),
-              ne(sql.schema.devices.pushToken, cleanToken)
-            )
-          )
-      }
+        const activeDevices = userDevices.filter((device) => device.revokedAt == null)
+        const targetByDeviceId = normalizedDeviceId
+          ? pickBestRow(userDevices.filter((device) => device.deviceId === normalizedDeviceId))
+          : null
+        const pendingDevice = pickBestRow(userDevices.filter((device) => device.pushToken === pendingToken))
+        const tokenOwner = pickBestRow(userDevices.filter((device) => device.pushToken === cleanToken))
+        const fallbackActive = pickBestRow(activeDevices)
+
+        const canonicalDevice =
+          targetByDeviceId ||
+          tokenOwner ||
+          pendingDevice ||
+          fallbackActive ||
+          null
+
+        const duplicateRows = userDevices.filter((device) => (
+          device.id !== canonicalDevice?.id &&
+          (device.pushToken === cleanToken || device.pushToken === pendingToken)
+        ))
+
+        for (const duplicate of duplicateRows) {
+          await tx
+            .update(sql.schema.devices)
+            .set({
+              pushToken: makeRetiredToken(duplicate, now),
+              revokedAt: now,
+              lastSeenAt: now
+            })
+            .where(eq(sql.schema.devices.id, duplicate.id))
+        }
+
+        if (canonicalDevice) {
+          const updatePayload = {
+            pushToken: cleanToken,
+            lastSeenAt: now,
+            revokedAt: null
+          }
+          if (normalizedDeviceId) updatePayload.deviceId = normalizedDeviceId
+
+          await tx
+            .update(sql.schema.devices)
+            .set(updatePayload)
+            .where(eq(sql.schema.devices.id, canonicalDevice.id))
+        }
+      })
 
       ctx.body = await logSuccess(ctx, 'update_push_token', 'Push token updated', { result: true })
     } catch (e) {

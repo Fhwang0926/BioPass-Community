@@ -14,7 +14,7 @@
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "firebase-admin": "^13.10.0",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.3.1",
     "jsonwebtoken": "^9.0.3",
     "koa": "^2.16.4",
     "koa-bodyparser": "^4.4.1",
@@ -47,7 +47,7 @@
     "db:sync": "npm run db:push"
   },
   "resolutions": {
-    "js-yaml": "4.3.0",
+    "js-yaml": "4.3.1",
     "websocket-driver": "0.7.5",
     "form-data": "2.5.6",
     "jws": "4.0.1",
